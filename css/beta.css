@@ -4,7 +4,7 @@ body {
 .radarcanvas {
   align-self: stretch;
   flex: 1;
-  overflow: hidden;
+  overflow: visible;
   z-index: 0;
 }
 .iconsettings {
@@ -21,7 +21,7 @@ body {
   flex-direction: column;
   justify-content: center;
 }
-.buttonbase {
+button.buttonbase {
   width: 48px;
   height: 48px;
   border-radius: var(--br-4);
@@ -38,7 +38,7 @@ body {
   overflow: hidden;
   object-fit: cover;
 }
-
+.buttontogglefullscreen,
 .radarcontrols {
   display: flex;
   align-items: flex-start;
@@ -117,7 +117,6 @@ body {
   align-items: center;
   justify-content: center;
 }
-
 .simcontrols {
   align-self: stretch;
   display: flex;
@@ -161,7 +160,14 @@ body {
   justify-content: flex-start;
   gap: var(--gap-12);
 }
-.cardownship,
+.card {
+  border-radius: var(--br-4);
+  background-color: var(--neutral-800-alpha-80);
+  overflow: hidden;
+  padding: var(--space-3) var(--padding-16) var(--padding-16);
+  box-sizing: border-box;
+}
+.card,
 .datacontainer {
   display: flex;
   flex-direction: column;
@@ -176,11 +182,7 @@ body {
 }
 .cardownship {
   width: 304px;
-  border-radius: var(--br-4);
-  background-color: var(--neutral-800-alpha-80);
-  overflow: hidden;
-  padding: var(--space-3) var(--padding-16) var(--padding-16);
-  box-sizing: border-box;
+  min-height: 104px;
 }
 .track {
   text-transform: uppercase;
@@ -296,6 +298,10 @@ body {
   font-size: var(--font-size-12);
   color: var(--neutral-300);
   font-family: var(--font-ibm-plex-sans);
+  overflow-x: auto;
+  flex-wrap: nowrap !important;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
 }
 .commandcenter {
   align-self: stretch;
@@ -351,10 +357,72 @@ body {
   line-height: normal;
   letter-spacing: normal;
 }
+
+/* Reset defaults on our semantic buttons */
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+  
+
+/* Retain your existing divider on the play panel */
+button.controlplay {
+  border-right: 1px solid var(--color-darkslategray);
+}
+
+/* Keep the flex sizing you already have for back/forward */
+button.control-backward,
+button.control-forward {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensure the playback time matches your typography */
+button.controlplay .placeholder {
+  font-family: var(--font-ibm-plex-mono);
+  font-size: var(--font-size-18);
+  color: var(--primary-500);
+}
+
+.iconnumber {
+  width: 20px;
+  position: relative;
+  max-height: 100%;
+  overflow: hidden;
+  object-fit: cover;
+}
+
+.label,
+.metricprimary,
+.metricvalue {
+   /* Modern browsers */
+  user-select: none;
+
+  /* Webkit browsers (Safari, Chrome, Edge) */
+  -webkit-user-select: none;
+  
+  /* Firefox */
+  -moz-user-select: none;
+  
+  /* Internet Explorer/Edge Legacy */
+  -ms-user-select: none;
+  
+  /* Disable touch callout on iOS */
+  -webkit-touch-callout: none;
+  
+  /* Disable drag */
+  -webkit-user-drag: none;
+  
+  /* Disable highlighting */
+  -webkit-tap-highlight-color: transparent;
+}
+
 @media screen and (max-width: 1210px) {
-  .radarcontrols {
-    display: none;
-  }
+
   .beta {
     flex-wrap: wrap;
     padding-left: var(--padding-8);
@@ -363,44 +431,92 @@ body {
   }
 }
 @media screen and (max-width: 792px) {
+  .beta{
+    flex-direction: column;
+    align-items: flex-end;
+    padding-left: var(--padding-12);
+    padding-right: var(--padding-12);
+    padding-bottom: var(--padding-48);
+  }
+  .beta .maneuver-logo-child {
+    width:32px!important;
+  }
+  .maneuver-logo-item{
+    display: none;
+  }
+  .radarcontrols {
+    flex-direction: row;
+  }
+  .radarcontrols .buttonbase {
+    width: 56px;
+    height: 56px;
+  }
+  .beta,
+  .commandcenter,
+  .radarcontrols,
+  .telemetry,
+  .simcontrols {
+    gap: var(--gap-12);
+  }
+  .telemetry {
+    display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: calc(100vw - 2 * var(--padding-12));   /* subtract left/right padding */
+  overflow-x: auto;
+  flex-wrap: nowrap !important;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  }
   .radarcanvas {
     min-width: 100%;
+    position: absolute;
+    height: 100vh;
+    width: 100vw;
+    top:0;
+    left: 0;
   }
+  .card {
+    flex:1;
+  }
+  /* Swap the order of command center sections */
+  .commandcenter > .simcontrols {
+    order: 2;
+  }
+
+  .commandcenter > .telemetry {
+    order: 1;
+    align-self: stretch;  /* override the parent’s align-items:flex-start */
+    min-width: 0;         /* allow it to shrink below its contents */
 }
 
-
-button.buttonbase,
-button.buttonbase2,
-button.buttonswitch {
-  border: none;
-  padding: 0;
-  cursor: pointer;
+  /* Allow telemetry cards to overflow and scroll horizontally */
+.telemetry {
+  overflow-x: auto;
+  flex-wrap: nowrap !important;
 }
 
-button.controlplay {
-  background: none;
-  padding: 0;
-  cursor: pointer;
-  border: none; /* remove default button border */
-  border-right: 1px solid var(--color-darkslategray); /* retain divider */
-}
+  /* Prevent cards from shrinking and make them horizontally scrollable */
+  .telemetry > .cardownship,
+  .telemetry > .cardtrack,
+  .telemetry > .cardcpa {
+    flex: 0 0 auto;
+  }
 
-button.control-backward,
-button.control-forward {
-  background: none;
-  padding: 0;
-  cursor: pointer;
-  border: none;
-  align-self: stretch;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Telemetry cards: scroll snap for horizontal scrolling */
+.telemetry > .cardownship,
+.telemetry > .cardtrack,
+.telemetry > .cardcpa {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
 }
-
-/* ensure playback time uses project typography */
-button.controlplay .placeholder {
-  font-family: var(--font-ibm-plex-mono);
-  font-size: var(--font-size-18);
-  color: var(--primary-500);
+.controlsplayback,
+.simcontrols .buttonbase2 {
+  height: 64px;
+}
+.controlbackward-icon {
+    all: unset;
+}
 }

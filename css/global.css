@@ -20,7 +20,9 @@ body {
   --padding-2: 2px;
   --padding-4: 4px;
   --padding-8: 8px;
+  --padding-12: 12px;
   --padding-16: 16px;
+  --padding-48: 48px;
 
   /* BorderRadius */
   --br-2: 2px;
