@@ -1,0 +1,95 @@
+.label4 {
+  position: relative;
+  line-height: 18px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.panelheader5 {
+  width: 272px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+.metric-label,
+.metricvalue19 {
+  position: relative;
+  line-height: 18px;
+}
+.metricvalue19 {
+  flex: 1;
+  font-size: var(--font-size-18);
+  line-height: 24px;
+  font-family: var(--font-ibm-plex-mono);
+  color: var(--primary-500);
+  text-align: right;
+}
+.metricprimary17 {
+  align-self: stretch;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--gap-12);
+}
+.datacontainer5 {
+  align-self: stretch;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--padding-4) 0 0;
+  font-size: var(--font-size-14);
+  color: var(--primary-600);
+}
+.datacontainer5,
+.devicedesktop,
+.panelheader6 {
+  display: flex;
+  justify-content: flex-start;
+}
+.devicedesktop {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  border-radius: var(--br-4);
+  background-color: var(--neutral-800-alpha-80);
+  width: 304px;
+  overflow: hidden;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--space-3) var(--padding-16) var(--padding-16);
+  box-sizing: border-box;
+}
+.panelheader6 {
+  align-self: stretch;
+  flex-direction: row;
+  align-items: center;
+}
+.cardownship1,
+.devicemobile {
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.devicemobile {
+  position: absolute;
+  top: 142px;
+  left: 20px;
+  border-radius: var(--br-4);
+  background-color: var(--neutral-800-alpha-80);
+  width: 196px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: var(--space-3) var(--padding-16) var(--padding-16);
+}
+.cardownship1 {
+  width: 100%;
+  border-radius: var(--br-5);
+  border: 1px dashed var(--color-blueviolet);
+  height: 264px;
+  text-align: left;
+  font-size: var(--font-size-12);
+  color: var(--neutral-300);
+  font-family: var(--font-ibm-plex-sans);
+}

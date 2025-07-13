@@ -1,0 +1,31 @@
+.iconswitchoff {
+  width: 14px;
+  position: relative;
+  max-height: 100%;
+  overflow: hidden;
+}
+.stateactive,
+.stateinactive {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  border-radius: var(--br-2);
+  background-color: var(--neutral-900);
+  width: 20px;
+  height: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.stateactive {
+  top: 51px;
+}
+.buttonswitch3 {
+  width: 100%;
+  border-radius: var(--br-5);
+  border: 1px dashed var(--color-blueviolet);
+  box-sizing: border-box;
+  height: 88px;
+  overflow: hidden;
+}
