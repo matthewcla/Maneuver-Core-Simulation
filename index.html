@@ -19,69 +19,28 @@
     <div class="beta">
       <main class="radarcanvas"></main>
       <div class="radarcontrols">
-        <div class="menusettings">
-          <div class="buttonbase">
-            <img
-              class="iconsettings"
-              loading="lazy"
-              alt=""
-              src="./public/iconsettings@2x.png"
-            />
-          </div>
-        </div>
-        <div class="buttontogglefullscreen">
-          <div class="buttonbase">
-            <img
-              class="iconmaximize"
-              loading="lazy"
-              alt=""
-              src="./public/iconmaximize@2x.png"
-            />
-          </div>
-        </div>
+        <button type="button" class="buttonbase"><img class="iconsettings" loading="lazy" alt="" src="./public/iconsettings@2x.png"/></button>
+        <button type="button" class="buttonbase"><img class="iconpola-plots" loading="lazy" alt="" src="./public/iconpolar-plots.svg"/></button>
+        <button type="button" class="buttonbase"><img class="iconrange24" alt="" src="./public/iconrange12-1.svg" /></button>
+        <button type="button" class="buttonbase"><img class="iconnumber" alt="" src="./public/iconnumber@2x.png" /></button>
+        <button type="button" class="buttonbase"><img class="iconmaximize" loading="lazy" alt="" src="./public/iconmaximize@2x.png"/></button>
       </div>
       <section class="commandcenter">
         <div class="simcontrols">
           <div class="controlsplayback">
-            <div class="controlplay">
-              <img
-                class="iconplay"
-                loading="lazy"
-                alt=""
-                src="./public/iconplay.svg"
-              />
-
+            <button type="button" class="controlplay">
+              <img class="iconplay" loading="lazy" alt="" src="./public/iconplay.svg"/>
               <div class="placeholder">00:01:04</div>
-            </div>
+            </button>
             <div class="tracking">
-              <img
-                class="controlbackward-icon"
-                loading="lazy"
-                alt=""
-                src="./public/controlbackward.svg"
-              />
-
-              <img
-                class="controlbackward-icon"
-                loading="lazy"
-                alt=""
-                src="./public/controlforward.svg"
-              />
+              <button type="button" class="control-backward"><img class="controlbackward-icon" loading="lazy" alt="" src="./public/controlbackward.svg"/></button>
+              <button type="button" class="control-forward"><img class="controlforward-icon" loading="lazy" alt="" src="./public/controlforward.svg"/></button>
             </div>
           </div>
-          <div class="buttontogglefullscreen">
-            <div class="buttonbase2">
-              <img
-                class="iconregenerate"
-                loading="lazy"
-                alt=""
-                src="./public/iconregenerate.svg"
-              />
-            </div>
-          </div>
+          <button type="button" class="buttonbase2"><img class="iconregenerate" loading="lazy" alt="" src="./public/iconregenerate.svg"/></button>
         </div>
         <div class="telemetry">
-          <div class="cardownship">
+          <div id="own-ship" class="cardownship">
             <div class="panelheader">
               <div class="label">ownship</div>
             </div>
@@ -96,7 +55,7 @@
               </div>
             </div>
           </div>
-          <div class="cardtrack">
+          <div id="track" class="cardtrack">
             <div class="panelheader1">
               <button class="metrictracklabel">
                 <div class="track">TRACK</div>
@@ -122,18 +81,11 @@
               </div>
             </div>
           </div>
-          <div class="cardcpa">
+          <div id="cpa" class="cardcpa">
             <div class="panelheader2">
               <div class="label">CPA</div>
               <div class="control">
-                <div class="buttonswitch">
-                  <img
-                    class="iconswitchon"
-                    loading="lazy"
-                    alt=""
-                    src="./public/iconswitchon.svg"
-                  />
-                </div>
+                <button type="button" class="buttonswitch"> <img class="iconswitchon" loading="lazy" alt="" src="./public/iconswitchon.svg"/></button>
               </div>
             </div>
             <div class="datacontainer">
@@ -151,18 +103,11 @@
               </div>
             </div>
           </div>
-          <div class="cardcpa">
+          <div id="cpa" class="cardcpa">
             <div class="panelheader2">
               <div class="label">REL MOTION</div>
               <div class="control">
-                <div class="buttonswitch">
-                  <img
-                    class="iconswitchon"
-                    loading="lazy"
-                    alt=""
-                    src="./public/iconswitchon.svg"
-                  />
-                </div>
+                <button type="button" class="buttonswitch"> <img class="iconswitchon" loading="lazy" alt="" src="./public/iconswitchon.svg"/></button>
               </div>
             </div>
             <div class="datacontainer">
@@ -188,18 +133,11 @@
               </div>
             </div>
           </div>
-          <div class="cardcpa">
+          <div id="wind" class="cardcpa">
             <div class="panelheader2">
               <div class="label">WIND</div>
               <div class="control">
-                <div class="buttonswitch">
-                  <img
-                    class="iconswitchon"
-                    loading="lazy"
-                    alt=""
-                    src="./public/iconswitchon.svg"
-                  />
-                </div>
+                <button type="button" class="buttonswitch"> <img class="iconswitchon" loading="lazy" alt="" src="./public/iconswitchon.svg"/></button>
               </div>
             </div>
             <div class="datacontainer">
@@ -217,19 +155,8 @@
       </section>
       <div class="maneuverlogo">
         <div class="maneuver-logo">
-          <img
-            class="maneuver-logo-child"
-            loading="lazy"
-            alt=""
-            src="./public/group-27.svg"
-          />
-
-          <img
-            class="maneuver-logo-item"
-            loading="lazy"
-            alt=""
-            src="./public/group-28.svg"
-          />
+          <img class="maneuver-logo-child" loading="lazy" alt="" src="./public/group-27.svg"/>
+          <img class="maneuver-logo-item" loading="lazy" alt="" src="./public/group-28.svg"/>
         </div>
       </div>
     </div>
