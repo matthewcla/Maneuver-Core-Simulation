@@ -21,7 +21,7 @@ body {
   flex-direction: column;
   justify-content: center;
 }
-button.buttonbase {
+.buttonbase {
   width: 48px;
   height: 48px;
   border-radius: var(--br-4);
@@ -38,7 +38,7 @@ button.buttonbase {
   overflow: hidden;
   object-fit: cover;
 }
-.buttontogglefullscreen,
+
 .radarcontrols {
   display: flex;
   align-items: flex-start;
@@ -117,6 +117,7 @@ button.buttonbase {
   align-items: center;
   justify-content: center;
 }
+
 .simcontrols {
   align-self: stretch;
   display: flex;
@@ -180,7 +181,6 @@ button.buttonbase {
   overflow: hidden;
   padding: var(--space-3) var(--padding-16) var(--padding-16);
   box-sizing: border-box;
-  min-height: 104px;
 }
 .track {
   text-transform: uppercase;
@@ -369,65 +369,38 @@ button.buttonbase {
 }
 
 
-/* Reset defaults on our semantic buttons */
-button {
-  background: none;
+button.buttonbase,
+button.buttonbase2,
+button.buttonswitch {
   border: none;
   padding: 0;
   cursor: pointer;
 }
-  
 
-/* Retain your existing divider on the play panel */
 button.controlplay {
-  border-right: 1px solid var(--color-darkslategray);
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  border: none; /* remove default button border */
+  border-right: 1px solid var(--color-darkslategray); /* retain divider */
 }
 
-/* Keep the flex sizing you already have for back/forward */
 button.control-backward,
 button.control-forward {
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  border: none;
+  align-self: stretch;
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Ensure the playback time matches your typography */
+/* ensure playback time uses project typography */
 button.controlplay .placeholder {
   font-family: var(--font-ibm-plex-mono);
   font-size: var(--font-size-18);
   color: var(--primary-500);
-}
-
-.iconnumber {
-  width: 20px;
-  position: relative;
-  max-height: 100%;
-  overflow: hidden;
-  object-fit: cover;
-}
-
-.label,
-.metricprimary,
-.metricvalue {
-   /* Modern browsers */
-  user-select: none;
-  
-  /* Webkit browsers (Safari, Chrome, Edge) */
-  -webkit-user-select: none;
-  
-  /* Firefox */
-  -moz-user-select: none;
-  
-  /* Internet Explorer/Edge Legacy */
-  -ms-user-select: none;
-  
-  /* Disable touch callout on iOS */
-  -webkit-touch-callout: none;
-  
-  /* Disable drag */
-  -webkit-user-drag: none;
-  
-  /* Disable highlighting */
-  -webkit-tap-highlight-color: transparent;
 }
