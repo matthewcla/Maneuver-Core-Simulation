@@ -1,9 +1,9 @@
-.labeltext,
-.metricvalue {
+.labeltext16,
+.metricvalue16 {
   position: relative;
   line-height: 18px;
 }
-.metricvalue {
+.metricvalue16 {
   flex: 1;
   font-size: var(--font-size-18);
   line-height: 24px;
@@ -69,7 +69,7 @@
 .stateediting {
   top: 158px;
 }
-.metricprimary {
+.metricprimary16 {
   width: 100%;
   border-radius: var(--br-5);
   border: 1px dashed var(--color-blueviolet);

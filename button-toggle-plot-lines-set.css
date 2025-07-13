@@ -5,7 +5,7 @@
   overflow: hidden;
   object-fit: cover;
 }
-.buttonbase8 {
+.buttonbase11 {
   position: absolute;
   width: 100%;
   top: 0;
@@ -26,7 +26,7 @@
   width: 48px;
   height: 48px;
 }
-.buttonbase9 {
+.buttonbase12 {
   position: absolute;
   width: 100%;
   right: 0;
@@ -54,7 +54,7 @@
   overflow: hidden;
   object-fit: cover;
 }
-.buttonbase10 {
+.buttonbase13 {
   position: absolute;
   width: 100%;
   top: 0;
@@ -68,7 +68,7 @@
   align-items: center;
   justify-content: center;
 }
-.buttonbase11,
+.buttonbase14,
 .stateoff-devicemobile {
   position: absolute;
   top: 147px;
@@ -76,7 +76,7 @@
   width: 56px;
   height: 56px;
 }
-.buttonbase11 {
+.buttonbase14 {
   width: 100%;
   top: 0;
   right: 0;

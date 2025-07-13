@@ -1,34 +1,34 @@
-.track {
+.track1 {
   text-transform: uppercase;
 }
 .separator,
-.track {
+.track1 {
   position: relative;
   line-height: 18px;
   font-weight: 500;
 }
-.metrictracklabel,
-.panelheader2 {
+.metrictracklabel1,
+.panelheader7 {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
 }
-.metrictracklabel {
+.metrictracklabel1 {
   border-radius: var(--br-2);
   background-color: var(--primary-500-alpha-90);
   padding: var(--padding-1) var(--padding-4);
   gap: var(--gap-4);
 }
-.panelheader2 {
+.panelheader7 {
   align-self: stretch;
 }
-.labeltext6,
-.metricvalue7 {
+.labeltext22,
+.metricvalue23 {
   position: relative;
   line-height: 18px;
 }
-.metricvalue7 {
+.metricvalue23 {
   flex: 1;
   font-size: var(--font-size-18);
   line-height: 24px;
@@ -36,7 +36,7 @@
   color: var(--primary-500);
   text-align: right;
 }
-.metricprimary5 {
+.metricprimary21 {
   align-self: stretch;
   overflow: hidden;
   display: flex;
@@ -45,14 +45,14 @@
   justify-content: flex-start;
   gap: var(--gap-12);
 }
-.datacontainer2,
+.datacontainer7,
 .devicedesktop1 {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
 }
-.datacontainer2 {
+.datacontainer7 {
   align-self: stretch;
   padding: var(--padding-4) 0 0;
   font-size: var(--font-size-14);
@@ -67,7 +67,7 @@
   width: 304px;
   padding: var(--space-3) var(--padding-16) var(--padding-16);
 }
-.cardtrack,
+.cardtrack1,
 .devicedesktop1,
 .devicemobile1 {
   box-sizing: border-box;
@@ -86,7 +86,7 @@
   justify-content: flex-start;
   padding: var(--space-3) var(--padding-16) var(--padding-16);
 }
-.cardtrack {
+.cardtrack1 {
   width: 100%;
   border-radius: var(--br-5);
   border: 1px dashed var(--color-blueviolet);

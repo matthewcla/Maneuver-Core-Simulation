@@ -1,14 +1,14 @@
-.maneuver-logo-child {
+.maneuver-logo-inner {
   width: 20px;
   position: relative;
   max-height: 100%;
 }
-.maneuver-logo-item {
+.group-icon {
   height: 12.8px;
   width: 112px;
   position: relative;
 }
-.maneuver-logo {
+.maneuver-logo1 {
   height: 24px;
   width: 100%;
   overflow: hidden;
