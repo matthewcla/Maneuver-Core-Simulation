@@ -4,8 +4,42 @@ body {
 }
 
 :root {
+  /* Color */
+  --color-blueviolet: #9747ff;
+
+  /* Gap */
+  --gap-8: 8px;
+  --gap-12: 12px;
+
+  /* Padding */
+  --padding-1: 1px;
+  --padding-2: 2px;
+  --padding-4: 4px;
+
+  /* BorderRadius */
+  --br-2: 2px;
+  --br-4: 4px;
+  --br-5: 5px;
+
+  /* Font */
+  --font-ibm-plex-mono: IBM Plex Mono;
+  --font-ibm-plex-sans: IBM Plex Sans;
+
+  /* FontSize */
+  --font-size-11: 11px;
+  --font-size-14: 14px;
+  --font-size-18: 18px;
+
   /* Figma Variables */
 
   /* Spacing */
   --space-2: 8px;
+
+  /* Color */
+  --neutral-900: #000;
+  --primary-500-alpha-90: rgba(117, 251, 76, 0.9);
+  --neutral-800-alpha-80: rgba(34, 34, 34, 0.8);
+  --neutral-500: #898989;
+  --primary-500: #75fb4c;
+  --primary-600: #44a828;
 }
