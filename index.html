@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1, width=device-width" />
 
-    <link rel="stylesheet" href="./global.css" />
-    <link rel="stylesheet" href="./beta.css" />
+    <link rel="stylesheet" href="./css/global.css" />
+    <link rel="stylesheet" href="./css/beta.css" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=IBM Plex Mono:wght@400;500&display=swap"
@@ -19,11 +19,15 @@
     <div class="beta">
       <main id="radarcanvas" class="radarcanvas"></main>
       <div class="radarcontrols">
-        <button type="button" class="buttonbase"><img class="iconsettings" loading="lazy" alt="" src="./public/iconsettings@2x.png"/></button>
-        <button type="button" class="buttonbase"><img class="iconpola-plots" loading="lazy" alt="" src="./public/iconpolar-plots.svg"/></button>
-        <button type="button" class="buttonbase"><img class="iconrange24" alt="" src="./public/iconrange12-1.svg" /></button>
-        <button type="button" class="buttonbase"><img class="iconnumber" alt="" src="./public/iconnumber@2x.png" /></button>
-        <button type="button" class="buttonbase"><img class="iconmaximize" loading="lazy" alt="" src="./public/iconmaximize@2x.png"/></button>
+        <button type="button" id="radar-settings" class="buttonbase"><img class="iconsettings" loading="lazy" alt="" src="./public/iconsettings@2x.png"/></button>
+        <button type="button" id="polar-plots" class="buttonbase"><img class="iconpola-plots" loading="lazy" alt="" src="./public/iconpolar-plots.svg"/></button>
+        <button type="button" id="radar-range" class="buttonbase"><img class="iconrange24" alt="" src="./public/iconrange12-1.svg" /></button>
+        <button type="button" id="track-id" class="buttonbase"><img class="iconnumber" alt="" src="./public/iconnumber@2x.png" /></button>
+        <button type="button" id="full-screen" class="buttonbase"><img class="iconmaximize" loading="lazy" alt="" src="./public/iconmaximize@2x.png"/></button>
+      <div class="add-remove-tracks">
+          <button type="button" id="add-track" class="buttonbase"><img alt="" src="./public/union3.svg"/></button>
+          <button type="button" id="remove-track" class="buttonbase"><img loading="lazy" alt="" src="./public/union4.svg"/></button>
+        </div>
       </div>
       <section class="commandcenter">
         <div class="simcontrols">
@@ -40,7 +44,7 @@
           <button type="button" class="buttonbase2"><img class="iconregenerate" loading="lazy" alt="" src="./public/iconregenerate.svg"/></button>
         </div>
         <div class="telemetry">
-          <div id="own-ship" class="cardownship">
+          <div id="own-ship" class="card cardownship">
             <div class="panelheader">
               <div class="label">ownship</div>
             </div>
@@ -55,7 +59,7 @@
               </div>
             </div>
           </div>
-          <div id="track" class="cardtrack">
+          <div id="track" class="card cardtrack">
             <div class="panelheader1">
               <button class="metrictracklabel">
                 <div class="track">TRACK</div>
@@ -81,7 +85,7 @@
               </div>
             </div>
           </div>
-          <div id="cpa" class="cardcpa">
+          <div id="cpa" class="card cardcpa">
             <div class="panelheader2">
               <div class="label">CPA</div>
               <div class="control">
@@ -103,7 +107,7 @@
               </div>
             </div>
           </div>
-          <div id="cpa" class="cardcpa">
+          <div id="cpa" class="card cardcpa">
             <div class="panelheader2">
               <div class="label">REL MOTION</div>
               <div class="control">
@@ -133,7 +137,7 @@
               </div>
             </div>
           </div>
-          <div id="wind" class="cardcpa">
+          <div id="wind" class="card cardcpa">
             <div class="panelheader2">
               <div class="label">WIND</div>
               <div class="control">
