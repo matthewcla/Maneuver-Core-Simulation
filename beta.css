@@ -412,7 +412,7 @@ button.controlplay .placeholder {
 .metricvalue {
    /* Modern browsers */
   user-select: none;
-  
+
   /* Webkit browsers (Safari, Chrome, Edge) */
   -webkit-user-select: none;
   
