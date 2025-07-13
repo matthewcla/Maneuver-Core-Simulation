@@ -5,16 +5,21 @@ body {
 
 :root {
   /* Color */
+  --color-darkslategray: #333;
+  --color-gray: rgba(23, 23, 23, 0.8);
   --color-blueviolet: #9747ff;
 
   /* Gap */
+  --gap-4: 4px;
   --gap-8: 8px;
+  --gap-10: 10px;
   --gap-12: 12px;
 
   /* Padding */
   --padding-1: 1px;
   --padding-2: 2px;
   --padding-4: 4px;
+  --padding-16: 16px;
 
   /* BorderRadius */
   --br-2: 2px;
@@ -27,6 +32,7 @@ body {
 
   /* FontSize */
   --font-size-11: 11px;
+  --font-size-12: 12px;
   --font-size-14: 14px;
   --font-size-18: 18px;
 
@@ -34,8 +40,11 @@ body {
 
   /* Spacing */
   --space-2: 8px;
+  --space-3: 12px;
 
   /* Color */
+  --neutral-700-alpha-80: rgba(24, 24, 24, 0.8);
+  --neutral-300: #b0b0b0;
   --neutral-900: #000;
   --primary-500-alpha-90: rgba(117, 251, 76, 0.9);
   --neutral-800-alpha-80: rgba(34, 34, 34, 0.8);
