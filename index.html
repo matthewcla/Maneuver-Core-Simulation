@@ -19,11 +19,15 @@
     <div class="beta">
       <main id="radarcanvas" class="radarcanvas"></main>
       <div class="radarcontrols">
-        <button type="button" class="buttonbase"><img class="iconsettings" loading="lazy" alt="" src="./public/iconsettings@2x.png"/></button>
-        <button type="button" class="buttonbase"><img class="iconpola-plots" loading="lazy" alt="" src="./public/iconpolar-plots.svg"/></button>
-        <button type="button" class="buttonbase"><img class="iconrange24" alt="" src="./public/iconrange12-1.svg" /></button>
-        <button type="button" class="buttonbase"><img class="iconnumber" alt="" src="./public/iconnumber@2x.png" /></button>
-        <button type="button" class="buttonbase"><img class="iconmaximize" loading="lazy" alt="" src="./public/iconmaximize@2x.png"/></button>
+        <button type="button" id="radar-settings" class="buttonbase"><img class="iconsettings" loading="lazy" alt="" src="./public/iconsettings@2x.png"/></button>
+        <button type="button" id="polar-plots" class="buttonbase"><img class="iconpola-plots" loading="lazy" alt="" src="./public/iconpolar-plots.svg"/></button>
+        <button type="button" id="radar-range" class="buttonbase"><img class="iconrange24" alt="" src="./public/iconrange12-1.svg" /></button>
+        <button type="button" id="track-id" class="buttonbase"><img class="iconnumber" alt="" src="./public/iconnumber@2x.png" /></button>
+        <button type="button" id="full-screen" class="buttonbase"><img class="iconmaximize" loading="lazy" alt="" src="./public/iconmaximize@2x.png"/></button>
+      <div class="add-remove-tracks">
+          <button type="button" id="add-track" class="buttonbase"><img alt="" src="./public/union3.svg"/></button>
+          <button type="button" id="remove-track" class="buttonbase"><img loading="lazy" alt="" src="./public/union4.svg"/></button>
+        </div>
       </div>
       <section class="commandcenter">
         <div class="simcontrols">
