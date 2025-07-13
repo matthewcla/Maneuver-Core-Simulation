@@ -23,6 +23,6 @@
   flex-direction: row;
   align-items: flex-start;
   justify-content: flex-start;
-  padding: var(--padding-4) 3px;
+  padding: 4px 3px;
   box-sizing: border-box;
 }
