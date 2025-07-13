@@ -1,0 +1,19 @@
+.iconrange24-child {
+  position: absolute;
+  height: 60%;
+  width: 90%;
+  top: 20%;
+  right: 5%;
+  bottom: 20%;
+  left: 5%;
+  max-width: 100%;
+  overflow: hidden;
+  max-height: 100%;
+}
+.iconrange24 {
+  width: 100%;
+  height: 20px;
+  overflow: hidden;
+  line-height: normal;
+  letter-spacing: normal;
+}
