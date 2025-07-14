@@ -396,6 +396,15 @@ button.controlplay .placeholder {
   color: var(--primary-500);
 }
 
+/* Visual feedback for playback controls */
+.selected {
+  background-color: var(--primary-500-alpha-70);
+}
+
+.unselected {
+  opacity: 0.5;
+}
+
 .iconnumber {
   width: 20px;
   position: relative;
