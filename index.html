@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="initial-scale=1, width=device-width" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#000000">
+    <title>Maneuver : Simulator : V2</title>
+    <link rel="icon" type="image/svg+xml" href="favicons.svg">
+    <!-- <link rel="manifest" href="manifest.webmanifest"> -->
 
     <link rel="stylesheet" href="./css/global.css" />
     <link rel="stylesheet" href="./css/beta.css" />
@@ -16,42 +22,50 @@
     />
   </head>
   <body>
+    <div id="drag-tooltip"></div>
+    <div id="order-tooltip"></div>
     <div class="beta">
-      <main id="radarcanvas" class="radarcanvas"></main>
+      <main class="radar">
+        <canvas id="radarCanvas"></canvas>
+      </main>
       <div class="radarcontrols">
         <button type="button" id="radar-settings" class="buttonbase"><img class="iconsettings" loading="lazy" alt="" src="./public/iconsettings@2x.png"/></button>
         <button type="button" id="polar-plots" class="buttonbase"><img class="iconpola-plots" loading="lazy" alt="" src="./public/iconpolar-plots.svg"/></button>
         <button type="button" id="radar-range" class="buttonbase"><img class="iconrange24" alt="" src="./public/iconrange12-1.svg" /></button>
-        <button type="button" id="track-id" class="buttonbase"><img class="iconnumber" alt="" src="./public/iconnumber@2x.png" /></button>
+        <button type="button" id="track-ids" class="buttonbase"><img class="iconnumber" alt="" src="./public/iconnumber@2x.png" /></button>
         <button type="button" id="full-screen" class="buttonbase"><img class="iconmaximize" loading="lazy" alt="" src="./public/iconmaximize@2x.png"/></button>
       <div class="add-remove-tracks">
           <button type="button" id="add-track" class="buttonbase"><img alt="" src="./public/union3.svg"/></button>
           <button type="button" id="remove-track" class="buttonbase"><img loading="lazy" alt="" src="./public/union4.svg"/></button>
         </div>
       </div>
-      <section class="commandcenter">
+      <section id="data-pane" class="commandcenter">
         <div class="simcontrols">
           <div class="controlsplayback">
             <button type="button" class="controlplay">
               <img class="iconplay" loading="lazy" alt="" src="./public/iconplay.svg"/>
-              <div class="placeholder">00:01:04</div>
+              <div id="sim-clock" class="placeholder">00:01:04</div>
             </button>
             <div class="tracking">
-              <button type="button" class="control-backward"><img class="controlbackward-icon" loading="lazy" alt="" src="./public/controlbackward.svg"/></button>
-              <button type="button" class="control-forward"><img class="controlforward-icon" loading="lazy" alt="" src="./public/controlforward.svg"/></button>
+              <button type="button" id="future" class="control-backward"><img class="controlbackward-icon" loading="lazy" alt="" src="./public/controlbackward.svg"/>
+                <span id="rev-speed-indicator" class="position-absolute d-none" style="bottom:0; right:0.25rem; font-size:0.75rem;"></span>
+              </button>
+              <button type="button" class="control-forward"><img class="controlforward-icon" loading="lazy" alt="" src="./public/controlforward.svg"/>
+                <span id="ff-speed-indicator" class="position-absolute d-none" style="bottom:0; right:0.25rem; font-size:0.75rem;"></span>
+              </button>
             </div>
           </div>
-          <button type="button" class="buttonbase2"><img class="iconregenerate" loading="lazy" alt="" src="./public/iconregenerate.svg"/></button>
+          <button id="regenerate" type="button" class="buttonbase2"><img class="iconregenerate" loading="lazy" alt="" src="./public/iconregenerate.svg"/></button>
         </div>
         <div class="telemetry">
           <div id="own-ship" class="card cardownship">
             <div class="panelheader">
               <div class="label">ownship</div>
             </div>
-            <div class="datacontainer">
+            <div id="own-ship-data-container" class="datacontainer">
               <div class="metricprimary">
                 <div class="labeltext">Crs</div>
-                <div class="metricvalue">091 T</div>
+                <div id="ownship-crs" class="metricvalue">091 T</div>
               </div>
               <div class="metricprimary">
                 <div class="labeltext">Spd</div>
@@ -66,26 +80,26 @@
                 <div class="track-label">01</div>
               </button>
             </div>
-            <div class="datacontainer1">
+            <div id="track-data-container" class="datacontainer1">
               <div class="metricprimary">
                 <div class="labeltext">Brg</div>
-                <div class="metricvalue">285 T</div>
+                <div id="track-brg" class="metricvalue">285 T</div>
               </div>
               <div class="metricprimary">
                 <div class="labeltext">Rng</div>
-                <div class="metricvalue">20.9 nm</div>
+                <div id="track-rng" class="metricvalue">20.9 nm</div>
               </div>
               <div class="metricprimary">
                 <div class="labeltext">Crs</div>
-                <div class="metricvalue">255 T</div>
+                <div id="track-crs" class="metricvalue">255 T</div>
               </div>
               <div class="metricprimary">
                 <div class="labeltext">Spd</div>
-                <div class="metricvalue">6.1 KTS</div>
+                <div id="track-spd" class="metricvalue">6.1 KTS</div>
               </div>
             </div>
           </div>
-          <div id="cpa" class="card cardcpa">
+          <div id="cpa-data-container" class="card cardcpa">
             <div class="panelheader2">
               <div class="label">CPA</div>
               <div class="control">
@@ -107,7 +121,7 @@
               </div>
             </div>
           </div>
-          <div id="cpa" class="card cardcpa">
+          <div id="rm-data-container" class="card cardcpa">
             <div class="panelheader2">
               <div class="label">REL MOTION</div>
               <div class="control">
@@ -137,7 +151,7 @@
               </div>
             </div>
           </div>
-          <div id="wind" class="card cardcpa">
+          <div id="wind-data-container" class="card cardcpa">
             <div class="panelheader2">
               <div class="label">WIND</div>
               <div class="control">
@@ -164,5 +178,13 @@
         </div>
       </div>
     </div>
+    <!-- <script type="module" src="./js/install.js"></script> -->
+    <script src="./js/arena.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        new Simulator();
+      });
+    </script>
+    <!-- <script type="module" src="./js/dynamics.js"></script> -->
   </body>
 </html>

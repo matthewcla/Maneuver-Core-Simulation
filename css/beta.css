@@ -1,9 +1,16 @@
 body {
   background: var(  --neutral-900);
 }
+
 .radarcanvas {
+  display: block;
+  width: calc(900px * var(--ui-scale));
+  height: calc(900px * var(--ui-scale));
+}
+.radar {
   align-self: stretch;
   flex: 1;
+  min-width: 0;
   overflow: visible;
   z-index: 0;
 }
@@ -223,7 +230,7 @@ button.buttonbase {
   align-items: flex-start;
   justify-content: flex-start;
 }
-.datacontainer1 {
+.datacontainer {
   align-self: stretch;
   padding: var(--padding-4) 0 0;
 }
