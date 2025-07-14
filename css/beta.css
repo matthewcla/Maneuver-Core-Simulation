@@ -476,7 +476,7 @@ button.controlplay .placeholder {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   }
-  .radarcanvas {
+  .radar {
     min-width: 100%;
     position: absolute;
     height: 100vh;
