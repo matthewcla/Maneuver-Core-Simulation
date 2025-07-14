@@ -253,15 +253,16 @@ class Simulator {
         this.dragTooltip = document.getElementById('drag-tooltip');
         this.orderTooltip = document.getElementById('order-tooltip');
         // this.btnVectorTime = document.getElementById('btn-vector-time');
-        this.btnPlayPause = document.querySelector('.controlplay');
+        // Playback controls
+        this.btnPlayPause = document.getElementById('play-pause');
         // this.iconPlay = document.getElementById('icon-play');
         // this.iconPause = document.getElementById('icon-pause');
         this.btnRange = document.getElementById('radar-range');
         this.btnAddTrack  = document.getElementById('add-track');
         this.btnDropTrack = document.getElementById('remove-track');
         this.btnScen = document.getElementById('regenerate');
-        this.btnFf = document.querySelector('.control-forward');
-        this.btnRev = document.querySelector('.control-backward');
+        this.btnFf = document.getElementById('future');
+        this.btnRev = document.getElementById('past');
         this.ffSpeedIndicator = document.getElementById('ff-speed-indicator');
         this.revSpeedIndicator = document.getElementById('rev-speed-indicator');
         // this.btnHelp = document.getElementById('btn-help');
