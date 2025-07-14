@@ -1,9 +1,16 @@
 body {
   background: var(  --neutral-900);
 }
+
 .radarcanvas {
+  display: block;
+  width: calc(900px * var(--ui-scale));
+  height: calc(900px * var(--ui-scale));
+}
+.radar {
   align-self: stretch;
   flex: 1;
+  min-width: 0;
   overflow: visible;
   z-index: 0;
 }
@@ -69,7 +76,7 @@ button.buttonbase {
 .controlplay {
   align-self: stretch;
   flex: 1 1 auto;
-+ min-width: 0
+  min-width: 0;
   border-right: 1px solid var(--color-darkslategray);
   box-sizing: border-box;
   display: flex;
@@ -118,7 +125,7 @@ button.buttonbase {
   align-items: center;
   justify-content: center;
 }
-.simcontrols {
+.sim-controls {
   align-self: stretch;
   display: flex;
   flex-direction: row;
@@ -223,7 +230,7 @@ button.buttonbase {
   align-items: flex-start;
   justify-content: flex-start;
 }
-.datacontainer1 {
+.datacontainer {
   align-self: stretch;
   padding: var(--padding-4) 0 0;
 }
@@ -422,15 +429,34 @@ button.controlplay .placeholder {
   -webkit-tap-highlight-color: transparent;
 }
 
-@media screen and (max-width: 1210px) {
-
-  .beta {
-    flex-wrap: wrap;
-    padding-left: var(--padding-8);
-    padding-right: var(--padding-8);
-    box-sizing: border-box;
-  }
+.control-backward{
+  border-right: 1px solid #333;;
 }
+
+@media screen and (min-width: 793px) {
+
+  .controlsplayback {
+  height: 48px;
+}
+
+.radarcontrols .buttonbase img {
+  width:24px;
+}
+
+.sim-controls .buttonbase2 img {
+  width:26px;
+}
+.control-forward,
+.control-backward,
+.buttonbase2  {
+  height: 48px;
+  width: 48px;
+}
+.add-remove-tracks {
+  display: none;
+}
+}
+
 @media screen and (max-width: 792px) {
   .beta{
     flex-direction: column;
@@ -469,7 +495,7 @@ button.controlplay .placeholder {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   }
-  .radarcanvas {
+  .radar {
     min-width: 100%;
     position: absolute;
     height: 100vh;
@@ -481,7 +507,7 @@ button.controlplay .placeholder {
     flex:1;
   }
   /* Swap the order of command center sections */
-  .commandcenter > .simcontrols {
+  .commandcenter > .sim-controls {
     order: 2;
   }
 
@@ -511,22 +537,28 @@ button.controlplay .placeholder {
   flex: 0 0 auto;
   scroll-snap-align: start;
 }
+
 .controlsplayback,
-.simcontrols .buttonbase2 {
+.sim-controls .buttonbase2 {
   height: 64px;
 }
+
 .radarcontrols .buttonbase img {
   width:24px;
 }
-.simcontrols .buttonbase2 {
+
+.sim-controls .buttonbase2 {
   width:64px;
 }
-.simcontrols .buttonbase2 img {
+
+.sim-controls .buttonbase2 img {
   width:26px;
 }
+
 .controlbackward-icon {
     all: unset;
 }
+
 .add-remove-tracks {
   display: flex;
   flex-direction: row;
