@@ -473,8 +473,10 @@ class Simulator {
         this.btnVectorTime?.addEventListener('click', () => this.toggleVectorTime());
         this.btnRange?.addEventListener('click', () => this.toggleRange());
         this.btnPlayPause?.addEventListener('click', () => this.togglePlayPause());
-        this.btnFf?.addEventListener('click', () => this.fastForward());
-        this.btnRev?.addEventListener('click', () => this.rewind());
+        // Bind playback controls directly to ensure the correct handlers
+        // are invoked when the buttons are pressed
+        this.btnFf?.addEventListener('click', this.fastForward.bind(this));
+        this.btnRev?.addEventListener('click', this.rewind.bind(this));
         this.btnAddTrack?.addEventListener('click', () => this.addTrack());
         this.btnDropTrack?.addEventListener('click', () => this.dropTrack());
         this.btnScen?.addEventListener('click', () => this.setupRandomScenario());
