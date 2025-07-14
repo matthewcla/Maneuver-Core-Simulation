@@ -1319,14 +1319,14 @@ class Simulator {
         // this.btnRmv.className = `control-btn ${this.showRelativeMotion ? 'selected' : 'unselected'}`;
         // this.btnCpa.className = `control-btn ${this.showCPAInfo ? 'selected' : 'unselected'}`;
 
-        this.btnPlayPause.className = `sim-control-btn ${this.isSimulationRunning ? 'selected' : 'unselected'}`;
+        this.btnPlayPause.className = `controlplay ${this.isSimulationRunning ? 'selected' : 'unselected'}`;
         if (this.iconPlay && this.iconPause) {
             this.iconPlay.classList.toggle('d-none', this.isSimulationRunning);
             this.iconPause.classList.toggle('d-none', !this.isSimulationRunning);
         }
 
-        this.btnFf.className = `sim-control-btn ${this.simulationSpeed > 1 ? 'selected' : 'unselected'}`;
-        this.btnRev.className = `sim-control-btn ${this.simulationSpeed < 0 ? 'selected' : 'unselected'}`;
+        this.btnFf.className = `control-forward ${this.simulationSpeed > 1 ? 'selected' : 'unselected'}`;
+        this.btnRev.className = `control-backward ${this.simulationSpeed < 0 ? 'selected' : 'unselected'}`;
     }
 
     updateSpeedIndicator() {
