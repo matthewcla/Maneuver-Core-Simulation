@@ -42,15 +42,15 @@
       <section id="data-pane" class="commandcenter">
         <div class="sim-controls">
           <div class="controlsplayback">
-            <button type="button" id="play-pause" class="controlplay unselected">
+            <button type="button" id="play-pause" class="controlplay" aria-label="Play or pause scenario" title="Play or pause scenario">
               <img class="iconplay" loading="lazy" alt="" src="./public/iconplay.svg"/>
               <div id="sim-clock" class="placeholder">00:01:04</div>
             </button>
             <div class="tracking">
-              <button type="button" id="past" class="control-backward unselected"><img class="controlbackward-icon" loading="lazy" alt="" src="./public/controlbackward.svg"/>
+              <button type="button" id="past" class="control-backward" aria-label="Rewind" title="Rewind"><img class="controlbackward-icon" loading="lazy" alt="" src="./public/controlbackward.svg"/>
                 <span id="rev-speed-indicator" class="position-absolute d-none" style="bottom:0; right:0.25rem; font-size:0.75rem;"></span>
               </button>
-              <button type="button" id="future" class="control-forward unselected"><img class="controlforward-icon" loading="lazy" alt="" src="./public/controlforward.svg"/>
+              <button type="button" id="future" class="control-forward" aria-label="Fast forward" title="Fast forward"><img class="controlforward-icon" loading="lazy" alt="" src="./public/controlforward.svg"/>
                 <span id="ff-speed-indicator" class="position-absolute d-none" style="bottom:0; right:0.25rem; font-size:0.75rem;"></span>
               </button>
             </div>
