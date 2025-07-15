@@ -6,8 +6,16 @@ It displays a radar screen, lets you play/pause a simulated scenario, add or dro
 
 ## Running Locally
 1. Clone or download this repository.
-2. Open the `Simulator/index.html` file in any modern desktop browser (Chrome, Firefox, Edge, etc.).
-3. The simulator should load immediately—no server setup is required.
+2. Run `npm install` to install dependencies.
+3. Run `npm run build` to generate the bundled files in the `dist/` folder.
+4. Open the `index.html` file in any modern desktop browser (Chrome, Firefox, Edge, etc.).
+5. The simulator should load immediately—no server setup is required.
+
+## Progressive Web App
+Maneuver works as a Progressive Web App. Open `index.html` in a modern browser
+and use the browser's share or menu option ("Add to Home Screen" on iOS/Android)
+to install it. The service worker caches the core files so the simulator
+continues to work offline once loaded.
 
 ## Safety Disclaimer
 This software is **not** a certified navigational tool. It is meant purely for educational and entertainment purposes. Do **not** rely on it for real‑world navigation or collision avoidance. Always use official, approved navigational equipment in real situations.
