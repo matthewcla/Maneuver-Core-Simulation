@@ -1653,6 +1653,9 @@ class Simulator {
     handleContainerPointerDown(e) {
         e.preventDefault();
         e.stopPropagation();
+        if (this.mainContainer.setPointerCapture) {
+            this.mainContainer.setPointerCapture(e.pointerId);
+        }
         if (e.pointerType === 'mouse' && e.button !== 0) return;
         this.containerPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
@@ -1708,6 +1711,13 @@ class Simulator {
     handleContainerPointerUp(e) {
         e.preventDefault();
         e.stopPropagation();
+        if (this.mainContainer.releasePointerCapture) {
+            try {
+                this.mainContainer.releasePointerCapture(e.pointerId);
+            } catch (err) {
+                // ignore if not captured
+            }
+        }
         this.containerPointers.delete(e.pointerId);
         clearTimeout(this.dragTimer);
         if (this.containerPointers.size < 2) {
