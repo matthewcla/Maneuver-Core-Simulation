@@ -16,7 +16,7 @@ checked in, or ensure dependencies are installed so `npm run build` can run
 successfully.
 
 ## Touch Gestures
-- **Long‑press drag:** hold a pointer on the radar for about 400 ms and then move
+- **Long‑press drag:** hold a pointer on the radar for about 800 ms and then move
   to pan the radar container.
 - **Pinch zoom:** with two pointers on the radar, pinch in or out to change the
   zoom level. Zooming only affects the radar display.
