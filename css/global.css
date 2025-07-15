@@ -69,3 +69,44 @@ body {
   --ui-scale: 1;
   --base: calc(1 * var(--ui-scale));
 }
+
+/* PWA install prompt styles */
+.install-btn {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--neutral-800-alpha-80, #222);
+  color: #fff;
+  border: none;
+  border-radius: var(--br-4);
+  display: none;
+  z-index: 1000;
+}
+.install-btn.show {
+  display: block;
+}
+
+.ios-tip {
+  position: fixed;
+  left: 50%;
+  bottom: 4rem;
+  transform: translateX(-50%);
+  background-color: var(--neutral-800-alpha-80, rgba(34,34,34,0.8));
+  color: #fff;
+  padding: 1rem;
+  border-radius: var(--br-4);
+  max-width: 260px;
+  text-align: center;
+  display: none;
+  z-index: 1000;
+}
+body.no-install-ios .ios-tip {
+  display: block;
+}
+.ios-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}

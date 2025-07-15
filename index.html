@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#000000">
     <title>Maneuver : Simulator : V2</title>
     <link rel="icon" type="image/svg+xml" href="favicons.svg">
-    <!-- <link rel="manifest" href="manifest.webmanifest"> -->
+    <link rel="manifest" href="manifest.webmanifest">
 
     <link rel="stylesheet" href="./css/global.css" />
     <link rel="stylesheet" href="./css/beta.css" />
@@ -24,6 +24,14 @@
   <body>
     <div id="drag-tooltip"></div>
     <div id="order-tooltip"></div>
+    <button id="btnInstall" class="install-btn">Install</button>
+    <div id="iosTip" class="ios-tip">
+      <p>To add this app to your home screen, tap Share and then "Add to Home Screen".</p>
+      <div class="ios-actions">
+        <button id="ios-share">Share</button>
+        <button id="ios-web">Dismiss</button>
+      </div>
+    </div>
     <div class="beta">
       <main class="radar">
         <canvas id="radarCanvas"></canvas>
@@ -178,12 +186,18 @@
         </div>
       </div>
     </div>
-    <!-- <script type="module" src="./js/install.js"></script> -->
+    <script type="module" src="./js/install.js"></script>
     <script src="./js/arena.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         new Simulator();
       });
+
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js');
+        });
+      }
     </script>
     <!-- <script type="module" src="./js/dynamics.js"></script> -->
   </body>
