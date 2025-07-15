@@ -1,6 +1,8 @@
 body {
   margin: 0;
   line-height: normal;
+  height: 100vh;
+  overflow: hidden;
 }
 
 :root {
