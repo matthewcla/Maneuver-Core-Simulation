@@ -364,6 +364,15 @@ class Simulator {
         this.showTrackIds = true;
         this.uiScaleFactor = 1;
 
+        // --- Container Drag & Zoom State ---
+        this.containerDragActive = false;
+        this.containerDragStart = { x: 0, y: 0 };
+        this.containerOffset = { x: 0, y: 0 };
+        this.dragTimer = null;
+        this.containerPointers = new Map();
+        this.initialPinchDistance = 0;
+        this.initialScale = 1;
+
         // Sync data panel visibility with feature toggles
         this.rmDataContainer.open   = this.showRelativeMotion;
         this.cpaDataContainer.open  = this.showCPAInfo;
@@ -379,6 +388,9 @@ class Simulator {
         this.handlePointerDown = this.handlePointerDown.bind(this);
         this.handlePointerUp = this.handlePointerUp.bind(this);
         this.handlePointerMove = this.handlePointerMove.bind(this);
+        this.handleContainerPointerDown = this.handleContainerPointerDown.bind(this);
+        this.handleContainerPointerMove = this.handleContainerPointerMove.bind(this);
+        this.handleContainerPointerUp = this.handleContainerPointerUp.bind(this);
 
         this._initialize();
     }
@@ -440,6 +452,10 @@ class Simulator {
             this.canvas?.addEventListener('pointerleave', this.handlePointerUp);
             this.canvas?.addEventListener('pointercancel', this.handlePointerUp);
             this.canvas?.addEventListener('pointermove', this.handlePointerMove);
+            this.mainContainer?.addEventListener('pointerdown', this.handleContainerPointerDown);
+            this.mainContainer?.addEventListener('pointermove', this.handleContainerPointerMove);
+            this.mainContainer?.addEventListener('pointerup', this.handleContainerPointerUp);
+            this.mainContainer?.addEventListener('pointercancel', this.handleContainerPointerUp);
         } else if ('ontouchstart' in window) {
             const wrap = (handler) => (e) => {
                 const touch = e.touches[0] || e.changedTouches[0];
@@ -456,11 +472,18 @@ class Simulator {
             this.canvas?.addEventListener('touchmove', wrap(this.handlePointerMove));
             this.canvas?.addEventListener('touchend', wrap(this.handlePointerUp));
             this.canvas?.addEventListener('touchcancel', wrap(this.handlePointerUp));
+            this.mainContainer?.addEventListener('touchstart', wrap(this.handleContainerPointerDown));
+            this.mainContainer?.addEventListener('touchmove', wrap(this.handleContainerPointerMove));
+            this.mainContainer?.addEventListener('touchend', wrap(this.handleContainerPointerUp));
+            this.mainContainer?.addEventListener('touchcancel', wrap(this.handleContainerPointerUp));
         } else {
             this.canvas?.addEventListener('mousedown', this.handlePointerDown);
             this.canvas?.addEventListener('mouseup', this.handlePointerUp);
             this.canvas?.addEventListener('mouseleave', this.handlePointerUp);
             this.canvas?.addEventListener('mousemove', this.handlePointerMove);
+            this.mainContainer?.addEventListener('mousedown', this.handleContainerPointerDown);
+            this.mainContainer?.addEventListener('mousemove', this.handleContainerPointerMove);
+            this.mainContainer?.addEventListener('mouseup', this.handleContainerPointerUp);
         }
 
         // Window resize
@@ -1384,6 +1407,25 @@ class Simulator {
         this.markSceneDirty();
     }
 
+    setZoom(scale) {
+        const BASE = 900;
+        const clamped = Math.max(0.7, Math.min(1.5, scale));
+        document.documentElement.style.setProperty('--ui-scale', clamped);
+        this.uiScaleFactor = clamped;
+
+        const size = BASE * clamped;
+        this.canvas.style.width = `${size}px`;
+        this.canvas.style.height = `${size}px`;
+
+        this.canvas.width = size * this.DPR;
+        this.canvas.height = size * this.DPR;
+        this.staticCanvas.width = this.canvas.width;
+        this.staticCanvas.height = this.canvas.height;
+        this.staticDirty = true;
+        this.prepareStaticStyles();
+        this.markSceneDirty();
+    }
+
     // applyDataPanelFontSizes() {
     //     const titleSize = 1.25 * this.uiScaleFactor;
     //     const largeValueSize = 1.4 * this.uiScaleFactor;
@@ -1586,6 +1628,68 @@ class Simulator {
                 this.hoveredTrackId = newHoverId;
                 this.markSceneDirty();
             }
+        }
+    }
+
+    handleContainerPointerDown(e) {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        this.containerPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        if (this.containerPointers.size === 2) {
+            clearTimeout(this.dragTimer);
+            const pts = Array.from(this.containerPointers.values());
+            this.initialPinchDistance = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+            this.initialScale = this.uiScaleFactor;
+        } else if (this.containerPointers.size === 1) {
+            let item = null;
+            if (e.target === this.canvas) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) * this.DPR;
+                const y = (e.clientY - rect.top) * this.DPR;
+                item = this.getInteractiveItemAt(x, y);
+            }
+            if (item) return;
+            this.dragTimer = setTimeout(() => {
+                if (this.containerPointers.has(e.pointerId) && this.containerPointers.size === 1) {
+                    const style = getComputedStyle(this.mainContainer);
+                    const matrix = new DOMMatrixReadOnly(style.transform === 'none' ? undefined : style.transform);
+                    this.containerOffset = { x: matrix.m41, y: matrix.m42 };
+                    this.containerDragStart = { x: e.clientX, y: e.clientY };
+                    this.containerDragActive = true;
+                }
+            }, 400);
+        }
+    }
+
+    handleContainerPointerMove(e) {
+        if (!this.containerPointers.has(e.pointerId)) return;
+        this.containerPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        if (this.containerPointers.size === 2) {
+            clearTimeout(this.dragTimer);
+            this.containerDragActive = false;
+            const pts = Array.from(this.containerPointers.values());
+            const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+            if (this.initialPinchDistance > 0) {
+                const factor = dist / this.initialPinchDistance;
+                this.setZoom(this.initialScale * factor);
+            }
+        } else if (this.containerDragActive) {
+            const pos = this.containerPointers.get(e.pointerId);
+            const dx = pos.x - this.containerDragStart.x;
+            const dy = pos.y - this.containerDragStart.y;
+            this.mainContainer.style.transform = `translate(${this.containerOffset.x + dx}px, ${this.containerOffset.y + dy}px)`;
+        }
+    }
+
+    handleContainerPointerUp(e) {
+        this.containerPointers.delete(e.pointerId);
+        clearTimeout(this.dragTimer);
+        if (this.containerPointers.size < 2) {
+            this.initialPinchDistance = 0;
+        }
+        if (this.containerPointers.size === 0) {
+            this.containerDragActive = false;
         }
     }
 
