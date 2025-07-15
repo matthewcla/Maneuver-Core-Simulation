@@ -8,7 +8,7 @@
   "name": "maneuver",
   "scripts": {
     "start": "parcel ./*.html ",
-    "build": "parcel build ./*.html  --dist-dir ./build"
+   "build": "parcel build ./*.html --dist-dir ./dist"
   },
   "version": "1.0.0"
 }
