@@ -461,20 +461,26 @@ class Simulator {
             const wrap = (handler) => (e) => {
                 const touch = e.touches[0] || e.changedTouches[0];
                 if (!touch) return;
+                e.preventDefault();
+                e.stopPropagation();
                 handler({
                     clientX: touch.clientX,
                     clientY: touch.clientY,
                     button: 0,
                     buttons: 1,
-                    pointerType: 'touch'
+                    pointerType: 'touch',
+                    pointerId: touch.identifier || 0,
+                    preventDefault: () => e.preventDefault(),
+                    stopPropagation: () => e.stopPropagation(),
                 });
             };
-            this.canvas?.addEventListener('touchstart', wrap(this.handlePointerDown));
-            this.canvas?.addEventListener('touchmove', wrap(this.handlePointerMove));
+            const opts = { passive: false };
+            this.canvas?.addEventListener('touchstart', wrap(this.handlePointerDown), opts);
+            this.canvas?.addEventListener('touchmove', wrap(this.handlePointerMove), opts);
             this.canvas?.addEventListener('touchend', wrap(this.handlePointerUp));
             this.canvas?.addEventListener('touchcancel', wrap(this.handlePointerUp));
-            this.mainContainer?.addEventListener('touchstart', wrap(this.handleContainerPointerDown));
-            this.mainContainer?.addEventListener('touchmove', wrap(this.handleContainerPointerMove));
+            this.mainContainer?.addEventListener('touchstart', wrap(this.handleContainerPointerDown), opts);
+            this.mainContainer?.addEventListener('touchmove', wrap(this.handleContainerPointerMove), opts);
             this.mainContainer?.addEventListener('touchend', wrap(this.handleContainerPointerUp));
             this.mainContainer?.addEventListener('touchcancel', wrap(this.handleContainerPointerUp));
         } else {
