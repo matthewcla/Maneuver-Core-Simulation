@@ -1526,6 +1526,9 @@ class Simulator {
 
     handlePointerDown(e) {
         if (e.button !== 0 && e.buttons !== undefined && e.buttons !== 1) return;
+        if (this.canvas.setPointerCapture && e.pointerId !== undefined) {
+            try { this.canvas.setPointerCapture(e.pointerId); } catch (err) {}
+        }
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = (e.clientX - rect.left) * this.DPR;
         const mouseY = (e.clientY - rect.top) * this.DPR;
@@ -1548,7 +1551,14 @@ class Simulator {
         }
     }
 
-    handlePointerUp() {
+    handlePointerUp(e) {
+        if (this.canvas.releasePointerCapture && e && e.pointerId !== undefined) {
+            try {
+                this.canvas.releasePointerCapture(e.pointerId);
+            } catch (err) {
+                // ignore if not captured
+            }
+        }
         this.canvas.style.cursor = 'grab';
         if (this.draggedItemId === 'ownShip' && this.dragType === 'vector') {
             if (this.ownShip.dragCourse !== null && this.ownShip.dragSpeed !== null) {
