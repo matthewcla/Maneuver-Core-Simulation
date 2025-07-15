@@ -326,6 +326,7 @@ class Simulator {
         this.pendingDragId = null;
         this.pendingDragType = null;
         this.DPR = window.devicePixelRatio || 1;
+        this.baseDPR = this.DPR;
         this.pointerDownPos = { x: 0, y: 0 };
         this.dragThreshold = 6 * this.DPR;
         this.lastMousePos = { x: 0, y: 0 };
@@ -490,6 +491,14 @@ class Simulator {
         window.addEventListener('resize', this._throttleRAF(() => {
             this.scaleUI();
         }));
+
+        // Detect changes to devicePixelRatio (e.g. pinch zoom)
+        const handleDpr = this._throttleRAF(() => this._checkDPR());
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', handleDpr);
+        } else {
+            window.addEventListener('resize', handleDpr);
+        }
 
         // Control buttons
         this.btnVectorTime?.addEventListener('click', () => this.toggleVectorTime());
@@ -692,6 +701,16 @@ class Simulator {
                 });
             }
         };
+    }
+
+    _checkDPR() {
+        const current = window.devicePixelRatio || 1;
+        if (current !== this.baseDPR) {
+            this.baseDPR = current;
+            this.DPR = current;
+            this.dragThreshold = 6 * this.DPR;
+            this.setZoom(1);
+        }
     }
 
     _setText(id, value) {
