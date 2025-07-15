@@ -1697,7 +1697,7 @@ class Simulator {
                     this.containerDragStart = { x: e.clientX, y: e.clientY };
                     this.containerDragActive = true;
                 }
-            }, 400);
+            }, 800);
         }
     }
 
