@@ -448,15 +448,16 @@ class Simulator {
     _attachEventListeners() {
         // Canvas interaction
         if (window.PointerEvent) {
-            this.canvas?.addEventListener('pointerdown', this.handlePointerDown);
-            this.canvas?.addEventListener('pointerup', this.handlePointerUp);
-            this.canvas?.addEventListener('pointerleave', this.handlePointerUp);
-            this.canvas?.addEventListener('pointercancel', this.handlePointerUp);
-            this.canvas?.addEventListener('pointermove', this.handlePointerMove);
-            this.mainContainer?.addEventListener('pointerdown', this.handleContainerPointerDown);
-            this.mainContainer?.addEventListener('pointermove', this.handleContainerPointerMove);
-            this.mainContainer?.addEventListener('pointerup', this.handleContainerPointerUp);
-            this.mainContainer?.addEventListener('pointercancel', this.handleContainerPointerUp);
+            const opts = { passive: false };
+            this.canvas?.addEventListener('pointerdown', this.handlePointerDown, opts);
+            this.canvas?.addEventListener('pointerup', this.handlePointerUp, opts);
+            this.canvas?.addEventListener('pointerleave', this.handlePointerUp, opts);
+            this.canvas?.addEventListener('pointercancel', this.handlePointerUp, opts);
+            this.canvas?.addEventListener('pointermove', this.handlePointerMove, opts);
+            this.mainContainer?.addEventListener('pointerdown', this.handleContainerPointerDown, opts);
+            this.mainContainer?.addEventListener('pointermove', this.handleContainerPointerMove, opts);
+            this.mainContainer?.addEventListener('pointerup', this.handleContainerPointerUp, opts);
+            this.mainContainer?.addEventListener('pointercancel', this.handleContainerPointerUp, opts);
         } else if ('ontouchstart' in window) {
             const wrap = (handler) => (e) => {
                 const touch = e.touches[0] || e.changedTouches[0];
