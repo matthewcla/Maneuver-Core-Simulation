@@ -13,6 +13,15 @@ body {
   min-width: 0;
   overflow: visible;
   z-index: 0;
+  /* Prevent text selection and default gestures */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
 }
 .iconsettings {
   width: 20px;
