@@ -230,6 +230,12 @@ button.buttonbase {
   align-items: flex-start;
   justify-content: flex-start;
 }
+.datacontainer1 {
+  align-self: stretch;
+  padding: var(--padding-4) 0 0;
+  font-size: var(--font-size-14);
+  color: var(--primary-600);
+}
 .datacontainer {
   align-self: stretch;
   padding: var(--padding-4) 0 0;
