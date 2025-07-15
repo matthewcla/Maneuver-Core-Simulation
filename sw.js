@@ -1,14 +1,13 @@
 const CACHE_NAME = 'maneuver-cache-v1';
 const ASSETS = [
-  './',
-  './index.html',
-  './manifest.webmanifest',
-  './js/arena.js',
-  './js/install.js',
-  './js/dynamics.js',
-  './css/global.css',
-  './css/beta.css',
-  './favicons.svg'
+  '/',
+  '/index.html',
+  '/manifest.webmanifest',
+  '/js/arena.js',
+  '/js/dynamics.js',
+  '/css/global.css',
+  '/css/beta.css',
+  '/favicons.svg'
 ];
 
 self.addEventListener('install', event => {
