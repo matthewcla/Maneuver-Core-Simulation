@@ -464,6 +464,9 @@ button.controlplay .placeholder {
 .add-remove-tracks {
   display: none;
 }
+  .controlplay.pause {
+    opacity: 0.5;
+  }
 }
 
 @media screen and (max-width: 792px) {
@@ -476,6 +479,15 @@ button.controlplay .placeholder {
   }
   .beta .maneuver-logo-child {
     width:32px!important;
+  }
+  .beta .maneuverlogo {
+    padding-left: 10px;
+    padding-right:10px;
+    padding-top:14px;
+    padding-bottom:var(--padding-12);
+    background-color: var(--neutral-800-alpha-80);
+    border-radius: 100px;
+    display: block;
   }
   .maneuver-logo-item{
     display: none;

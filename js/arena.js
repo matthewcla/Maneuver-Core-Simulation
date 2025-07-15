@@ -242,7 +242,7 @@ class Simulator {
         // --- DOM Element References ---
         this.canvas = document.getElementById('radarCanvas');
         this.ctx = this.canvas.getContext('2d');
-        console.log('Simulator init: canvas element:', this.canvas);
+        
         if (!this.canvas) {
             console.error('radarCanvas element not found in DOM');
         }
@@ -610,6 +610,74 @@ class Simulator {
         this.markSceneDirty();
     }
 
+    /**
+     * Toggle play/pause of the simulation.
+     */
+    togglePlayPause() {
+      // If FF/RW active, reset to normal play and resume play immediately
+      if (this.simulationSpeed !== 1) {
+        // Stop fast-forward/rewind and resume normal play immediately
+        this.simulationSpeed = 1;
+        this.updateSpeedIndicator();
+        this.updateButtonStyles();
+        this.isSimulationRunning = true;
+        this.btnPlayPause.classList.remove('pause');
+        this.startGameLoop();
+        return;
+      }
+      // Toggle play/pause
+      if (this.isSimulationRunning) {
+        this.isSimulationRunning = false;
+        this.btnPlayPause.classList.add('pause');
+      } else {
+        this.isSimulationRunning = true;
+        this.btnPlayPause.classList.remove('pause');
+        this.startGameLoop();
+      }
+      this.updateSpeedIndicator();
+      this.updateButtonStyles();
+    }
+
+    /**
+     * Cycle forward through fast-forward speeds.
+     */
+    fastForward() {
+      // Cycle through 25×/50× or reset to normal (1×)
+      if (this.simulationSpeed === this.ffSpeeds[this.ffSpeeds.length - 1]) {
+        this.simulationSpeed = 1;
+      } else {
+        if (!this.isSimulationRunning) this.isSimulationRunning = true;
+        const idx = this.ffSpeeds.indexOf(this.simulationSpeed);
+        this.simulationSpeed = idx === -1
+          ? this.ffSpeeds[0]
+          : (this.ffSpeeds[idx + 1] || 1);
+      }
+      this.updateSpeedIndicator();
+      this.updateButtonStyles();
+      this.markSceneDirty();
+      this.btnPlayPause.classList.remove('pause');
+    }
+
+    /**
+     * Cycle backward through rewind speeds.
+     */
+    rewind() {
+      // Cycle through –25×/–50× or reset to normal (1×)
+      if (this.simulationSpeed === this.revSpeeds[this.revSpeeds.length - 1]) {
+        this.simulationSpeed = 1;
+      } else {
+        if (!this.isSimulationRunning) this.isSimulationRunning = true;
+        const idx = this.revSpeeds.indexOf(this.simulationSpeed);
+        this.simulationSpeed = idx === -1
+          ? this.revSpeeds[0]
+          : (this.revSpeeds[idx + 1] || 1);
+      }
+      this.updateSpeedIndicator();
+      this.updateButtonStyles();
+      this.markSceneDirty();
+      this.btnPlayPause.classList.remove('pause');
+    }
+
     // TODO: Optimize the simulation loop to handle ~50-100 tracks smoothly.
     // - Avoid creating new objects or strings every frame (reuse them instead).
     // - Do minimal work for off-screen or non-selected tracks.
@@ -623,7 +691,16 @@ class Simulator {
         this.updatePhysics(deltaTime);
 
         if (this.isSimulationRunning) {
-            this.simulationElapsed += (deltaTime / 1000) * Math.abs(this.simulationSpeed);
+            this.simulationElapsed += (deltaTime / 1000) * this.simulationSpeed;
+            if (this.simulationElapsed <= 0) {
+                this.simulationElapsed = 0;
+                if (this.simulationSpeed < 0) {
+                    // Auto-stop rewind at start and resume play
+                    this.simulationSpeed = 1;
+                    this.updateSpeedIndicator();
+                    this.updateButtonStyles();
+                }
+            }
             this.sceneDirty = true;
         }
 
@@ -926,7 +1003,7 @@ class Simulator {
     // --- Drawing ---
     drawRadar() {
         // Debug: log frame and fill red overlay
-        console.log('drawRadar called:', { width: this.canvas.width, height: this.canvas.height });
+        // console.log('drawRadar called:', { width: this.canvas.width, height: this.canvas.height });
         // Debug fill to confirm drawing
         this.ctx.save();
         this.ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
@@ -1702,6 +1779,7 @@ class Simulator {
         this.updateButtonStyles();
         this.updateSpeedIndicator();
         this.startGameLoop();
+        console.log('fired');
     }
 
     addTrack() {
