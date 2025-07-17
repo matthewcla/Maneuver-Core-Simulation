@@ -17,6 +17,7 @@ checked in, or ensure dependencies are installed so `npm run build` can run
 successfully.
 
 ## Touch Gestures
+
 - **Long‑press drag:** hold a pointer on the radar for about 800 ms and then move
   to pan the radar container.
 - **Pinch zoom:** with two pointers on the radar, pinch in or out to change the
@@ -27,6 +28,7 @@ Maneuver works as a Progressive Web App. Open `index.html` in a modern browser
 and use the browser's share or menu option ("Add to Home Screen" on iOS/Android)
 to install it. The service worker caches the core files so the simulator
 continues to work offline once loaded.
+
 
 ## Safety Disclaimer
 This software is **not** a certified navigational tool. It is meant purely for educational and entertainment purposes. Do **not** rely on it for real‑world navigation or collision avoidance. Always use official, approved navigational equipment in real situations.
