@@ -252,11 +252,9 @@ class Simulator {
         }
         this.dragTooltip = document.getElementById('drag-tooltip');
         this.orderTooltip = document.getElementById('order-tooltip');
-        // this.btnVectorTime = document.getElementById('btn-vector-time');
+        
         // Playback controls
         this.btnPlayPause = document.getElementById('play-pause');
-        // this.iconPlay = document.getElementById('icon-play');
-        // this.iconPause = document.getElementById('icon-pause');
         this.btnRange = document.getElementById('radar-range');
         this.btnAddTrack  = document.getElementById('add-track');
         this.btnDropTrack = document.getElementById('remove-track');
@@ -265,15 +263,6 @@ class Simulator {
         this.btnRev = document.getElementById('past');
         this.ffSpeedIndicator = document.getElementById('ff-speed-indicator');
         this.revSpeedIndicator = document.getElementById('rev-speed-indicator');
-        // this.btnHelp = document.getElementById('btn-help');
-        // this.helpModal = document.getElementById('help-modal');
-        // this.helpCloseBtn = document.getElementById('help-close-btn');
-        // this.helpContent = this.helpModal.querySelector('pre');
-        // this.buttonBar = document.getElementById('button-bar');
-        // this.radarWrapper = document.getElementById('radar-wrapper');
-        // this.radarContainer = document.getElementById('radar-container');
-        // this.rightPane = document.getElementById('right-pane');
-        // this.dataPane = document.getElementById('data-pane');
         this.trackDataContainer = document.getElementById('track-data-container');
         this.rmDataContainer = document.getElementById('rm-data-container');
         this.cpaDataContainer = document.getElementById('cpa-data-container');
@@ -456,10 +445,19 @@ class Simulator {
             this.canvas?.addEventListener('pointerleave', this.handlePointerUp, opts);
             this.canvas?.addEventListener('pointercancel', this.handlePointerUp, opts);
             this.canvas?.addEventListener('pointermove', this.handlePointerMove, opts);
-            this.mainContainer?.addEventListener('pointerdown', this.handleContainerPointerDown, opts);
-            this.mainContainer?.addEventListener('pointermove', this.handleContainerPointerMove, opts);
-            this.mainContainer?.addEventListener('pointerup', this.handleContainerPointerUp, opts);
-            this.mainContainer?.addEventListener('pointercancel', this.handleContainerPointerUp, opts);
+            // Guarded container drag: only allow if target is not the canvas
+            this.mainContainer?.addEventListener('pointerdown', (e) => {
+                if (e.target !== this.canvas) this.handleContainerPointerDown(e);
+            }, opts);
+            this.mainContainer?.addEventListener('pointermove', (e) => {
+                if (e.target !== this.canvas) this.handleContainerPointerMove(e);
+            }, opts);
+            this.mainContainer?.addEventListener('pointerup', (e) => {
+                if (e.target !== this.canvas) this.handleContainerPointerUp(e);
+            }, opts);
+            this.mainContainer?.addEventListener('pointercancel', (e) => {
+                if (e.target !== this.canvas) this.handleContainerPointerUp(e);
+            }, opts);
         } else if ('ontouchstart' in window) {
             const wrap = (handler) => (e) => {
                 const touch = e.touches[0] || e.changedTouches[0];
@@ -482,18 +480,34 @@ class Simulator {
             this.canvas?.addEventListener('touchmove', wrap(this.handlePointerMove), opts);
             this.canvas?.addEventListener('touchend', wrap(this.handlePointerUp));
             this.canvas?.addEventListener('touchcancel', wrap(this.handlePointerUp));
-            this.mainContainer?.addEventListener('touchstart', wrap(this.handleContainerPointerDown), opts);
-            this.mainContainer?.addEventListener('touchmove', wrap(this.handleContainerPointerMove), opts);
-            this.mainContainer?.addEventListener('touchend', wrap(this.handleContainerPointerUp));
-            this.mainContainer?.addEventListener('touchcancel', wrap(this.handleContainerPointerUp));
+            // Guarded container drag for touch events
+            this.mainContainer?.addEventListener('touchstart', (e) => {
+                if (e.target !== this.canvas) wrap(this.handleContainerPointerDown)(e);
+            }, opts);
+            this.mainContainer?.addEventListener('touchmove', (e) => {
+                if (e.target !== this.canvas) wrap(this.handleContainerPointerMove)(e);
+            }, opts);
+            this.mainContainer?.addEventListener('touchend', (e) => {
+                if (e.target !== this.canvas) wrap(this.handleContainerPointerUp)(e);
+            });
+            this.mainContainer?.addEventListener('touchcancel', (e) => {
+                if (e.target !== this.canvas) wrap(this.handleContainerPointerUp)(e);
+            });
         } else {
             this.canvas?.addEventListener('mousedown', this.handlePointerDown);
             this.canvas?.addEventListener('mouseup', this.handlePointerUp);
             this.canvas?.addEventListener('mouseleave', this.handlePointerUp);
             this.canvas?.addEventListener('mousemove', this.handlePointerMove);
-            this.mainContainer?.addEventListener('mousedown', this.handleContainerPointerDown);
-            this.mainContainer?.addEventListener('mousemove', this.handleContainerPointerMove);
-            this.mainContainer?.addEventListener('mouseup', this.handleContainerPointerUp);
+            // Guarded container drag for mouse events
+            this.mainContainer?.addEventListener('mousedown', (e) => {
+                if (e.target !== this.canvas) this.handleContainerPointerDown(e);
+            });
+            this.mainContainer?.addEventListener('mousemove', (e) => {
+                if (e.target !== this.canvas) this.handleContainerPointerMove(e);
+            });
+            this.mainContainer?.addEventListener('mouseup', (e) => {
+                if (e.target !== this.canvas) this.handleContainerPointerUp(e);
+            });
         }
 
         // Window resize
@@ -558,7 +572,13 @@ class Simulator {
             });
         }
         // Fullscreen toggle
-        this.btnFullscreen?.addEventListener('click', () => this.toggleFullScreen());
+        if (this.btnFullscreen) {
+            const sim = this;
+            this.btnFullscreen.addEventListener('click', function (e) {
+                this.classList.toggle('active');
+                sim.toggleFullScreen();
+            });
+        }
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && fsApi.isActive()) {
                 fsApi.exit();
@@ -566,8 +586,20 @@ class Simulator {
         });
 
         // Settings toggles for polar plot and track IDs
-        this.chkPolarPlot?.addEventListener('click', () => this.togglePolarPlot());
-        this.chkTrackIds?.addEventListener('click', () => this.toggleTrackIds());
+        if (this.chkPolarPlot) {
+            const sim = this;
+            this.chkPolarPlot.addEventListener('click', function (e) {
+                this.classList.toggle('active');
+                sim.togglePolarPlot();
+            });
+        }
+        if (this.chkTrackIds) {
+            const sim = this;
+            this.chkTrackIds.addEventListener('click', function (e) {
+                this.classList.toggle('active');
+                sim.toggleTrackIds();
+            });
+        }
 
         // Shared tooltip behavior for elements with data-tooltip
         document.querySelectorAll('[data-tooltip]').forEach(el => {
@@ -575,11 +607,29 @@ class Simulator {
                 this.dragTooltip.textContent = el.getAttribute('data-tooltip');
                 this.dragTooltip.style.color = this.radarGreen;
                 this.dragTooltip.style.display = 'block';
-                this.dragTooltip.style.transform = `translate(${e.clientX - this.dragTooltip.offsetWidth - 10}px, ${e.clientY - this.dragTooltip.offsetHeight - 10}px)`;
+                // Dynamic positioning logic (buffer, edge-aware)
+                const buffer = 10;
+                const tooltipWidth = this.dragTooltip.offsetWidth;
+                const tooltipHeight = this.dragTooltip.offsetHeight;
+                let x = e.clientX + buffer;
+                if (e.clientX + tooltipWidth + buffer > window.innerWidth) {
+                  x = e.clientX - tooltipWidth - buffer;
+                }
+                const y = e.clientY - tooltipHeight - buffer;
+                this.dragTooltip.style.transform = `translate(${x}px, ${y}px)`;
             });
             el.addEventListener('pointermove', e => {
                 if (this.dragTooltip.style.display === 'block') {
-                    this.dragTooltip.style.transform = `translate(${e.clientX - this.dragTooltip.offsetWidth - 10}px, ${e.clientY - this.dragTooltip.offsetHeight - 10}px)`;
+                    // Dynamic positioning logic (buffer, edge-aware)
+                    const buffer = 10;
+                    const tooltipWidth = this.dragTooltip.offsetWidth;
+                    const tooltipHeight = this.dragTooltip.offsetHeight;
+                    let x = e.clientX + buffer;
+                    if (e.clientX + tooltipWidth + buffer > window.innerWidth) {
+                      x = e.clientX - tooltipWidth - buffer;
+                    }
+                    const y = e.clientY - tooltipHeight - buffer;
+                    this.dragTooltip.style.transform = `translate(${x}px, ${y}px)`;
                 }
             });
             el.addEventListener('pointerleave', () => {
@@ -609,15 +659,6 @@ class Simulator {
         this.vectorTimeIndex = (this.vectorTimeIndex + 1) % this.vectorTimes.length;
         this.vectorTimeInMinutes = this.vectorTimes[this.vectorTimeIndex];
         this.btnVectorTime.textContent = `${this.vectorTimeInMinutes} min`;
-        this.markSceneDirty();
-    }
-
-    // --- Range Toggle ---
-    toggleRange() {
-        this.rangeIndex = (this.rangeIndex + 1) % this.rangeScales.length;
-        this.maxRange = this.rangeScales[this.rangeIndex];
-        this.btnRange.textContent = `${this.maxRange.toFixed(1)} nm`;
-        this.staticDirty = true;
         this.markSceneDirty();
     }
 
@@ -1416,9 +1457,7 @@ class Simulator {
     }
 
     updateButtonStyles() {
-        // this.btnWind.className = `control-btn ${this.showWeather ? 'selected' : 'unselected'}`;
-        // this.btnRmv.className = `control-btn ${this.showRelativeMotion ? 'selected' : 'unselected'}`;
-        // this.btnCpa.className = `control-btn ${this.showCPAInfo ? 'selected' : 'unselected'}`;
+    
 
         this.btnPlayPause.className = `controlplay ${this.isSimulationRunning ? 'selected' : 'unselected'}`;
         if (this.iconPlay && this.iconPause) {
@@ -1480,7 +1519,6 @@ class Simulator {
         }
 
         this.prepareStaticStyles();
-        // this.applyDataPanelFontSizes();
 
         this.markSceneDirty();
     }
@@ -1503,23 +1541,6 @@ class Simulator {
         this.prepareStaticStyles();
         this.markSceneDirty();
     }
-
-    // applyDataPanelFontSizes() {
-    //     const titleSize = 1.25 * this.uiScaleFactor;
-    //     const largeValueSize = 1.4 * this.uiScaleFactor;
-    //     const mediumValueSize = 1.3 * this.uiScaleFactor;
-    //
-    //     document.querySelectorAll('.data-title').forEach(el => el.style.fontSize = `${titleSize}rem`);
-    //     document.querySelectorAll('.data-label').forEach(el => el.style.fontSize = `${mediumValueSize}rem`);
-    //
-    //     document.querySelectorAll('#ownship-crs, #ownship-spd, #track-data-container .data-value').forEach(el => {
-    //         if (el) el.style.fontSize = `${largeValueSize}rem`;
-    //     });
-    //
-    //     document.querySelectorAll('#rm-data-container .data-value, #cpa-data-container .data-value, #wind-data-container .data-value').forEach(el => {
-    //         if (el) el.style.fontSize = `${mediumValueSize}rem`;
-    //     });
-    // }
 
     // --- Interaction Handlers ---
     updateDragTooltip(e) {
@@ -1839,20 +1860,26 @@ class Simulator {
         this.markSceneDirty();
     }
 
+    // --- Range Toggle ---
     toggleRange() {
-        const currentIndex = this.rangeScales.indexOf(this.maxRange);
-        this.maxRange = this.rangeScales[(currentIndex + 1) % this.rangeScales.length];
-        this._setText('btn-range', this.maxRange.toFixed(1)+' nm');
+        this.rangeIndex = (this.rangeIndex + 1) % this.rangeScales.length;
+        this.maxRange = this.rangeScales[this.rangeIndex];
+
+        // Update button class to reflect current range
+        const rounded = Math.round(this.maxRange);
+        const rangeClasses = ['range-3','range-6','range-12','range-24'];
+        this.btnRange.classList.remove(...rangeClasses);
+        this.btnRange.classList.add(`range-${rounded}`);
         this.staticDirty = true;
         this.markSceneDirty();
     }
 
-    // toggleWeather() {
-    //     this.showWeather = !this.showWeather;
-    //     this.markSceneDirty();
-    //     this.scaleUI();
-    //     this.updateDataPanels();
-    // }
+    
+    toggleWeather() {
+        this.showWeather = !this.showWeather;
+        this.markSceneDirty();
+        this.updateDataPanels();
+    }
 
     toggleRelativeMotion() {
         this.showRelativeMotion = !this.showRelativeMotion;
@@ -2089,11 +2116,11 @@ class Simulator {
 //     window.addEventListener('resize', enforceLandscape);
 // });
 
-// Register service worker for offline support
-// if ('serviceWorker' in navigator) {
-//     window.addEventListener('load', () => {
-//         navigator.serviceWorker.register('/sw.js')
-//             .then(reg => console.log('Service Worker registered', reg))
-//             .catch(err => console.error('Service Worker registration failed:', err));
-//     });
-// }
+Register service worker for offline support
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker registered', reg))
+            .catch(err => console.error('Service Worker registration failed:', err));
+    });
+}
