@@ -6,6 +6,9 @@ body {
   display: block;
   width: calc(900px * var(--ui-scale));
   height: calc(900px * var(--ui-scale));
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
 }
 
 #radarCanvas {
@@ -20,6 +23,9 @@ body {
   -webkit-user-drag: none;
   -webkit-tap-highlight-color: transparent;
   touch-action: none;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
 }
 .radar {
   align-self: stretch;
@@ -79,11 +85,24 @@ button.buttonbase {
   height: 48px;
   flex-direction: row;
 }
-.radarcontrols {
+.radarcontrols,
+#radar-settings-menu {
+  display: flex;
   align-self: stretch;
   flex-direction: column;
   gap: var(--space-2);
   z-index: 1;
+}
+
+#radar-settings.active {
+  background-color: var(--primary-500);
+}
+
+#radar-settings-menu {
+  display:none;
+}
+#radar-settings-menu.active {
+  display:flex;
 }
 .iconplay {
   height: 11px;
@@ -434,7 +453,7 @@ button.controlplay .placeholder {
 }
 
 /* Visual feedback for playback controls */
-.selected {
+.tracking .selected {
   background-color: var(--primary-500-alpha-70);
 }
 
@@ -541,17 +560,20 @@ button.controlplay .placeholder {
   .telemetry {
     gap: var(--gap-12);
   }
+  #radar-settings-menu {
+    flex-direction: row;
+  }
   .telemetry {
     display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  flex: 1 1 auto;
-  min-width: 0;
-  width: calc(100vw - 2 * var(--padding-12));   /* subtract left/right padding */
-  overflow-x: auto;
-  flex-wrap: nowrap !important;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
+    flex-direction: row;
+    align-items: stretch;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: calc(100vw - 2 * var(--padding-12));   /* subtract left/right padding */
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
   }
   .radar {
     min-width: 100%;

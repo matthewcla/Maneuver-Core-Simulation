@@ -30,12 +30,16 @@
         <canvas id="radarCanvas"></canvas>
       </main>
       <div class="radarcontrols">
-        <button type="button" id="radar-settings" class="buttonbase"><img class="iconsettings" loading="lazy" alt="" src="./public/iconsettings@2x.png"/></button>
-        <button type="button" id="polar-plots" class="buttonbase"><img class="iconpola-plots" loading="lazy" alt="" src="./public/iconpolar-plots.svg"/></button>
-        <button type="button" id="radar-range" class="buttonbase"><img class="iconrange24" alt="" src="./public/iconrange12-1.svg" /></button>
-        <button type="button" id="track-ids" class="buttonbase"><img class="iconnumber" alt="" src="./public/iconnumber@2x.png" /></button>
+        <button type="button" id="radar-settings" class="buttonbase">
+            <img class="iconsettings" loading="lazy" alt="" src="./public/iconsettings@2x.png"/>
+          </button>
+        <nav id="radar-settings-menu">
+          <button type="button" id="polar-plots" class="buttonbase"><img class="iconpola-plots" loading="lazy" alt="" src="./public/iconpolar-plots.svg"/></button>
+          <button type="button" id="radar-range" class="buttonbase"><img class="iconrange24" alt="" src="./public/iconrange12-1.svg" /></button>
+          <button type="button" id="track-ids" class="buttonbase"><img class="iconnumber" alt="" src="./public/iconnumber@2x.png" /></button>          
+        </nav>
         <button type="button" id="full-screen" class="buttonbase"><img class="iconmaximize" loading="lazy" alt="" src="./public/iconmaximize@2x.png"/></button>
-      <div class="add-remove-tracks">
+        <div class="add-remove-tracks">
           <button type="button" id="add-track" class="buttonbase"><img alt="" src="./public/union3.svg"/></button>
           <button type="button" id="remove-track" class="buttonbase"><img loading="lazy" alt="" src="./public/union4.svg"/></button>
         </div>
@@ -187,13 +191,13 @@
         new Simulator();
       });
     </script>
-    <script>
+    <!-- <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js');
         });
       }
-    </script>
+    </script> -->
     <!-- <script type="module" src="./js/dynamics.js"></script> -->
   </body>
 </html>

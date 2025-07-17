@@ -286,6 +286,7 @@ class Simulator {
         this.radarWrapper = this.mainContainer;
 
         this.btnSettings = document.getElementById('radar-settings');
+        this.settingsDrawer = document.getElementById('radar-settings-menu');
         this.chkPolarPlot = document.getElementById('polar-plots');
         this.chkTrackIds = document.getElementById('track-ids');
         this.btnFullscreen = document.getElementById('full-screen');
@@ -552,37 +553,8 @@ class Simulator {
         // Settings drawer interactions
         if (this.btnSettings && this.settingsDrawer) {
             this.btnSettings.addEventListener('click', () => {
-                if (this.settingsDrawer.classList.contains('open')) {
-                    this.settingsDrawer.classList.remove('open');
-                    this.settingsDrawer.addEventListener('transitionend', () => {
-                        this.settingsDrawer.style.display = 'none';
-                    }, { once: true });
-                } else {
-                    this.settingsDrawer.style.display = 'flex';
-                    requestAnimationFrame(() => this.settingsDrawer.classList.add('open'));
-                }
-            });
-
-            this.settingsDrawer.addEventListener('mouseleave', () => {
-                if (this.settingsDrawer.classList.contains('open')) {
-                    this.settingsDrawer.classList.remove('open');
-                    this.settingsDrawer.addEventListener('transitionend', () => {
-                        this.settingsDrawer.style.display = 'none';
-                    }, { once: true });
-                }
-            });
-
-            // Close the drawer when tapping outside of it on touch devices
-            document.addEventListener('pointerdown', (e) => {
-                if (e.pointerType === 'touch' &&
-                    this.settingsDrawer.classList.contains('open') &&
-                    !this.settingsDrawer.contains(e.target) &&
-                    e.target !== this.btnSettings) {
-                    this.settingsDrawer.classList.remove('open');
-                    this.settingsDrawer.addEventListener('transitionend', () => {
-                        this.settingsDrawer.style.display = 'none';
-                    }, { once: true });
-                }
+                this.btnSettings.classList.toggle('active');
+                this.settingsDrawer.classList.toggle('active');
             });
         }
         // Fullscreen toggle
@@ -594,8 +566,8 @@ class Simulator {
         });
 
         // Settings toggles for polar plot and track IDs
-        this.chkPolarPlot?.addEventListener('change', () => this.togglePolarPlot());
-        this.chkTrackIds?.addEventListener('change', () => this.toggleTrackIds());
+        this.chkPolarPlot?.addEventListener('click', () => this.togglePolarPlot());
+        this.chkTrackIds?.addEventListener('click', () => this.toggleTrackIds());
 
         // Shared tooltip behavior for elements with data-tooltip
         document.querySelectorAll('[data-tooltip]').forEach(el => {
@@ -2118,10 +2090,10 @@ class Simulator {
 // });
 
 // Register service worker for offline support
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('Service Worker registered', reg))
-            .catch(err => console.error('Service Worker registration failed:', err));
-    });
-}
+// if ('serviceWorker' in navigator) {
+//     window.addEventListener('load', () => {
+//         navigator.serviceWorker.register('/sw.js')
+//             .then(reg => console.log('Service Worker registered', reg))
+//             .catch(err => console.error('Service Worker registration failed:', err));
+//     });
+// }
