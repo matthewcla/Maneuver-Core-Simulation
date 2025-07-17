@@ -19,7 +19,6 @@ body {
   min-width: 0;
   overflow: visible;
   z-index: 0;
-  /* Prevent text selection and default gestures */
 }
 .iconsettings {
   width: 20px;
