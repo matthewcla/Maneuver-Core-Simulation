@@ -1184,7 +1184,7 @@ class Simulator {
 
     drawOwnShipIcon(center, radius) {
         this.ctx.strokeStyle = this.radarGreen;
-        this.ctx.lineWidth = 1.4;
+        // this.ctx.lineWidth = 1.4;
         const iconRadius = this.canvas.width * 0.014;
         this.ctx.beginPath();
         this.ctx.arc(center, center, iconRadius, 0, 2 * Math.PI);
@@ -1196,11 +1196,8 @@ class Simulator {
         const endX = center + vectorDistPixels * Math.cos(courseAngle);
         const endY = center - vectorDistPixels * Math.sin(courseAngle);
         this.ownShip.vectorEndpoint = { x: endX, y: endY };
-        this.ctx.lineWidth = VECTOR_LINE_WIDTH;
-        this.ctx.beginPath();
-        this.ctx.moveTo(center, center);
-        this.ctx.lineTo(endX, endY);
-        this.ctx.stroke();
+        
+        
 
         // Draw ordered course/speed vector if still manoeuvring
         const orderedCourse = this.ownShip.orderedCourse;
@@ -1250,6 +1247,13 @@ class Simulator {
             this.ctx.stroke();
             this.ctx.restore();
         }
+
+        this.ctx.strokeStyle = this.radarGreen;
+        this.ctx.lineWidth = VECTOR_LINE_WIDTH;
+        this.ctx.beginPath();
+        this.ctx.moveTo(center, center);
+        this.ctx.lineTo(endX, endY);
+        this.ctx.stroke();
     }
 
     getTargetCoords(center, radius, track) {
@@ -2116,7 +2120,7 @@ class Simulator {
 //     window.addEventListener('resize', enforceLandscape);
 // });
 
-Register service worker for offline support
+// Register service worker for offline support
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
