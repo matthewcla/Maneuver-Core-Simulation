@@ -6,12 +6,28 @@ body {
   display: block;
   width: calc(900px * var(--ui-scale));
   height: calc(900px * var(--ui-scale));
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  
 }
 
 #radarCanvas {
   display: block;
   width: calc(900px * var(--ui-scale));
   height: calc(900px * var(--ui-scale));
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  left:28px;
 }
 .radar {
   align-self: stretch;
@@ -63,11 +79,79 @@ button.buttonbase {
   height: 48px;
   flex-direction: row;
 }
-.radarcontrols {
+
+.radarcontrols svg {
+  color: var(--primary-500);
+  fill:currentColor;
+  height: 20px;
+  width: 20px;
+}
+
+.radarcontrols,
+#radar-settings-menu {
+  display: flex;
   align-self: stretch;
   flex-direction: column;
   gap: var(--space-2);
   z-index: 1;
+}
+
+#radar-settings.active,
+#polar-plots.active,
+#track-ids.active,
+#full-screen.active {
+  background: var(--primary-500);
+  fill: currentColor;
+
+}
+
+#radar-range svg {
+ display: none;
+}
+
+#radar-range.range-3 .range-3,
+#radar-range.range-6 .range-6,
+#radar-range.range-12 .range-12,
+#radar-range.range-24 .range-24 {
+  display: block;
+}
+
+
+#polar-plots svg {
+  height: 23px;
+  width: 23px;
+}
+
+#radar-settings.active svg,
+#polar-plots.active svg,
+#track-ids.active svg,
+#full-screen.active svg {
+  color: #000;
+  fill: currentColor;
+}
+
+
+#full-screen svg,
+#track-ids svg  {
+  color: var(--primary-500);
+
+}
+
+#full-screen.active svg.maximize,
+#full-screen svg.minimize {
+  display: none;
+} 
+
+#full-screen.active svg.minimize {
+  display: block;
+}
+
+
+#radar-settings-menu {
+  display:none;
+}
+#radar-settings-menu.active {
+  display:flex;
 }
 .iconplay {
   height: 11px;
@@ -166,7 +250,7 @@ button.buttonbase {
   color: var(--primary-500);
   text-align: right;
 }
-.metricprimary {
+.metric-row {
   align-self: stretch;
   overflow: hidden;
   display: flex;
@@ -288,7 +372,7 @@ button.buttonbase {
   gap: var(--gap-10);
 }
 .cardcpa,
-.metricprimary12,
+.metric-row,
 .panelheader2 {
   display: flex;
   justify-content: flex-start;
@@ -303,7 +387,7 @@ button.buttonbase {
   padding: var(--space-3) var(--padding-16) var(--padding-16);
   box-sizing: border-box;
 }
-.metricprimary12 {
+.metric-row12 {
   align-self: stretch;
   flex-direction: row;
   align-items: center;
@@ -393,6 +477,24 @@ button.controlplay {
   border-right: 1px solid var(--color-darkslategray);
 }
 
+#play-pause .pause,
+#play-pause .play {
+  color: var(--primary-500); /* or another color */
+  fill: currentColor;
+  display: block;
+  height: 12px;
+}
+
+#play-pause.selected .pause,
+#play-pause .play  {
+  display: none;
+}
+#play-pause .pause,
+#play-pause.selected .play {
+  display: block;
+}
+
+
 /* Keep the flex sizing you already have for back/forward */
 button.control-backward,
 button.control-forward {
@@ -409,6 +511,15 @@ button.controlplay .placeholder {
   color: var(--primary-500);
 }
 
+/* Visual feedback for playback controls */
+.tracking .selected {
+  background-color: var(--primary-500-alpha-70);
+}
+
+.unselected {
+  opacity: 0.5;
+}
+
 .iconnumber {
   width: 20px;
   position: relative;
@@ -418,7 +529,7 @@ button.controlplay .placeholder {
 }
 
 .label,
-.metricprimary,
+.metric-row,
 .metricvalue {
    /* Modern browsers */
   user-select: none;
@@ -468,6 +579,9 @@ button.controlplay .placeholder {
 .add-remove-tracks {
   display: none;
 }
+  .controlplay.pause {
+    opacity: 0.5;
+  }
 }
 
 @media screen and (max-width: 792px) {
@@ -480,6 +594,15 @@ button.controlplay .placeholder {
   }
   .beta .maneuver-logo-child {
     width:32px!important;
+  }
+  .beta .maneuverlogo {
+    padding-left: 10px;
+    padding-right:10px;
+    padding-top:14px;
+    padding-bottom:var(--padding-12);
+    background-color: var(--neutral-800-alpha-80);
+    border-radius: 100px;
+    display: block;
   }
   .maneuver-logo-item{
     display: none;
@@ -496,17 +619,23 @@ button.controlplay .placeholder {
   .telemetry {
     gap: var(--gap-12);
   }
+  #radar-settings-menu {
+    flex-direction: row;
+  }
+  body #radarCanvas {
+    left: unset
+  }
   .telemetry {
     display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  flex: 1 1 auto;
-  min-width: 0;
-  width: calc(100vw - 2 * var(--padding-12));   /* subtract left/right padding */
-  overflow-x: auto;
-  flex-wrap: nowrap !important;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
+    flex-direction: row;
+    align-items: stretch;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: calc(100vw - 2 * var(--padding-12));   /* subtract left/right padding */
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
   }
   .radar {
     min-width: 100%;
@@ -590,4 +719,29 @@ button.controlplay .placeholder {
   width: 64px;
 }
 
+}
+
+
+
+
+#drag-tooltip,
+#order-tooltip {
+  position: absolute;
+  display: none;
+  background-color: var(--neutral-900-alpha-80);
+  color: var(--primary-500);
+  font-size: var(--font-size-14);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--br-2);
+  pointer-events: none;
+  z-index: 3;
+  white-space: nowrap;
+  font-family: var(--font-ibm-plex-sans);
+}
+#radar-range.active {
+  background: var(--primary-500);
+}
+#radar-range.active svg {
+  color: var(--neutral-900);
+  fill: currentColor;
 }

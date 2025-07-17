@@ -53,15 +53,15 @@ body {
   --primary-500-alpha-90: rgba(117, 251, 76, 0.9);
   --primary-600: #44a828;
   --neutral-300: #b0b0b0;
-  --primary-500-alpha-70: rgba(113, 251, 76, 0.7);
+  --primary-500-alpha-70: rgba(117, 251, 76, 0.7);
   --primary-500: #75fb4c;
   --neutral-800-alpha-80: rgba(34, 34, 34, 0.8);
   --neutral-900: #000;
 
 
-  --radar-green: #00FF00;
+  --radar-green: #44a828;
   --radar-white: #FFFFFF;
-  --radar-faint-green: rgba(0, 255, 0, 0.5);
+  --radar-faint-green: rgba(117, 251, 76, 0.5);
   --radar-faint-white: rgba(255, 255, 255, 0.5);
   --radar-dark-orange: #FF8C00;
   --radar-faint-orange: rgba(255, 140, 0, 0.5);

@@ -242,7 +242,7 @@ class Simulator {
         // --- DOM Element References ---
         this.canvas = document.getElementById('radarCanvas');
         this.ctx = this.canvas.getContext('2d');
-        console.log('Simulator init: canvas element:', this.canvas);
+        
         if (!this.canvas) {
             console.error('radarCanvas element not found in DOM');
         }
@@ -252,27 +252,17 @@ class Simulator {
         }
         this.dragTooltip = document.getElementById('drag-tooltip');
         this.orderTooltip = document.getElementById('order-tooltip');
-        // this.btnVectorTime = document.getElementById('btn-vector-time');
-        this.btnPlayPause = document.querySelector('.controlplay');
-        // this.iconPlay = document.getElementById('icon-play');
-        // this.iconPause = document.getElementById('icon-pause');
+        
+        // Playback controls
+        this.btnPlayPause = document.getElementById('play-pause');
         this.btnRange = document.getElementById('radar-range');
         this.btnAddTrack  = document.getElementById('add-track');
         this.btnDropTrack = document.getElementById('remove-track');
         this.btnScen = document.getElementById('regenerate');
-        this.btnFf = document.querySelector('.control-forward');
-        this.btnRev = document.querySelector('.control-backward');
+        this.btnFf = document.getElementById('future');
+        this.btnRev = document.getElementById('past');
         this.ffSpeedIndicator = document.getElementById('ff-speed-indicator');
         this.revSpeedIndicator = document.getElementById('rev-speed-indicator');
-        // this.btnHelp = document.getElementById('btn-help');
-        // this.helpModal = document.getElementById('help-modal');
-        // this.helpCloseBtn = document.getElementById('help-close-btn');
-        // this.helpContent = this.helpModal.querySelector('pre');
-        // this.buttonBar = document.getElementById('button-bar');
-        // this.radarWrapper = document.getElementById('radar-wrapper');
-        // this.radarContainer = document.getElementById('radar-container');
-        // this.rightPane = document.getElementById('right-pane');
-        // this.dataPane = document.getElementById('data-pane');
         this.trackDataContainer = document.getElementById('track-data-container');
         this.rmDataContainer = document.getElementById('rm-data-container');
         this.cpaDataContainer = document.getElementById('cpa-data-container');
@@ -285,6 +275,7 @@ class Simulator {
         this.radarWrapper = this.mainContainer;
 
         this.btnSettings = document.getElementById('radar-settings');
+        this.settingsDrawer = document.getElementById('radar-settings-menu');
         this.chkPolarPlot = document.getElementById('polar-plots');
         this.chkTrackIds = document.getElementById('track-ids');
         this.btnFullscreen = document.getElementById('full-screen');
@@ -441,6 +432,20 @@ class Simulator {
             this.canvas?.addEventListener('pointerleave', this.handlePointerUp, opts);
             this.canvas?.addEventListener('pointercancel', this.handlePointerUp, opts);
             this.canvas?.addEventListener('pointermove', this.handlePointerMove, opts);
+
+            // Guarded container drag: only allow if target is not the canvas
+            this.mainContainer?.addEventListener('pointerdown', (e) => {
+                if (e.target !== this.canvas) this.handleContainerPointerDown(e);
+            }, opts);
+            this.mainContainer?.addEventListener('pointermove', (e) => {
+                if (e.target !== this.canvas) this.handleContainerPointerMove(e);
+            }, opts);
+            this.mainContainer?.addEventListener('pointerup', (e) => {
+                if (e.target !== this.canvas) this.handleContainerPointerUp(e);
+            }, opts);
+            this.mainContainer?.addEventListener('pointercancel', (e) => {
+                if (e.target !== this.canvas) this.handleContainerPointerUp(e);
+            }, opts);
         } else if ('ontouchstart' in window) {
             const wrap = (handler) => (e) => {
                 const touch = e.touches[0] || e.changedTouches[0];
@@ -463,11 +468,36 @@ class Simulator {
             this.canvas?.addEventListener('touchmove', wrap(this.handlePointerMove), opts);
             this.canvas?.addEventListener('touchend', wrap(this.handlePointerUp));
             this.canvas?.addEventListener('touchcancel', wrap(this.handlePointerUp));
+
+            // Guarded container drag for touch events
+            this.mainContainer?.addEventListener('touchstart', (e) => {
+                if (e.target !== this.canvas) wrap(this.handleContainerPointerDown)(e);
+            }, opts);
+            this.mainContainer?.addEventListener('touchmove', (e) => {
+                if (e.target !== this.canvas) wrap(this.handleContainerPointerMove)(e);
+            }, opts);
+            this.mainContainer?.addEventListener('touchend', (e) => {
+                if (e.target !== this.canvas) wrap(this.handleContainerPointerUp)(e);
+            });
+            this.mainContainer?.addEventListener('touchcancel', (e) => {
+                if (e.target !== this.canvas) wrap(this.handleContainerPointerUp)(e);
+            });
         } else {
             this.canvas?.addEventListener('mousedown', this.handlePointerDown);
             this.canvas?.addEventListener('mouseup', this.handlePointerUp);
             this.canvas?.addEventListener('mouseleave', this.handlePointerUp);
             this.canvas?.addEventListener('mousemove', this.handlePointerMove);
+
+            // Guarded container drag for mouse events
+            this.mainContainer?.addEventListener('mousedown', (e) => {
+                if (e.target !== this.canvas) this.handleContainerPointerDown(e);
+            });
+            this.mainContainer?.addEventListener('mousemove', (e) => {
+                if (e.target !== this.canvas) this.handleContainerPointerMove(e);
+            });
+            this.mainContainer?.addEventListener('mouseup', (e) => {
+                if (e.target !== this.canvas) this.handleContainerPointerUp(e);
+            });
         }
 
         // Window resize
@@ -479,8 +509,10 @@ class Simulator {
         this.btnVectorTime?.addEventListener('click', () => this.toggleVectorTime());
         this.btnRange?.addEventListener('click', () => this.toggleRange());
         this.btnPlayPause?.addEventListener('click', () => this.togglePlayPause());
-        this.btnFf?.addEventListener('click', () => this.fastForward());
-        this.btnRev?.addEventListener('click', () => this.rewind());
+        // Bind playback controls directly to ensure the correct handlers
+        // are invoked when the buttons are pressed
+        this.btnFf?.addEventListener('click', this.fastForward.bind(this));
+        this.btnRev?.addEventListener('click', this.rewind.bind(this));
         this.btnAddTrack?.addEventListener('click', () => this.addTrack());
         this.btnDropTrack?.addEventListener('click', () => this.dropTrack());
         this.btnScen?.addEventListener('click', () => this.setupRandomScenario());
@@ -517,41 +549,18 @@ class Simulator {
         // Settings drawer interactions
         if (this.btnSettings && this.settingsDrawer) {
             this.btnSettings.addEventListener('click', () => {
-                if (this.settingsDrawer.classList.contains('open')) {
-                    this.settingsDrawer.classList.remove('open');
-                    this.settingsDrawer.addEventListener('transitionend', () => {
-                        this.settingsDrawer.style.display = 'none';
-                    }, { once: true });
-                } else {
-                    this.settingsDrawer.style.display = 'flex';
-                    requestAnimationFrame(() => this.settingsDrawer.classList.add('open'));
-                }
-            });
-
-            this.settingsDrawer.addEventListener('mouseleave', () => {
-                if (this.settingsDrawer.classList.contains('open')) {
-                    this.settingsDrawer.classList.remove('open');
-                    this.settingsDrawer.addEventListener('transitionend', () => {
-                        this.settingsDrawer.style.display = 'none';
-                    }, { once: true });
-                }
-            });
-
-            // Close the drawer when tapping outside of it on touch devices
-            document.addEventListener('pointerdown', (e) => {
-                if (e.pointerType === 'touch' &&
-                    this.settingsDrawer.classList.contains('open') &&
-                    !this.settingsDrawer.contains(e.target) &&
-                    e.target !== this.btnSettings) {
-                    this.settingsDrawer.classList.remove('open');
-                    this.settingsDrawer.addEventListener('transitionend', () => {
-                        this.settingsDrawer.style.display = 'none';
-                    }, { once: true });
-                }
+                this.btnSettings.classList.toggle('active');
+                this.settingsDrawer.classList.toggle('active');
             });
         }
         // Fullscreen toggle
-        this.btnFullscreen?.addEventListener('click', () => this.toggleFullScreen());
+        if (this.btnFullscreen) {
+            const sim = this;
+            this.btnFullscreen.addEventListener('click', function (e) {
+                this.classList.toggle('active');
+                sim.toggleFullScreen();
+            });
+        }
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && fsApi.isActive()) {
                 fsApi.exit();
@@ -559,8 +568,20 @@ class Simulator {
         });
 
         // Settings toggles for polar plot and track IDs
-        this.chkPolarPlot?.addEventListener('change', () => this.togglePolarPlot());
-        this.chkTrackIds?.addEventListener('change', () => this.toggleTrackIds());
+        if (this.chkPolarPlot) {
+            const sim = this;
+            this.chkPolarPlot.addEventListener('click', function (e) {
+                this.classList.toggle('active');
+                sim.togglePolarPlot();
+            });
+        }
+        if (this.chkTrackIds) {
+            const sim = this;
+            this.chkTrackIds.addEventListener('click', function (e) {
+                this.classList.toggle('active');
+                sim.toggleTrackIds();
+            });
+        }
 
         // Shared tooltip behavior for elements with data-tooltip
         document.querySelectorAll('[data-tooltip]').forEach(el => {
@@ -568,11 +589,29 @@ class Simulator {
                 this.dragTooltip.textContent = el.getAttribute('data-tooltip');
                 this.dragTooltip.style.color = this.radarGreen;
                 this.dragTooltip.style.display = 'block';
-                this.dragTooltip.style.transform = `translate(${e.clientX - this.dragTooltip.offsetWidth - 10}px, ${e.clientY - this.dragTooltip.offsetHeight - 10}px)`;
+                // Dynamic positioning logic (buffer, edge-aware)
+                const buffer = 10;
+                const tooltipWidth = this.dragTooltip.offsetWidth;
+                const tooltipHeight = this.dragTooltip.offsetHeight;
+                let x = e.clientX + buffer;
+                if (e.clientX + tooltipWidth + buffer > window.innerWidth) {
+                  x = e.clientX - tooltipWidth - buffer;
+                }
+                const y = e.clientY - tooltipHeight - buffer;
+                this.dragTooltip.style.transform = `translate(${x}px, ${y}px)`;
             });
             el.addEventListener('pointermove', e => {
                 if (this.dragTooltip.style.display === 'block') {
-                    this.dragTooltip.style.transform = `translate(${e.clientX - this.dragTooltip.offsetWidth - 10}px, ${e.clientY - this.dragTooltip.offsetHeight - 10}px)`;
+                    // Dynamic positioning logic (buffer, edge-aware)
+                    const buffer = 10;
+                    const tooltipWidth = this.dragTooltip.offsetWidth;
+                    const tooltipHeight = this.dragTooltip.offsetHeight;
+                    let x = e.clientX + buffer;
+                    if (e.clientX + tooltipWidth + buffer > window.innerWidth) {
+                      x = e.clientX - tooltipWidth - buffer;
+                    }
+                    const y = e.clientY - tooltipHeight - buffer;
+                    this.dragTooltip.style.transform = `translate(${x}px, ${y}px)`;
                 }
             });
             el.addEventListener('pointerleave', () => {
@@ -605,13 +644,72 @@ class Simulator {
         this.markSceneDirty();
     }
 
-    // --- Range Toggle ---
-    toggleRange() {
-        this.rangeIndex = (this.rangeIndex + 1) % this.rangeScales.length;
-        this.maxRange = this.rangeScales[this.rangeIndex];
-        this.btnRange.textContent = `${this.maxRange.toFixed(1)} nm`;
-        this.staticDirty = true;
-        this.markSceneDirty();
+    /**
+     * Toggle play/pause of the simulation.
+     */
+    togglePlayPause() {
+      // If FF/RW active, reset to normal play and resume play immediately
+      if (this.simulationSpeed !== 1) {
+        // Stop fast-forward/rewind and resume normal play immediately
+        this.simulationSpeed = 1;
+        this.updateSpeedIndicator();
+        this.updateButtonStyles();
+        this.isSimulationRunning = true;
+        this.btnPlayPause.classList.remove('pause');
+        this.startGameLoop();
+        return;
+      }
+      // Toggle play/pause
+      if (this.isSimulationRunning) {
+        this.isSimulationRunning = false;
+        this.btnPlayPause.classList.add('pause');
+      } else {
+        this.isSimulationRunning = true;
+        this.btnPlayPause.classList.remove('pause');
+        this.startGameLoop();
+      }
+      this.updateSpeedIndicator();
+      this.updateButtonStyles();
+    }
+
+    /**
+     * Cycle forward through fast-forward speeds.
+     */
+    fastForward() {
+      // Cycle through 25×/50× or reset to normal (1×)
+      if (this.simulationSpeed === this.ffSpeeds[this.ffSpeeds.length - 1]) {
+        this.simulationSpeed = 1;
+      } else {
+        if (!this.isSimulationRunning) this.isSimulationRunning = true;
+        const idx = this.ffSpeeds.indexOf(this.simulationSpeed);
+        this.simulationSpeed = idx === -1
+          ? this.ffSpeeds[0]
+          : (this.ffSpeeds[idx + 1] || 1);
+      }
+      this.updateSpeedIndicator();
+      this.updateButtonStyles();
+      this.markSceneDirty();
+      this.btnPlayPause.classList.remove('pause');
+    }
+
+    /**
+     * Cycle backward through rewind speeds.
+     */
+    rewind() {
+      // Cycle through –25×/–50× or reset to normal (1×)
+      if (this.simulationSpeed === this.revSpeeds[this.revSpeeds.length - 1]) {
+        this.simulationSpeed = 1;
+      } else {
+        if (!this.isSimulationRunning) this.isSimulationRunning = true;
+        const idx = this.revSpeeds.indexOf(this.simulationSpeed);
+        this.simulationSpeed = idx === -1
+          ? this.revSpeeds[0]
+          : (this.revSpeeds[idx + 1] || 1);
+      }
+      this.updateSpeedIndicator();
+      this.updateButtonStyles();
+      this.markSceneDirty();
+      this.btnPlayPause.classList.remove('pause');
     }
 
     // TODO: Optimize the simulation loop to handle ~50-100 tracks smoothly.
@@ -627,7 +725,16 @@ class Simulator {
         this.updatePhysics(deltaTime);
 
         if (this.isSimulationRunning) {
-            this.simulationElapsed += (deltaTime / 1000) * Math.abs(this.simulationSpeed);
+            this.simulationElapsed += (deltaTime / 1000) * this.simulationSpeed;
+            if (this.simulationElapsed <= 0) {
+                this.simulationElapsed = 0;
+                if (this.simulationSpeed < 0) {
+                    // Auto-stop rewind at start and resume play
+                    this.simulationSpeed = 1;
+                    this.updateSpeedIndicator();
+                    this.updateButtonStyles();
+                }
+            }
             this.sceneDirty = true;
         }
 
@@ -930,7 +1037,7 @@ class Simulator {
     // --- Drawing ---
     drawRadar() {
         // Debug: log frame and fill red overlay
-        console.log('drawRadar called:', { width: this.canvas.width, height: this.canvas.height });
+        // console.log('drawRadar called:', { width: this.canvas.width, height: this.canvas.height });
         // Debug fill to confirm drawing
         this.ctx.save();
         this.ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
@@ -1049,7 +1156,7 @@ class Simulator {
 
     drawOwnShipIcon(center, radius) {
         this.ctx.strokeStyle = this.radarGreen;
-        this.ctx.lineWidth = 1.4;
+        // this.ctx.lineWidth = 1.4;
         const iconRadius = this.canvas.width * 0.014;
         this.ctx.beginPath();
         this.ctx.arc(center, center, iconRadius, 0, 2 * Math.PI);
@@ -1061,11 +1168,8 @@ class Simulator {
         const endX = center + vectorDistPixels * Math.cos(courseAngle);
         const endY = center - vectorDistPixels * Math.sin(courseAngle);
         this.ownShip.vectorEndpoint = { x: endX, y: endY };
-        this.ctx.lineWidth = VECTOR_LINE_WIDTH;
-        this.ctx.beginPath();
-        this.ctx.moveTo(center, center);
-        this.ctx.lineTo(endX, endY);
-        this.ctx.stroke();
+        
+        
 
         // Draw ordered course/speed vector if still manoeuvring
         const orderedCourse = this.ownShip.orderedCourse;
@@ -1115,6 +1219,13 @@ class Simulator {
             this.ctx.stroke();
             this.ctx.restore();
         }
+
+        this.ctx.strokeStyle = this.radarGreen;
+        this.ctx.lineWidth = VECTOR_LINE_WIDTH;
+        this.ctx.beginPath();
+        this.ctx.moveTo(center, center);
+        this.ctx.lineTo(endX, endY);
+        this.ctx.stroke();
     }
 
     getTargetCoords(center, radius, track) {
@@ -1322,9 +1433,7 @@ class Simulator {
     }
 
     updateButtonStyles() {
-        // this.btnWind.className = `control-btn ${this.showWeather ? 'selected' : 'unselected'}`;
-        // this.btnRmv.className = `control-btn ${this.showRelativeMotion ? 'selected' : 'unselected'}`;
-        // this.btnCpa.className = `control-btn ${this.showCPAInfo ? 'selected' : 'unselected'}`;
+    
 
         this.btnPlayPause.className = `controlplay ${this.isSimulationRunning ? 'selected' : 'unselected'}`;
         if (this.iconPlay && this.iconPause) {
@@ -1386,27 +1495,28 @@ class Simulator {
         }
 
         this.prepareStaticStyles();
-        // this.applyDataPanelFontSizes();
 
         this.markSceneDirty();
     }
 
-    // applyDataPanelFontSizes() {
-    //     const titleSize = 1.25 * this.uiScaleFactor;
-    //     const largeValueSize = 1.4 * this.uiScaleFactor;
-    //     const mediumValueSize = 1.3 * this.uiScaleFactor;
-    //
-    //     document.querySelectorAll('.data-title').forEach(el => el.style.fontSize = `${titleSize}rem`);
-    //     document.querySelectorAll('.data-label').forEach(el => el.style.fontSize = `${mediumValueSize}rem`);
-    //
-    //     document.querySelectorAll('#ownship-crs, #ownship-spd, #track-data-container .data-value').forEach(el => {
-    //         if (el) el.style.fontSize = `${largeValueSize}rem`;
-    //     });
-    //
-    //     document.querySelectorAll('#rm-data-container .data-value, #cpa-data-container .data-value, #wind-data-container .data-value').forEach(el => {
-    //         if (el) el.style.fontSize = `${mediumValueSize}rem`;
-    //     });
-    // }
+    setZoom(scale) {
+        const BASE = 900;
+        const clamped = Math.max(0.7, Math.min(1.5, scale));
+        document.documentElement.style.setProperty('--ui-scale', clamped);
+        this.uiScaleFactor = clamped;
+
+        const size = BASE * clamped;
+        this.canvas.style.width = `${size}px`;
+        this.canvas.style.height = `${size}px`;
+
+        this.canvas.width = size * this.DPR;
+        this.canvas.height = size * this.DPR;
+        this.staticCanvas.width = this.canvas.width;
+        this.staticCanvas.height = this.canvas.height;
+        this.staticDirty = true;
+        this.prepareStaticStyles();
+        this.markSceneDirty();
+    }
 
     // --- Interaction Handlers ---
     updateDragTooltip(e) {
@@ -1648,20 +1758,26 @@ class Simulator {
         this.markSceneDirty();
     }
 
+    // --- Range Toggle ---
     toggleRange() {
-        const currentIndex = this.rangeScales.indexOf(this.maxRange);
-        this.maxRange = this.rangeScales[(currentIndex + 1) % this.rangeScales.length];
-        this._setText('btn-range', this.maxRange.toFixed(1)+' nm');
+        this.rangeIndex = (this.rangeIndex + 1) % this.rangeScales.length;
+        this.maxRange = this.rangeScales[this.rangeIndex];
+
+        // Update button class to reflect current range
+        const rounded = Math.round(this.maxRange);
+        const rangeClasses = ['range-3','range-6','range-12','range-24'];
+        this.btnRange.classList.remove(...rangeClasses);
+        this.btnRange.classList.add(`range-${rounded}`);
         this.staticDirty = true;
         this.markSceneDirty();
     }
 
-    // toggleWeather() {
-    //     this.showWeather = !this.showWeather;
-    //     this.markSceneDirty();
-    //     this.scaleUI();
-    //     this.updateDataPanels();
-    // }
+    
+    toggleWeather() {
+        this.showWeather = !this.showWeather;
+        this.markSceneDirty();
+        this.updateDataPanels();
+    }
 
     toggleRelativeMotion() {
         this.showRelativeMotion = !this.showRelativeMotion;
@@ -1716,6 +1832,7 @@ class Simulator {
         this.updateButtonStyles();
         this.updateSpeedIndicator();
         this.startGameLoop();
+        console.log('fired');
     }
 
     addTrack() {
