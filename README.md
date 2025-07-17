@@ -15,8 +15,6 @@ If deploying on Vercel, either skip the build step when the `dist/` folder is
 checked in, or ensure dependencies are installed so `npm run build` can run
 successfully.
 
-## Touch Gestures
-
 ## Safety Disclaimer
 This software is **not** a certified navigational tool. It is meant purely for educational and entertainment purposes. Do **not** rely on it for real‑world navigation or collision avoidance. Always use official, approved navigational equipment in real situations.
 
