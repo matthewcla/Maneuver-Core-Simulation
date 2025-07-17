@@ -325,7 +325,8 @@ class Simulator {
         this.dragType = null;
         this.pendingDragId = null;
         this.pendingDragType = null;
-        this.DPR = window.devicePixelRatio || 1;
+        this.baseDPR = window.devicePixelRatio || 1;
+        this.DPR = this.baseDPR;
         this.pointerDownPos = { x: 0, y: 0 };
         this.dragThreshold = 6 * this.DPR;
         this.lastMousePos = { x: 0, y: 0 };
@@ -473,6 +474,11 @@ class Simulator {
         // Window resize
         window.addEventListener('resize', this._throttleRAF(() => {
             this.scaleUI();
+        }));
+
+        const viewport = window.visualViewport || window;
+        viewport.addEventListener('resize', this._throttleRAF(() => {
+            this._checkDPR();
         }));
 
         // Control buttons
@@ -676,6 +682,16 @@ class Simulator {
                 });
             }
         };
+    }
+
+    _checkDPR() {
+        const current = window.devicePixelRatio || 1;
+        if (current !== this.baseDPR) {
+            this.baseDPR = current;
+            this.DPR = current;
+            this.dragThreshold = 6 * this.DPR;
+            this.scaleUI();
+        }
     }
 
     _setText(id, value) {
