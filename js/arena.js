@@ -350,6 +350,7 @@ class Simulator {
         this.showRelativeMotion = false;
         this.showCPAInfo = false;
         this.isSimulationRunning = true;
+        this.wasRunningBeforeHide = false;
         this.showWeather = false;
         this.showPolarPlot = true;
         this.showTrackIds = true;
@@ -629,6 +630,15 @@ class Simulator {
             .forEach(evt => document.addEventListener(evt, () => this._syncFullscreenUI()));
         this._syncFullscreenUI();
 
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.wasRunningBeforeHide = this.isSimulationRunning;
+                this.pauseSimulation();
+            } else if (this.wasRunningBeforeHide) {
+                this.resumeSimulation();
+            }
+        });
+
         // Editable fields
         this.dataPane?.addEventListener('click', (e) => {
             if (e.target.classList.contains('editable')) {
@@ -773,7 +783,7 @@ class Simulator {
             this.lastDomUpdate = timestamp;
         }
 
-        if (this.isSimulationRunning || this.sceneDirty) {
+        if (this.isSimulationRunning) {
             requestAnimationFrame(this.gameLoop);
         } else {
             this.gameLoop.running = false;
@@ -781,7 +791,7 @@ class Simulator {
     }
 
     startGameLoop() {
-        if (!this.gameLoop.running) {
+        if (!this.gameLoop.running && (this.isSimulationRunning || this.sceneDirty)) {
             this.gameLoop.running = true;
             requestAnimationFrame(this.gameLoop);
         }
@@ -1815,6 +1825,23 @@ class Simulator {
         this.showCPAInfo = !this.showCPAInfo;
         this.markSceneDirty();
         this._scheduleUIUpdate();
+    }
+
+    pauseSimulation() {
+        if (this.isSimulationRunning) {
+            this.isSimulationRunning = false;
+            this.updateButtonStyles();
+            this.updateSpeedIndicator();
+        }
+    }
+
+    resumeSimulation() {
+        if (!this.isSimulationRunning) {
+            this.isSimulationRunning = true;
+            this.updateButtonStyles();
+            this.updateSpeedIndicator();
+            this.startGameLoop();
+        }
     }
 
     togglePlayPause() {
