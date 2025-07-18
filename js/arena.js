@@ -350,7 +350,7 @@ class Simulator {
         this.showRelativeMotion = false;
         this.showCPAInfo = false;
         this.isSimulationRunning = true;
-        this.showWeather = true;
+        this.showWeather = false;
         this.showPolarPlot = true;
         this.showTrackIds = true;
         this.uiScaleFactor = 1;
