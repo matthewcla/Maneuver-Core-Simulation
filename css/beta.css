@@ -637,11 +637,13 @@ button.controlplay .placeholder {
   }
 
   body #radarCanvas {
-    left: unset;
-    position: absolute;
-    top: 50%;
+    position: relative;
+    width: calc(100% + 10px);
+    max-width: none;
+    margin-left: auto;
+    margin-right: auto;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
   }
 
   .telemetry {
@@ -674,11 +676,11 @@ button.controlplay .placeholder {
   }
   .radar {
     min-width: 100%;
-    position: absolute;
-    height: 100vh;
-    width: 100vw;
-    top:0;
-    left: 0;
+    flex: 1 1 auto;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .card {
     flex:1;
