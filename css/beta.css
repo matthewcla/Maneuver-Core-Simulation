@@ -431,6 +431,7 @@ button.buttonbase {
   justify-content: flex-start;
   gap: var(--space-2);
 }
+
 .beta,
 .maneuver-logo,
 .maneuverlogo {
@@ -458,6 +459,11 @@ button.buttonbase {
   gap: var(--space-2);
   line-height: normal;
   letter-spacing: normal;
+}
+
+#ff-speed-indicator,
+#rev-speed-indicator {
+  display: none;
 }
 
 /* Reset defaults on our semantic buttons */
