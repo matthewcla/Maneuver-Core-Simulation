@@ -379,6 +379,10 @@ class Simulator {
     _initialize() {
         this._attachEventListeners();
 
+        if (!this.ctx) {
+            this.ctx = this.canvas.getContext('2d');
+        }
+
         const BASE_CANVAS_SIZE = 900;
         this.canvas.width = BASE_CANVAS_SIZE * this.DPR;
         this.canvas.height = BASE_CANVAS_SIZE * this.DPR;
