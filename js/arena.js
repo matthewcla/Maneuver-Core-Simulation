@@ -1449,13 +1449,10 @@ class Simulator {
         const relWindBearing = (this.relativeWind.vectorDirection - this.ownShip.course + 360) % 360;
         this._setText('wind-true', showTrueWind ? `${this.formatBearing(this.trueWind.direction)} T  ${this.trueWind.speed.toFixed(1)} kts` : '--');
         this._setText('wind-rel', showRelWind ? `${this.formatBearing(relWindBearing)} R  ${this.relativeWind.speed.toFixed(1)} kts` : '--');
-
-        // this.applyDataPanelFontSizes();
     }
 
     updateButtonStyles() {
     
-
         this.btnPlayPause.className = `controlplay ${this.isSimulationRunning ? 'selected' : 'unselected'}`;
         if (this.iconPlay && this.iconPause) {
             this.iconPlay.classList.toggle('d-none', this.isSimulationRunning);
@@ -1647,7 +1644,16 @@ class Simulator {
         this.orderTooltip.style.display = 'none';
         this.markSceneDirty();
     }
+    handleContainerPointerMove(e) {
+        // Prevent crash. Implement dragging-to-pan later if needed.
+    }
+    handleContainerPointerDown(e) {
+        // Optional: track pointer start position for dragging container
+    }
 
+    handleContainerPointerUp(e) {
+        // Optional: reset state if you want dragging or container interaction
+    }
     handlePointerMove(e) {
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = (e.clientX - rect.left) * this.DPR;
@@ -1853,7 +1859,6 @@ class Simulator {
         this.updateButtonStyles();
         this.updateSpeedIndicator();
         this.startGameLoop();
-        console.log('fired');
     }
 
     addTrack() {
@@ -2036,10 +2041,10 @@ class Simulator {
 // });
 
 // Register service worker for offline support
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('Service Worker registered', reg))
-            .catch(err => console.error('Service Worker registration failed:', err));
-    });
-}
+// if ('serviceWorker' in navigator) {
+//     window.addEventListener('load', () => {
+//         navigator.serviceWorker.register('/sw.js')
+//             .then(reg => console.log('Service Worker registered', reg))
+//             .catch(err => console.error('Service Worker registration failed:', err));
+//     });
+// }

@@ -149,12 +149,12 @@
             <div id="own-ship-data-container" class="datacontainer">
               <div class="metric-row">
                 <div class="labeltext">Crs</div>
-                <div id="" class="metric-value">091 T</div>
+                <div id="" class="metric-value">--</div>
                 <!-- <div id="ownship-crs" class="metric-value">091 T</div> -->
               </div>
               <div class="metric-row">
                 <div class="labeltext">Spd</div>
-                <div id="ownship-spd" class="metric-value">12.7 KTS</div>
+                <div id="ownship-spd" class="metric-value">--</div>
               </div>
             </div>
           </div>
@@ -162,26 +162,25 @@
             <div class="panel-header1">
               <button class="metrictracklabel">
                 <div class="track">TRACK</div>
-                <div class="track-label">01</div>
+                <div id="track-id" class="track-label">01</div>
               </button>
             </div>
             <div id="track-data-container" class="datacontainer1">
               <div class="metric-row">
                 <div class="labeltext">Brg</div>
-                <div id="" class="metric-value">285 T</div>
-                <!-- <div id="track-brg" class="metric-value">285 T</div> -->
+                <div id="track-brg" class="metric-value">--</div>
               </div>
               <div class="metric-row">
                 <div class="labeltext">Rng</div>
-                <div id="" class="metric-value">20.9 nm</div>
+                <div id="track-rng" class="metric-value">--</div>
               </div>
               <div class="metric-row">
                 <div class="labeltext">Crs</div>
-                <div id="" class="metric-value">255 T</div>
+                <div id="track-crs" class="metric-value">--</div>
               </div>
               <div class="metric-row">
                 <div class="labeltext">Spd</div>
-                <div id="" class="metric-value">6.1 KTS</div>
+                <div id="track-spd" class="metric-value">--</div>
               </div>
             </div>
           </div>
@@ -195,15 +194,15 @@
             <div class="datacontainer">
               <div class="metric-row">
                 <div class="labeltext">Brg</div>
-                <div class="metric-value">209 T / STBD QTR</div>
+                <div id="cpa-brg" class="metric-value">--</div>
               </div>
               <div class="metric-row">
                 <div class="labeltext">Rng</div>
-                <div class="metric-value">0.4 nm</div>
+                <div id="cpa-rng" class="metric-value">--</div>
               </div>
               <div class="metric-row">
                 <div class="labeltext">Time</div>
-                <div class="metric-value">00:25:28</div>
+                <div id="cpa-time" class="metric-value">--</div>
               </div>
             </div>
           </div>
@@ -217,23 +216,23 @@
             <div class="datacontainer">
               <div class="metric-row">
                 <div class="labeltext">Rel Dir</div>
-                <div class="metric-value">299 T</div>
+                <div id="rm-dir" class="metric-value">--</div>
               </div>
               <div class="metric-row">
                 <div class="labeltext">Spd RM</div>
-                <div class="metric-value">5.6 kts</div>
+                <div id="rm-spd" class="metric-value">--s</div>
               </div>
               <div class="metric-row">
                 <div class="labeltext">Brg Rate</div>
-                <div class="metric-value">0.72 RIGHT</div>
+                <div id="rm-rate" class="metric-value">--</div>
               </div>
               <div class="metric-row">
                 <div class="labeltext">Tgt Angle</div>
-                <div class="metric-value">240 deg</div>
+                <div id="rm-angle" class="metric-value">--</div>
               </div>
               <div class="metric-row">
                 <div class="labeltext">Aspect</div>
-                <div class="metric-value">PORT QTR</div>
+                <div id="rm-aspect" class="metric-value">--</div>
               </div>
             </div>
           </div>
@@ -247,11 +246,11 @@
             <div class="datacontainer">
               <div class="metric-row">
                 <div class="labeltext">True</div>
-                <div class="metric-value">070 T 15.0 kts</div>
+                <div id="wind-true" class="metric-value">--</div>
               </div>
               <div class="metric-row">
                 <div class="labeltext">Rel</div>
-                <div class="metric-value">169 R 27.2 kts</div>
+                <div id="wind-rel" class="metric-value">--</div>
               </div>
             </div>
           </div>
@@ -271,11 +270,11 @@
       });
     </script>
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js');
-        });
-      }
+      // if ('serviceWorker' in navigator) {
+      //   window.addEventListener('load', () => {
+      //     navigator.serviceWorker.register('./sw.js');
+      //   });
+      // }
     </script>
   </body>
 </html>
