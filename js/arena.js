@@ -347,10 +347,10 @@ class Simulator {
         this.simulationSpeed = 1;
         this.ffSpeeds = [25, 50];
         this.revSpeeds = [-25, -50];
-        this.showRelativeMotion = true;
-        this.showCPAInfo = true;
+        this.showRelativeMotion = false;
+        this.showCPAInfo = false;
         this.isSimulationRunning = true;
-        this.showWeather = true;
+        this.showWeather = false;
         this.showPolarPlot = true;
         this.showTrackIds = true;
         this.uiScaleFactor = 1;
@@ -1033,7 +1033,7 @@ class Simulator {
         track.rm.spd = `${relSpeed.toFixed(1)} kts`;
         track.rm.rate = this.getBearingRate({x: relVelX, y: relVelY}, {x: targetPosX, y: targetPosY}, track.range);
         track.rm.angle = `${this.formatBearing(targetAngle)} deg`;
-        track.rm.aspect = this.getAspect(targetAngle);
+        // track.rm.aspect = this.getAspect(targetAngle);
     }
 
     calculateWindData() {
@@ -1437,7 +1437,7 @@ class Simulator {
         this._setText('rm-spd', showRM ? selectedTrack.rm.spd : '--');
         this._setText('rm-rate', showRM ? selectedTrack.rm.rate : '--');
         this._setText('rm-angle', showRM ? selectedTrack.rm.angle : '--');
-        this._setText('rm-aspect', showRM ? selectedTrack.rm.aspect : '--');
+        // this._setText('rm-aspect', showRM ? selectedTrack.rm.aspect : '--');
 
         const showCPA = selectedTrack && this.showCPAInfo && !selectedTrack.hasPassedCPA;
         this._setText('cpa-brg', showCPA ? selectedTrack.cpa.brg : '--');
@@ -2041,10 +2041,10 @@ class Simulator {
 // });
 
 // Register service worker for offline support
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('Service Worker registered', reg))
-            .catch(err => console.error('Service Worker registration failed:', err));
-    });
-}
+// if ('serviceWorker' in navigator) {
+//     window.addEventListener('load', () => {
+//         navigator.serviceWorker.register('/sw.js')
+//             .then(reg => console.log('Service Worker registered', reg))
+//             .catch(err => console.error('Service Worker registration failed:', err));
+//     });
+// }
