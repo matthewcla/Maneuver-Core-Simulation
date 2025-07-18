@@ -303,14 +303,14 @@ class Simulator {
             orderedVectorEndpoint: null
         };
         this.tracks = [
-            { id: '0001', initialBearing: 327, initialRange: 7.9, course: 255, speed: 6.1 },
-            { id: '0002', initialBearing: 345, initialRange: 6.5, course: 250, speed: 7.2 },
-            { id: '0003', initialBearing: 190, initialRange: 8.2, course: 75,  speed: 8.0 },
-            { id: '0004', initialBearing: 205, initialRange: 5.5, course: 70,  speed: 7.5 },
-            { id: '0005', initialBearing: 180, initialRange: 3.1, course: 72,  speed: 8.2 },
+            { id: '01', initialBearing: 327, initialRange: 7.9, course: 255, speed: 6.1 },
+            { id: '02', initialBearing: 345, initialRange: 6.5, course: 250, speed: 7.2 },
+            { id: '03', initialBearing: 190, initialRange: 8.2, course: 75,  speed: 8.0 },
+            { id: '04', initialBearing: 205, initialRange: 5.5, course: 70,  speed: 7.5 },
+            { id: '05', initialBearing: 180, initialRange: 3.1, course: 72,  speed: 8.2 },
         ];
 
-        this.selectedTrackId = '0001';
+        this.selectedTrackId = '01';
         this.hoveredTrackId = null;
         this.draggedItemId = null;
         this.dragType = null;
@@ -347,8 +347,8 @@ class Simulator {
         this.simulationSpeed = 1;
         this.ffSpeeds = [25, 50];
         this.revSpeeds = [-25, -50];
-        this.showRelativeMotion = false;
-        this.showCPAInfo = false;
+        this.showRelativeMotion = true;
+        this.showCPAInfo = true;
         this.isSimulationRunning = true;
         this.showWeather = true;
         this.showPolarPlot = true;
@@ -515,7 +515,10 @@ class Simulator {
         this.btnRev?.addEventListener('click', this.rewind.bind(this));
         this.btnAddTrack?.addEventListener('click', () => this.addTrack());
         this.btnDropTrack?.addEventListener('click', () => this.dropTrack());
-        this.btnScen?.addEventListener('click', () => this.setupRandomScenario());
+        this.btnScen?.addEventListener('click', () => {
+            this.destroy();
+            this.setupRandomScenario();
+        });
 
         // Help Modal
         // this.btnHelp?.addEventListener('click', () => this.showHelpModal());
@@ -634,6 +637,24 @@ class Simulator {
                 this._scheduleUIUpdate();
             }
         });
+    }
+
+    // Clears all simulation state and graphics buffers for garbage collection
+    destroy() {
+        cancelAnimationFrame(this._raf);
+        clearInterval(this._myInterval);
+        clearTimeout(this._myTimeout);
+        window.removeEventListener('resize', this._onResize);
+        if (this.tracks) this.tracks.length = 0;
+        this.ownShip = null;
+        this.tracks = null;
+        this.targets = null;
+        // wipe canvas to release GPU memory
+        if (this.canvas) {
+          this.canvas.width = this.canvas.width;
+          this.canvas.height = this.canvas.height;
+        }
+        this.ctx = null;
     }
 
     // --- Vector Time Toggle ---
@@ -1428,13 +1449,10 @@ class Simulator {
         const relWindBearing = (this.relativeWind.vectorDirection - this.ownShip.course + 360) % 360;
         this._setText('wind-true', showTrueWind ? `${this.formatBearing(this.trueWind.direction)} T  ${this.trueWind.speed.toFixed(1)} kts` : '--');
         this._setText('wind-rel', showRelWind ? `${this.formatBearing(relWindBearing)} R  ${this.relativeWind.speed.toFixed(1)} kts` : '--');
-
-        // this.applyDataPanelFontSizes();
     }
 
     updateButtonStyles() {
     
-
         this.btnPlayPause.className = `controlplay ${this.isSimulationRunning ? 'selected' : 'unselected'}`;
         if (this.iconPlay && this.iconPause) {
             this.iconPlay.classList.toggle('d-none', this.isSimulationRunning);
@@ -1626,7 +1644,16 @@ class Simulator {
         this.orderTooltip.style.display = 'none';
         this.markSceneDirty();
     }
+    handleContainerPointerMove(e) {
+        // Prevent crash. Implement dragging-to-pan later if needed.
+    }
+    handleContainerPointerDown(e) {
+        // Optional: track pointer start position for dragging container
+    }
 
+    handleContainerPointerUp(e) {
+        // Optional: reset state if you want dragging or container interaction
+    }
     handlePointerMove(e) {
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = (e.clientX - rect.left) * this.DPR;
@@ -1832,7 +1859,6 @@ class Simulator {
         this.updateButtonStyles();
         this.updateSpeedIndicator();
         this.startGameLoop();
-        console.log('fired');
     }
 
     addTrack() {

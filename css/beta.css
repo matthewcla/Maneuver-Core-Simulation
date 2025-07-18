@@ -96,15 +96,6 @@ button.buttonbase {
   z-index: 1;
 }
 
-#radar-settings.active,
-#polar-plots.active,
-#track-ids.active,
-#full-screen.active {
-  background: var(--primary-500);
-  fill: currentColor;
-
-}
-
 #radar-range svg {
  display: none;
 }
@@ -122,19 +113,26 @@ button.buttonbase {
   width: 23px;
 }
 
+#radar-settings svg,
+#polar-plots svg,
+#track-ids svg,
+#full-screen svg {
+  color: #666;
+  fill: currentColor;
+}
+
 #radar-settings.active svg,
+#radar-settings svg,
 #polar-plots.active svg,
 #track-ids.active svg,
 #full-screen.active svg {
-  color: #000;
+  color: var(--primary-500);
   fill: currentColor;
 }
 
 
-#full-screen svg,
-#track-ids svg  {
+#full-screen svg {
   color: var(--primary-500);
-
 }
 
 #full-screen.active svg.maximize,
@@ -230,19 +228,18 @@ button.buttonbase {
   text-transform: uppercase;
   font-weight: 500;
 }
-.panelheader {
-  width: 272px;
+.panel-header {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
 }
 .labeltext,
-.metricvalue {
+.metric-value {
   position: relative;
-  line-height: 18px;
+  /* line-height: 18px; */
 }
-.metricvalue {
+.metric-value {
   flex: 1;
   font-size: var(--font-size-18);
   line-height: 24px;
@@ -250,6 +247,7 @@ button.buttonbase {
   color: var(--primary-500);
   text-align: right;
 }
+
 .metric-row {
   align-self: stretch;
   overflow: hidden;
@@ -279,10 +277,7 @@ button.buttonbase {
   font-size: var(--font-size-14);
   color: var(--primary-600);
 }
-.cardownship {
-  width: 304px;
-  min-height: 104px;
-}
+
 .track {
   text-transform: uppercase;
 }
@@ -297,7 +292,7 @@ button.buttonbase {
   text-align: left;
 }
 .metrictracklabel,
-.panelheader1 {
+.panel-header1 {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -311,7 +306,7 @@ button.buttonbase {
   border-radius: var(--br-2);
   gap: var(--gap-4);
 }
-.panelheader1 {
+.panel-header1 {
   align-self: stretch;
 }
 .cardtrack,
@@ -331,16 +326,23 @@ button.buttonbase {
   align-self: stretch;
   padding: var(--padding-4) 0 0;
 }
-.cardtrack {
-  width: 304px;
+
+
+.card {
+  border-radius: var(--br-4);
+  overflow: hidden;
+  padding: var(--space-3) var(--padding-16) var(--padding-16);
+  box-sizing: border-box;
+}
+
+.card.secondary {
   border-radius: var(--br-4);
   background-color: var(--neutral-800-alpha-80);
   overflow: hidden;
   padding: var(--space-3) var(--padding-16) var(--padding-16);
   box-sizing: border-box;
-  font-size: var(--font-size-14);
-  color: var(--primary-600);
 }
+
 .iconswitchon {
   width: 14px;
   position: relative;
@@ -358,7 +360,7 @@ button.buttonbase {
   justify-content: center;
 }
 .control,
-.panelheader2 {
+.panel-header2 {
   align-self: stretch;
   flex-direction: row;
   align-items: center;
@@ -368,32 +370,23 @@ button.buttonbase {
   display: flex;
   justify-content: flex-end;
 }
-.panelheader2 {
+.panel-header2 {
   gap: var(--gap-10);
 }
-.cardcpa,
+.secondary,
 .metric-row,
-.panelheader2 {
+.panel-header2 {
   display: flex;
   justify-content: flex-start;
 }
-.cardcpa {
-  width: 304px;
-  border-radius: var(--br-4);
-  background-color: var(--color-gray);
-  overflow: hidden;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: var(--space-3) var(--padding-16) var(--padding-16);
-  box-sizing: border-box;
-}
+
 .metric-row12 {
   align-self: stretch;
   flex-direction: row;
   align-items: center;
   gap: var(--gap-12);
 }
-.commandcenter,
+.command-center,
 .telemetry {
   display: flex;
   flex-direction: column;
@@ -408,7 +401,7 @@ button.buttonbase {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
-.commandcenter {
+.command-center {
   align-self: stretch;
   gap: var(--gap-8);
   z-index: 2;
@@ -530,7 +523,7 @@ button.controlplay .placeholder {
 
 .label,
 .metric-row,
-.metricvalue {
+.metric-value {
    /* Modern browsers */
   user-select: none;
 
@@ -584,6 +577,12 @@ button.controlplay .placeholder {
   }
 }
 
+
+
+.card {
+  width: 304px;
+}
+
 @media screen and (max-width: 792px) {
   .beta{
     flex-direction: column;
@@ -592,9 +591,11 @@ button.controlplay .placeholder {
     padding-right: var(--padding-12);
     padding-bottom: var(--padding-48);
   }
+
   .beta .maneuver-logo-child {
     width:32px!important;
   }
+
   .beta .maneuverlogo {
     padding-left: 10px;
     padding-right:10px;
@@ -604,27 +605,39 @@ button.controlplay .placeholder {
     border-radius: 100px;
     display: block;
   }
+
   .maneuver-logo-item{
     display: none;
   }
+
   .radarcontrols {
     flex-direction: row;
   }
+
   .radarcontrols .buttonbase {
     width: 56px;
     height: 56px;
   }
+
+
   .beta,
-  .commandcenter,
+  .command-center,
   .telemetry {
     gap: var(--gap-12);
   }
+
   #radar-settings-menu {
     flex-direction: row;
   }
+
   body #radarCanvas {
-    left: unset
+    left: unset;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
+
   .telemetry {
     display: flex;
     flex-direction: row;
@@ -636,6 +649,22 @@ button.controlplay .placeholder {
     flex-wrap: nowrap !important;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
+  }
+  
+  .card {
+    width: 180px;
+  }
+  .card.wide {
+    width: 220px;
+  }
+  
+  .secondary .metric-value {
+    flex: 1;
+    font-size: var(--font-size-14);
+    line-height: 18px;
+    font-family: var(--font-ibm-plex-mono);
+    color: var(--primary-500);
+    text-align: right;
   }
   .radar {
     min-width: 100%;
@@ -649,11 +678,11 @@ button.controlplay .placeholder {
     flex:1;
   }
   /* Swap the order of command center sections */
-  .commandcenter > .sim-controls {
+  .command-center > .sim-controls {
     order: 2;
   }
 
-  .commandcenter > .telemetry {
+  .command-center > .telemetry {
     order: 1;
     align-self: stretch;  /* override the parent’s align-items:flex-start */
     min-width: 0;         /* allow it to shrink below its contents */
@@ -668,14 +697,14 @@ button.controlplay .placeholder {
   /* Prevent cards from shrinking and make them horizontally scrollable */
   .telemetry > .cardownship,
   .telemetry > .cardtrack,
-  .telemetry > .cardcpa {
+  .telemetry > .secondary {
     flex: 0 0 auto;
   }
 
 /* Telemetry cards: scroll snap for horizontal scrolling */
 .telemetry > .cardownship,
 .telemetry > .cardtrack,
-.telemetry > .cardcpa {
+.telemetry > .secondary {
   flex: 0 0 auto;
   scroll-snap-align: start;
 }
@@ -738,10 +767,12 @@ button.controlplay .placeholder {
   white-space: nowrap;
   font-family: var(--font-ibm-plex-sans);
 }
-#radar-range.active {
+
+/* #radar-range.active {
   background: var(--primary-500);
 }
+
 #radar-range.active svg {
   color: var(--neutral-900);
   fill: currentColor;
-}
+} */
