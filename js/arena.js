@@ -303,14 +303,14 @@ class Simulator {
             orderedVectorEndpoint: null
         };
         this.tracks = [
-            { id: '0001', initialBearing: 327, initialRange: 7.9, course: 255, speed: 6.1 },
-            { id: '0002', initialBearing: 345, initialRange: 6.5, course: 250, speed: 7.2 },
-            { id: '0003', initialBearing: 190, initialRange: 8.2, course: 75,  speed: 8.0 },
-            { id: '0004', initialBearing: 205, initialRange: 5.5, course: 70,  speed: 7.5 },
-            { id: '0005', initialBearing: 180, initialRange: 3.1, course: 72,  speed: 8.2 },
+            { id: '01', initialBearing: 327, initialRange: 7.9, course: 255, speed: 6.1 },
+            { id: '02', initialBearing: 345, initialRange: 6.5, course: 250, speed: 7.2 },
+            { id: '03', initialBearing: 190, initialRange: 8.2, course: 75,  speed: 8.0 },
+            { id: '04', initialBearing: 205, initialRange: 5.5, course: 70,  speed: 7.5 },
+            { id: '05', initialBearing: 180, initialRange: 3.1, course: 72,  speed: 8.2 },
         ];
 
-        this.selectedTrackId = '0001';
+        this.selectedTrackId = '01';
         this.hoveredTrackId = null;
         this.draggedItemId = null;
         this.dragType = null;
@@ -515,7 +515,10 @@ class Simulator {
         this.btnRev?.addEventListener('click', this.rewind.bind(this));
         this.btnAddTrack?.addEventListener('click', () => this.addTrack());
         this.btnDropTrack?.addEventListener('click', () => this.dropTrack());
-        this.btnScen?.addEventListener('click', () => this.setupRandomScenario());
+        this.btnScen?.addEventListener('click', () => {
+            this.destroy();
+            this.setupRandomScenario();
+        });
 
         // Help Modal
         // this.btnHelp?.addEventListener('click', () => this.showHelpModal());
@@ -634,6 +637,24 @@ class Simulator {
                 this._scheduleUIUpdate();
             }
         });
+    }
+
+    // Clears all simulation state and graphics buffers for garbage collection
+    destroy() {
+        cancelAnimationFrame(this._raf);
+        clearInterval(this._myInterval);
+        clearTimeout(this._myTimeout);
+        window.removeEventListener('resize', this._onResize);
+        if (this.tracks) this.tracks.length = 0;
+        this.ownShip = null;
+        this.tracks = null;
+        this.targets = null;
+        // wipe canvas to release GPU memory
+        if (this.canvas) {
+          this.canvas.width = this.canvas.width;
+          this.canvas.height = this.canvas.height;
+        }
+        this.ctx = null;
     }
 
     // --- Vector Time Toggle ---
@@ -2015,10 +2036,10 @@ class Simulator {
 // });
 
 // Register service worker for offline support
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('Service Worker registered', reg))
-            .catch(err => console.error('Service Worker registration failed:', err));
-    });
-}
+// if ('serviceWorker' in navigator) {
+//     window.addEventListener('load', () => {
+//         navigator.serviceWorker.register('/sw.js')
+//             .then(reg => console.log('Service Worker registered', reg))
+//             .catch(err => console.error('Service Worker registration failed:', err));
+//     });
+// }
