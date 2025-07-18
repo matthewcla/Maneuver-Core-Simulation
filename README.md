@@ -33,5 +33,8 @@ continues to work offline once loaded.
 ## Safety Disclaimer
 This software is **not** a certified navigational tool. It is meant purely for educational and entertainment purposes. Do **not** rely on it for real‑world navigation or collision avoidance. Always use official, approved navigational equipment in real situations.
 
+### Autopilot Warning
+Leaving the simulator running on autopilot for extended periods can turn your device into a total malware magnet. Use autopilot modes with caution.
+
 ## Contact
 Questions or feedback? Email: `AheadFlank.ai@gmail.com`

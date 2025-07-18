@@ -1,4 +1,6 @@
-const CACHE_NAME = 'maneuver-cache-v1';
+// Bump the cache name whenever the service worker changes to ensure old
+// caches are cleared on new deployments.
+const CACHE_NAME = 'maneuver-cache-v2';
 const ASSETS = [
   '/',
   '/index.html',
