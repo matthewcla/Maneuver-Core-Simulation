@@ -596,6 +596,10 @@ button.controlplay .placeholder {
     width:32px!important;
   }
 
+  #wind-data-container {
+    display: none!important;
+  }
+
   .beta .maneuverlogo {
     padding-left: 10px;
     padding-right:10px;
