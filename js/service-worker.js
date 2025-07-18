@@ -1,7 +1,4 @@
-
-// Update CACHE_VERSION on each release to force old caches to clear
-const CACHE_VERSION = 'v1';
-const CACHE_NAME = `maneuver-cache-${CACHE_VERSION}`;
+const CACHE_NAME = 'maneuver-cache-v1';
 const ASSETS = [
   '/',
   '/index.html',
