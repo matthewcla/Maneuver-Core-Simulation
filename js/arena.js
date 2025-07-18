@@ -347,8 +347,8 @@ class Simulator {
         this.simulationSpeed = 1;
         this.ffSpeeds = [25, 50];
         this.revSpeeds = [-25, -50];
-        this.showRelativeMotion = false;
-        this.showCPAInfo = false;
+        this.showRelativeMotion = true;
+        this.showCPAInfo = true;
         this.isSimulationRunning = true;
         this.showWeather = false;
         this.showPolarPlot = true;
