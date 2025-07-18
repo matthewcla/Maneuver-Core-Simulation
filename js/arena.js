@@ -1224,7 +1224,7 @@ class Simulator {
             const rect = this.canvas.getBoundingClientRect();
             const tipX = rect.left + (oEndX / this.DPR);
             const tipY = rect.top + (oEndY / this.DPR);
-            const txt = `Crs: ${this.formatBearing(orderedCourse)} T\nSpd: ${orderedSpeed.toFixed(1)} kts`;
+            const txt = `${this.formatBearing(orderedCourse)} T\n${orderedSpeed.toFixed(1)} kts`;
             this.orderTooltip.style.color = this.radarDarkOrange;
             this.orderTooltip.innerText = txt;
             this.orderTooltip.style.display = 'block';
@@ -1566,7 +1566,7 @@ class Simulator {
             const newCanvasAngleRad = Math.atan2(dy, dx);
             const newBearing = this.canvasAngleToBearing(this.toDegrees(newCanvasAngleRad));
 
-            tooltipText = `Brg: ${this.formatBearing(newBearing)} T\nRng: ${newRange.toFixed(1)} nm`;
+            tooltipText = `${this.formatBearing(newBearing)} T\n${newRange.toFixed(1)} nm`;
         } else if (this.dragType === 'vector') {
             const vessel = (this.draggedItemId === 'ownShip') ? this.ownShip : this.tracks.find(t => t.id === this.draggedItemId);
             if (vessel) {
@@ -1577,13 +1577,13 @@ class Simulator {
                 const newCourse = this.canvasAngleToBearing(this.toDegrees(newCanvasAngleRad));
                 const distOnCanvas = Math.hypot(dx, dy);
                 const newSpeed = distOnCanvas / pixelsPerNm / (this.vectorTimeInMinutes / 60);
-                tooltipText = `Crs: ${this.formatBearing(newCourse)} T\nSpd: ${newSpeed.toFixed(1)} kts`;
+                tooltipText = `${this.formatBearing(newCourse)} T\n${newSpeed.toFixed(1)} kts`;
             }
         } else if (this.draggedItemId === 'trueWind') {
             if (this.dragType === 'windDirection') {
                 tooltipText = `Dir: ${this.formatBearing(this.trueWind.direction)} T`;
             } else if (this.dragType === 'windSpeed') {
-                tooltipText = `Spd: ${this.trueWind.speed.toFixed(1)} kts`;
+                tooltipText = `${this.trueWind.speed.toFixed(1)} kts`;
             }
         }
 
