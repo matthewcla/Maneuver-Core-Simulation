@@ -646,7 +646,6 @@ class Simulator {
         clearTimeout(this._myTimeout);
         window.removeEventListener('resize', this._onResize);
         if (this.tracks) this.tracks.length = 0;
-        this.ownShip = null;
         this.tracks = null;
         this.targets = null;
         // wipe canvas to release GPU memory
