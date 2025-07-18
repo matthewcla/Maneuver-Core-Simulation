@@ -350,7 +350,6 @@ class Simulator {
         this.showRelativeMotion = false;
         this.showCPAInfo = false;
         this.isSimulationRunning = true;
-        this.wasRunningBeforeHide = false;
         this.showWeather = false;
         this.showPolarPlot = true;
         this.showTrackIds = true;
@@ -517,8 +516,16 @@ class Simulator {
         this.btnAddTrack?.addEventListener('click', () => this.addTrack());
         this.btnDropTrack?.addEventListener('click', () => this.dropTrack());
         this.btnScen?.addEventListener('click', () => {
-            this.destroy();
-            this.setupRandomScenario();
+            // 1) Clean up old instance
+            window.sim.destroy();
+
+            // 2) Build a completely new one
+            window.sim = new Simulator();
+
+            // 3) (Optional) If you want randomness on first load only,
+            //    your constructor might already call setupRandomScenario().
+            //    Otherwise, explicitly do:
+            // window.sim.setupRandomScenario();
         });
 
         // Help Modal
@@ -630,15 +637,6 @@ class Simulator {
             .forEach(evt => document.addEventListener(evt, () => this._syncFullscreenUI()));
         this._syncFullscreenUI();
 
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                this.wasRunningBeforeHide = this.isSimulationRunning;
-                this.pauseSimulation();
-            } else if (this.wasRunningBeforeHide) {
-                this.resumeSimulation();
-            }
-        });
-
         // Editable fields
         this.dataPane?.addEventListener('click', (e) => {
             if (e.target.classList.contains('editable')) {
@@ -656,6 +654,7 @@ class Simulator {
         clearTimeout(this._myTimeout);
         window.removeEventListener('resize', this._onResize);
         if (this.tracks) this.tracks.length = 0;
+        this.ownShip = null;
         this.tracks = null;
         this.targets = null;
         // wipe canvas to release GPU memory
@@ -783,7 +782,7 @@ class Simulator {
             this.lastDomUpdate = timestamp;
         }
 
-        if (this.isSimulationRunning) {
+        if (this.isSimulationRunning || this.sceneDirty) {
             requestAnimationFrame(this.gameLoop);
         } else {
             this.gameLoop.running = false;
@@ -791,7 +790,7 @@ class Simulator {
     }
 
     startGameLoop() {
-        if (!this.gameLoop.running && (this.isSimulationRunning || this.sceneDirty)) {
+        if (!this.gameLoop.running) {
             this.gameLoop.running = true;
             requestAnimationFrame(this.gameLoop);
         }
@@ -1224,7 +1223,7 @@ class Simulator {
             const rect = this.canvas.getBoundingClientRect();
             const tipX = rect.left + (oEndX / this.DPR);
             const tipY = rect.top + (oEndY / this.DPR);
-            const txt = `${this.formatBearing(orderedCourse)} T\n${orderedSpeed.toFixed(1)} kts`;
+            const txt = `Crs: ${this.formatBearing(orderedCourse)} T\nSpd: ${orderedSpeed.toFixed(1)} kts`;
             this.orderTooltip.style.color = this.radarDarkOrange;
             this.orderTooltip.innerText = txt;
             this.orderTooltip.style.display = 'block';
@@ -1566,7 +1565,7 @@ class Simulator {
             const newCanvasAngleRad = Math.atan2(dy, dx);
             const newBearing = this.canvasAngleToBearing(this.toDegrees(newCanvasAngleRad));
 
-            tooltipText = `${this.formatBearing(newBearing)} T\n${newRange.toFixed(1)} nm`;
+            tooltipText = `Brg: ${this.formatBearing(newBearing)} T\nRng: ${newRange.toFixed(1)} nm`;
         } else if (this.dragType === 'vector') {
             const vessel = (this.draggedItemId === 'ownShip') ? this.ownShip : this.tracks.find(t => t.id === this.draggedItemId);
             if (vessel) {
@@ -1577,13 +1576,13 @@ class Simulator {
                 const newCourse = this.canvasAngleToBearing(this.toDegrees(newCanvasAngleRad));
                 const distOnCanvas = Math.hypot(dx, dy);
                 const newSpeed = distOnCanvas / pixelsPerNm / (this.vectorTimeInMinutes / 60);
-                tooltipText = `${this.formatBearing(newCourse)} T\n${newSpeed.toFixed(1)} kts`;
+                tooltipText = `Crs: ${this.formatBearing(newCourse)} T\nSpd: ${newSpeed.toFixed(1)} kts`;
             }
         } else if (this.draggedItemId === 'trueWind') {
             if (this.dragType === 'windDirection') {
                 tooltipText = `Dir: ${this.formatBearing(this.trueWind.direction)} T`;
             } else if (this.dragType === 'windSpeed') {
-                tooltipText = `${this.trueWind.speed.toFixed(1)} kts`;
+                tooltipText = `Spd: ${this.trueWind.speed.toFixed(1)} kts`;
             }
         }
 
@@ -1825,23 +1824,6 @@ class Simulator {
         this.showCPAInfo = !this.showCPAInfo;
         this.markSceneDirty();
         this._scheduleUIUpdate();
-    }
-
-    pauseSimulation() {
-        if (this.isSimulationRunning) {
-            this.isSimulationRunning = false;
-            this.updateButtonStyles();
-            this.updateSpeedIndicator();
-        }
-    }
-
-    resumeSimulation() {
-        if (!this.isSimulationRunning) {
-            this.isSimulationRunning = true;
-            this.updateButtonStyles();
-            this.updateSpeedIndicator();
-            this.startGameLoop();
-        }
     }
 
     togglePlayPause() {

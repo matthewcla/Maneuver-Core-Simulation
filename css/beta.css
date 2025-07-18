@@ -204,6 +204,10 @@ button.buttonbase {
   max-height: 100%;
   overflow: hidden;
 }
+.iconregenerate svg {
+  color: var(--primary-500);
+  fill: currentColor;
+}
 .buttonbase2 {
   height: 48px;
   width: 48px;
@@ -576,8 +580,6 @@ button.controlplay .placeholder {
     opacity: 0.5;
   }
 }
-
-
 
 .card {
   width: 304px;

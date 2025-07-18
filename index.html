@@ -3,14 +3,17 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Maneuver">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#000000">
     <title>Maneuver : Simulator : Beta</title>
-    <link rel="icon" type="image/svg+xml" href="favicons.svg">
-    <link rel="manifest" href="/manifest.webmanifest">
+
+    <link rel="icon" type="image/svg+xml" href="./favicons.svg">
+    <link rel="manifest" href="/manifest.json"/>
     <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"/>
 
     <link rel="stylesheet" href="./css/global.css" />
     <link rel="stylesheet" href="./css/beta.css" />
@@ -37,7 +40,7 @@
             </svg>
           </button>
         <nav id="radar-settings-menu">
-          
+        
           <button type="button" id="radar-range" class="buttonbase range-12">
             <svg class="range-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -264,17 +267,12 @@
       </div>
     </div>
     <script src="./js/arena.js"></script>
+    <script src="./js/main.js"></script>
+    <script src="./js/service-worker.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         window.sim = new Simulator(document.getElementById('radarCanvas'));
       });
-    </script>
-    <script>
-      // if ('serviceWorker' in navigator) {
-      //   window.addEventListener('load', () => {
-      //     navigator.serviceWorker.register('./sw.js');
-      //   });
-      // }
     </script>
   </body>
 </html>
