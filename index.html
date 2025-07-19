@@ -265,13 +265,7 @@
         </div>
       </div>
     </div>
-    <script src="js/arena.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/service-worker.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        window.sim = new Simulator(document.getElementById('radarCanvas'));
-      });
-    </script>
+    <div id="loading" style="display:none">Loading…</div>
+    <script type="module" src="js/main.js"></script>
   </body>
 </html>

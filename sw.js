@@ -6,10 +6,13 @@ const ASSETS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/js/arena.js',
-  '/js/dynamics.js',
+  '/js/main.js',
+  '/js/radar-engine.js',
+  '/js/object-pool.js',
+  '/js/cpa-worker.js',
   '/css/global.css',
   '/css/beta.css',
+  '/offline.html',
   '/favicons.svg'
 ];
 
