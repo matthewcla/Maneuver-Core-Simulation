@@ -2,6 +2,12 @@
  * Scenario generation & COLREGs contact controller
  * ============================================================
  */
+import { ObjectPool } from './object-pool.js';
+
+const trackPool = new ObjectPool(() => ({
+  id: '', x: 0, y: 0, course: 0, speed: 0,
+  state: 'MONITORING', isUserControlled: false,
+}));
 const ScenarioConfig = {
     contact_density        : 6,
     cpa_leeway             : 0.3,
@@ -30,6 +36,22 @@ function solveCPA(own, tgt) {
     const yCPA = ry + vy*tCPA;
     const dCPA = Math.sqrt(xCPA*xCPA + yCPA*yCPA);
     return { t: tCPA, d: dCPA };
+}
+
+const cpaWorker = typeof Worker !== 'undefined'
+  ? new Worker('./cpa-worker.js', { type: 'module' })
+  : null;
+
+function solveCPAAsync(own, tgt) {
+  if (!cpaWorker) return Promise.resolve(solveCPA(own, tgt));
+  return new Promise((resolve) => {
+    const handler = (e) => {
+      cpaWorker.removeEventListener('message', handler);
+      resolve(e.data);
+    };
+    cpaWorker.addEventListener('message', handler);
+    cpaWorker.postMessage({ own, tgt });
+  });
 }
 
 const fsApi = {
@@ -119,9 +141,10 @@ class ScenarioGenerator {
         return h;
     }
     _spawn(own,bearing,range,course,speed){
+        const track = trackPool.acquire();
         const id  = String(this.nextId++).padStart(4, '0');
         const rad = bearing * Math.PI / 180;
-        return {
+        Object.assign(track, {
             id,
             x: own.x + range * Math.sin(rad),
             y: own.y + range * Math.cos(rad),
@@ -132,7 +155,8 @@ class ScenarioGenerator {
             _base: { course, speed },
             initialBearing: bearing,
             initialRange: range,
-        };
+        });
+        return track;
     }
     _tuneCPA(own,tgt){
         for(let i=0;i<90;i++){
@@ -347,8 +371,8 @@ class Simulator {
         this.simulationSpeed = 1;
         this.ffSpeeds = [25, 50];
         this.revSpeeds = [-25, -50];
-        this.showRelativeMotion = false;
-        this.showCPAInfo = false;
+        this.showRelativeMotion = true;
+        this.showCPAInfo = true;
         this.isSimulationRunning = true;
         this.showWeather = false;
         this.showPolarPlot = true;
@@ -1896,7 +1920,8 @@ class Simulator {
         if (this.selectedTrackId === null) return;
         const trackIndex = this.tracks.findIndex(t => t.id === this.selectedTrackId);
         if (trackIndex > -1) {
-            this.tracks.splice(trackIndex, 1);
+            const [removed] = this.tracks.splice(trackIndex, 1);
+            trackPool.release(removed);
             if (this.tracks.length > 0) {
                 const newIndex = Math.max(0, trackIndex - 1);
                 this.selectedTrackId = this.tracks[newIndex].id;
@@ -2056,3 +2081,12 @@ class Simulator {
 //             .catch(err => console.error('Service Worker registration failed:', err));
 //     });
 // }
+export {
+  ScenarioConfig,
+  ScenarioGenerator,
+  ContactController,
+  Simulator,
+  solveCPA,
+  solveCPAAsync,
+  fsApi
+};

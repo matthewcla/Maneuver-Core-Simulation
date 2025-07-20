@@ -26,8 +26,8 @@ successfully.
 ## Progressive Web App
 Maneuver works as a Progressive Web App. Open `index.html` in a modern browser
 and use the browser's share or menu option ("Add to Home Screen" on iOS/Android)
-to install it. The service worker caches the core files so the simulator
-continues to work offline once loaded.
+to install it. Modules load progressively and a service worker caches the core
+files so the simulator continues to work offline once loaded.
 
 
 ## Safety Disclaimer
