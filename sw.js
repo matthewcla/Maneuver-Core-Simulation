@@ -4,16 +4,16 @@ const CACHE_VERSION = 'v2';
 const CACHE_NAME = `maneuver-cache-${CACHE_VERSION}`;
 const ASSETS = [
   '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/js/main.js?v=1.0',
-  '/js/radar-engine.js?v=1.0',
-  '/js/object-pool.js?v=1.0',
-  '/js/cpa-worker.js?v=1.0',
-  '/css/global.css?v=1.0',
-  '/css/beta.css?v=1.0',
-  '/offline.html',
-  '/favicons.svg'
+  'index.html',
+  'manifest.webmanifest',
+  'js/main.js?v=1.0',
+  'js/radar-engine.js?v=1.0',
+  'js/object-pool.js?v=1.0',
+  'js/cpa-worker.js?v=1.0',
+  'css/global.css?v=1.0',
+  'css/beta.css?v=1.0',
+  'offline.html',
+  'favicons.svg'
 ];
 
 self.addEventListener('install', event => {
