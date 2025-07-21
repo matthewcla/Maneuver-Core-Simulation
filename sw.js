@@ -1,9 +1,9 @@
 
 // Update CACHE_VERSION on each release to force old caches to clear
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `maneuver-cache-${CACHE_VERSION}`;
 const ASSETS = [
-  '/',
+  './',
   'index.html',
   'manifest.webmanifest',
   'js/main.js?v=1.0',
