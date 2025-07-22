@@ -1523,7 +1523,7 @@ class Simulator {
         const containerHeight = this.mainContainer.clientHeight;
         const wrapperWidth = this.radarWrapper.clientWidth;
         const dim = Math.min(wrapperWidth, containerHeight);
-        const scale = Math.max(0.7, Math.min(1.5, dim / BASE));
+        const scale = Math.max(650 / BASE, Math.min(1.5, dim / BASE));
 
         document.documentElement.style.setProperty('--ui-scale', scale);
         this.uiScaleFactor = scale;
@@ -1550,7 +1550,7 @@ class Simulator {
 
     setZoom(scale) {
         const BASE = 900;
-        const clamped = Math.max(0.7, Math.min(1.5, scale));
+        const clamped = Math.max(650 / BASE, Math.min(1.5, scale));
         document.documentElement.style.setProperty('--ui-scale', clamped);
         this.uiScaleFactor = clamped;
 
