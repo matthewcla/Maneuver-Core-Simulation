@@ -1523,7 +1523,10 @@ class Simulator {
         const BASE = 900;
         const containerHeight = this.mainContainer.clientHeight;
         const wrapperWidth = this.radarWrapper.clientWidth;
-        const dim = Math.min(wrapperWidth, containerHeight);
+        const isPortraitMobile = window.matchMedia('(max-width: 792px) and (orientation: portrait)').matches;
+        const dim = isPortraitMobile ?
+            Math.min(containerHeight, wrapperWidth + 40) :
+            Math.min(wrapperWidth, containerHeight);
         const scale = Math.max(0.7, Math.min(1.5, dim / BASE));
 
         document.documentElement.style.setProperty('--ui-scale', scale);

@@ -591,7 +591,7 @@ button.controlplay .placeholder {
   width: 304px;
 }
 
-@media screen and (max-width: 792px) {
+@media screen and (max-width: 792px) and (orientation: portrait) {
   .beta{
     flex-direction: column;
     align-items: flex-end;
@@ -644,7 +644,7 @@ button.controlplay .placeholder {
 
   body #radarCanvas {
     position: relative;
-    width: calc(100% + 10px);
+    width: calc(100% + 40px);
     max-width: none;
     margin-left: auto;
     margin-right: auto;
