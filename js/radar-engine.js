@@ -1049,10 +1049,9 @@ class Simulator {
                 const cpaRange = Math.sqrt(cpaX**2 + cpaY**2);
                 const cpaCanvasAngle = this.toDegrees(Math.atan2(cpaY, cpaX));
                 const cpaBearing = this.canvasAngleToBearing(cpaCanvasAngle);
-                const cpaQuarter = this.getRelativeQuarter(cpaBearing, this.ownShip.course);
                 track.cpa.range = `${cpaRange.toFixed(1)} nm`;
                 track.cpa.time = this.formatTime(tcpa);
-                track.cpa.brg = `${this.formatBearing(cpaBearing)} T / ${cpaQuarter}`;
+                track.cpa.brg = `${this.formatBearing(cpaBearing)} T`;
             }
         }
         const ownshipBearingFromTarget = (track.bearing + 180) % 360;
