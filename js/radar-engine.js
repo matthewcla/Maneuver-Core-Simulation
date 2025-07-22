@@ -1209,7 +1209,7 @@ class Simulator {
 
     drawOwnShipIcon(center, radius) {
         this.ctx.strokeStyle = this.radarGreen;
-        // this.ctx.lineWidth = 1.4;
+        this.ctx.lineWidth = VECTOR_LINE_WIDTH;
         const iconRadius = this.canvas.width * 0.014;
         this.ctx.beginPath();
         this.ctx.arc(center, center, iconRadius, 0, 2 * Math.PI);
@@ -1293,7 +1293,7 @@ class Simulator {
         const { x, y } = this.getTargetCoords(center, radius, track);
         const targetSize = Math.max(11, radius * 0.038);
         this.ctx.strokeStyle = this.radarGreen;
-        this.ctx.lineWidth = 1.8;
+        this.ctx.lineWidth = VECTOR_LINE_WIDTH;
         this.ctx.strokeRect(x - targetSize / 2, y - targetSize / 2, targetSize, targetSize);
         this.ctx.lineWidth = VECTOR_LINE_WIDTH;
         const timeInHours = this.vectorTimeInMinutes / 60;
