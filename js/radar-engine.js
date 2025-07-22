@@ -1524,7 +1524,7 @@ class Simulator {
         const wrapperWidth = this.radarWrapper.clientWidth;
         const isPortrait = wrapperWidth < containerHeight;
         const dim = isPortrait ? containerHeight : Math.min(wrapperWidth, containerHeight);
-        const scale = Math.max(400 / BASE, Math.min(1.5, dim / BASE));
+        const scale = Math.max(650 / BASE, Math.min(1.5, dim / BASE));
 
         document.documentElement.style.setProperty('--ui-scale', scale);
         this.uiScaleFactor = scale;
