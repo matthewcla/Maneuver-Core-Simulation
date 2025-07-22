@@ -2,7 +2,8 @@ body {
   margin: 0;
   line-height: normal;
   height: 100vh;
-  overflow: hidden;
+  overflow-y: hidden;
+  overflow-x: auto;
 }
 
 :root {
