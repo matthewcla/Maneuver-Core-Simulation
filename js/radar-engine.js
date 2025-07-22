@@ -1821,11 +1821,25 @@ class Simulator {
         this.rangeIndex = (this.rangeIndex + 1) % this.rangeScales.length;
         this.maxRange = this.rangeScales[this.rangeIndex];
 
+        // Automatically adjust vector length based on range scale
+        const rangeToVector = {
+            3: 3,
+            6: 3,
+            12: 15,
+            24: 30,
+        };
+        const roundedRange = Math.round(this.maxRange);
+        const newVector = rangeToVector[roundedRange] ?? this.vectorTimeInMinutes;
+        if (newVector !== this.vectorTimeInMinutes) {
+            this.vectorTimeInMinutes = newVector;
+            this.vectorTimeIndex = this.vectorTimes.indexOf(this.vectorTimeInMinutes);
+            this._setText('btn-vector-time', `${this.vectorTimeInMinutes} min`);
+        }
+
         // Update button class to reflect current range
-        const rounded = Math.round(this.maxRange);
         const rangeClasses = ['range-3','range-6','range-12','range-24'];
         this.btnRange.classList.remove(...rangeClasses);
-        this.btnRange.classList.add(`range-${rounded}`);
+        this.btnRange.classList.add(`range-${roundedRange}`);
         this.staticDirty = true;
         this.markSceneDirty();
     }
