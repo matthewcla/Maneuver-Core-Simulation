@@ -594,7 +594,7 @@ button.controlplay .placeholder {
 @media screen and (max-width: 792px) {
   .beta{
     flex-direction: column;
-    align-items: flex-end;
+    align-items: center;
     padding-left: var(--padding-12);
     padding-right: var(--padding-12);
     padding-bottom: var(--padding-48);
@@ -642,9 +642,21 @@ button.controlplay .placeholder {
     flex-direction: row;
   }
 
+  @media screen and (orientation: portrait) {
+    .radar {
+      width: calc(100vw + 40px);
+    }
+
+    body #radarCanvas {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
   body #radarCanvas {
     position: relative;
-    width: calc(100% + 10px);
+    width: 100%;
+    height: 100%;
     max-width: none;
     margin-left: auto;
     margin-right: auto;
