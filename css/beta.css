@@ -652,6 +652,13 @@ button.controlplay .placeholder {
     transform: translateX(-50%);
   }
 
+  @media screen and (orientation: portrait) {
+    body #radarCanvas {
+      width: calc(100vw + 40px);
+      aspect-ratio: 1 / 1;
+    }
+  }
+
   .telemetry {
     display: flex;
     flex-direction: row;

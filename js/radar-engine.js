@@ -1522,7 +1522,12 @@ class Simulator {
     scaleUI() {
         const BASE = 900;
         const containerHeight = this.mainContainer.clientHeight;
-        const wrapperWidth = this.radarWrapper.clientWidth;
+        let wrapperWidth = this.radarWrapper.clientWidth;
+
+        if (window.matchMedia('(max-width: 792px) and (orientation: portrait)').matches) {
+            wrapperWidth = window.innerWidth + 40;
+        }
+
         const dim = Math.min(wrapperWidth, containerHeight);
         const scale = Math.max(0.7, Math.min(1.5, dim / BASE));
 
