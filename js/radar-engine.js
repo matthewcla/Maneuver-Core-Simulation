@@ -1251,7 +1251,8 @@ class Simulator {
             this.orderTooltip.style.color = this.radarDarkOrange;
             this.orderTooltip.innerText = txt;
             this.orderTooltip.style.display = 'block';
-            this.orderTooltip.style.transform = `translate(${tipX - this.orderTooltip.offsetWidth - 10}px, ${tipY - this.orderTooltip.offsetHeight - 10}px)`;
+            // Shift tooltip slightly up and left for better visibility
+            this.orderTooltip.style.transform = `translate(${tipX - this.orderTooltip.offsetWidth - 20}px, ${tipY - this.orderTooltip.offsetHeight - 20}px)`;
         } else {
             this.orderTooltip.style.display = 'none';
             this.ownShip.orderedVectorEndpoint = null;
@@ -1618,7 +1619,8 @@ class Simulator {
             }
             this.dragTooltip.innerText = tooltipText;
             this.dragTooltip.style.display = 'block';
-            this.dragTooltip.style.transform = `translate(${e.clientX - this.dragTooltip.offsetWidth - 10}px, ${e.clientY - this.dragTooltip.offsetHeight - 10}px)`;
+            // Shift tooltip slightly up and left for better visibility
+            this.dragTooltip.style.transform = `translate(${e.clientX - this.dragTooltip.offsetWidth - 20}px, ${e.clientY - this.dragTooltip.offsetHeight - 20}px)`;
         } else {
             this.dragTooltip.style.display = 'none';
         }
