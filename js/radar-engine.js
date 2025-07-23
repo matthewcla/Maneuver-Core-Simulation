@@ -1112,6 +1112,9 @@ class Simulator {
         if (this.showWeather) {
             this.drawWeatherInfo(center, radius);
         }
+        if(this.showCPAInfo && this.selectedTrackId !== null) {
+            this.drawCPAIndicator(center, radius);
+        }
         this.drawOwnShipIcon(center, radius);
         this.tracks.forEach(track => {
             if (track.range > this.maxRange) return;
@@ -1120,9 +1123,6 @@ class Simulator {
                 this.drawRelativeMotionVector(center, radius, track);
             }
         });
-        if(this.showCPAInfo && this.selectedTrackId !== null) {
-            this.drawCPAIndicator(center, radius);
-        }
         if (this.selectedTrackId !== null) {
             const track = this.tracks.find(t => t.id === this.selectedTrackId);
             if (track) this.drawBearingLine(center, radius, track);
