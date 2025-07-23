@@ -1023,6 +1023,11 @@ class Simulator {
         track.rmVector.speed = relSpeed;
         track.rmVector.bearing = this.canvasAngleToBearing(relVectorCanvasAngle);
 
+        // Deselect track if it has moved beyond the current radar range
+        if (track.id === this.selectedTrackId && track.range > this.maxRange) {
+            this.selectedTrackId = null;
+        }
+
         const targetPosCanvasAngle = this.toRadians(this.bearingToCanvasAngle(track.bearing));
         const targetPosX = track.range * Math.cos(targetPosCanvasAngle);
         const targetPosY = track.range * Math.sin(targetPosCanvasAngle);
@@ -1799,6 +1804,7 @@ class Simulator {
         }
 
         for (const track of this.tracks) {
+            if (track.range > this.maxRange) continue;
             const {x, y} = this.getTargetCoords(center, radius, track);
             const size = Math.max(11, radius * 0.038) * 1.5;
             if (mouseX > x - size/2 && mouseX < x + size/2 && mouseY > y - size/2 && mouseY < y + size/2) {
@@ -1809,6 +1815,7 @@ class Simulator {
         const allVessels = [this.ownShip, ...this.tracks];
         for (const vessel of allVessels) {
             if (!vessel.vectorEndpoint) continue;
+            if (vessel.id !== 'ownShip' && vessel.range > this.maxRange) continue;
             const startPt = (vessel.id === 'ownShip') ? {x: center, y: center} : this.getTargetCoords(center, radius, vessel);
             const distFromStart = Math.hypot(mouseX - startPt.x, mouseY - startPt.y);
             if (distFromStart < minVecPickDistance) continue;
