@@ -23,7 +23,7 @@ const DASH_PATTERN_NONCAR = [4, 4];      // dashed
 const DASH_PATTERN_SOLID  = [];          // solid
 const LABEL_OFFSET_PX     = 6;           // gap between ring and label
 const VECTOR_LINE_WIDTH   = 1.4 * 1.2 * 2; // consistent width for all vectors
-const CPA_POINT_RADIUS    = 12;          // radius for CPA indicator
+const CPA_POINT_RADIUS    = 8;          // radius for CPA indicator
 
 function solveCPA(own, tgt) {
     const rx = tgt.x - own.x;
