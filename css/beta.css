@@ -594,7 +594,8 @@ button.controlplay .placeholder {
 @media screen and (max-width: 792px) {
   .beta{
     flex-direction: column;
-    align-items: flex-end;
+    align-items: center;
+    justify-content: center;
     padding-left: var(--padding-12);
     padding-right: var(--padding-12);
     padding-bottom: var(--padding-48);
