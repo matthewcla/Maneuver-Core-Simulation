@@ -23,6 +23,7 @@ const DASH_PATTERN_NONCAR = [4, 4];      // dashed
 const DASH_PATTERN_SOLID  = [];          // solid
 const LABEL_OFFSET_PX     = 6;           // gap between ring and label
 const VECTOR_LINE_WIDTH   = 1.4 * 1.2 * 2; // consistent width for all vectors
+const CPA_POINT_RADIUS    = 12;          // radius for CPA indicator
 
 function solveCPA(own, tgt) {
     const rx = tgt.x - own.x;
@@ -1348,7 +1349,7 @@ class Simulator {
         const cpaY = center - cpaDistCanvas * Math.sin(cpaCanvasAngle);
 
         this.ctx.beginPath();
-        this.ctx.arc(cpaX, cpaY, 4, 0, 2 * Math.PI);
+        this.ctx.arc(cpaX, cpaY, CPA_POINT_RADIUS, 0, 2 * Math.PI);
         this.ctx.fillStyle = this.radarGreen;
         this.ctx.fill();
         this.ctx.save();
