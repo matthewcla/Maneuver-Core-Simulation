@@ -371,8 +371,8 @@ class Simulator {
         this.vectorTimeIndex = this.vectorTimes.indexOf(this.vectorTimeInMinutes);
         this.rangeIndex = this.rangeScales.indexOf(this.maxRange);
         this.simulationSpeed = 1;
-        this.ffSpeeds = [25, 50];
-        this.revSpeeds = [-25, -50];
+        this.ffSpeeds = [50];
+        this.revSpeeds = [-50];
         this.showRelativeMotion = true;
         this.showCPAInfo = true;
         this.isSimulationRunning = true;
@@ -731,7 +731,7 @@ class Simulator {
      * Cycle forward through fast-forward speeds.
      */
     fastForward() {
-      // Cycle through 25×/50× or reset to normal (1×)
+      // Cycle through 50× or reset to normal (1×)
       if (this.simulationSpeed === this.ffSpeeds[this.ffSpeeds.length - 1]) {
         this.simulationSpeed = 1;
       } else {
@@ -751,7 +751,7 @@ class Simulator {
      * Cycle backward through rewind speeds.
      */
     rewind() {
-      // Cycle through –25×/–50× or reset to normal (1×)
+      // Cycle through –50× or reset to normal (1×)
       if (this.simulationSpeed === this.revSpeeds[this.revSpeeds.length - 1]) {
         this.simulationSpeed = 1;
       } else {
@@ -1502,15 +1502,13 @@ class Simulator {
         this.revSpeedIndicator.classList.add('d-none');
 
         if (this.simulationSpeed > 1) {
-            const label = this.simulationSpeed === 25 ? '25x'
-                : this.simulationSpeed === 50 ? '50x'
+            const label = this.simulationSpeed === 50 ? '50x'
                     : `${this.simulationSpeed}x`;
             this.ffSpeedIndicator.textContent = label;
             this.ffSpeedIndicator.classList.remove('d-none');
         } else if (this.simulationSpeed < 0) {
             const absSpeed = Math.abs(this.simulationSpeed);
-            const label = absSpeed === 25 ? '25x'
-                : absSpeed === 50 ? '50x'
+            const label = absSpeed === 50 ? '50x'
                     : `${absSpeed}x`;
             this.revSpeedIndicator.textContent = label;
             this.revSpeedIndicator.classList.remove('d-none');
