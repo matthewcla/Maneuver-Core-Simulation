@@ -644,7 +644,8 @@ button.controlplay .placeholder {
 
   body #radarCanvas {
     position: relative;
-    width: calc(100% + 10px);
+    width: 120vw;
+    height: 120vw;
     max-width: none;
     margin-left: auto;
     margin-right: auto;
