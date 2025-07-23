@@ -24,6 +24,7 @@ const DASH_PATTERN_SOLID  = [];          // solid
 const LABEL_OFFSET_PX     = 6;           // gap between ring and label
 const VECTOR_LINE_WIDTH   = 1.4 * 1.2 * 2; // consistent width for all vectors
 const CPA_POINT_RADIUS    = 8;          // radius for CPA indicator
+const SPEED_MAGNET        = 0.15;       // snap threshold for drag speed
 
 function solveCPA(own, tgt) {
     const rx = tgt.x - own.x;
@@ -1600,7 +1601,11 @@ class Simulator {
                 const newCanvasAngleRad = Math.atan2(dy, dx);
                 const newCourse = this.canvasAngleToBearing(this.toDegrees(newCanvasAngleRad));
                 const distOnCanvas = Math.hypot(dx, dy);
-                const newSpeed = distOnCanvas / pixelsPerNm / (this.vectorTimeInMinutes / 60);
+                let newSpeed = distOnCanvas / pixelsPerNm / (this.vectorTimeInMinutes / 60);
+                const snappedSpeed = Math.round(newSpeed);
+                if (Math.abs(newSpeed - snappedSpeed) < SPEED_MAGNET) {
+                    newSpeed = snappedSpeed;
+                }
                 tooltipText = `${this.formatBearing(newCourse)} T\n${newSpeed.toFixed(1)} kts`;
             }
         } else if (this.draggedItemId === 'trueWind') {
@@ -1751,7 +1756,11 @@ class Simulator {
                 const newCanvasAngleRad = Math.atan2(dy, dx);
                 const newCourse = this.canvasAngleToBearing(this.toDegrees(newCanvasAngleRad));
                 const distOnCanvas = Math.sqrt(dx * dx + dy * dy);
-                const newSpeed = distOnCanvas / pixelsPerNm / timeInHours;
+                let newSpeed = distOnCanvas / pixelsPerNm / timeInHours;
+                const snappedSpeed = Math.round(newSpeed);
+                if (Math.abs(newSpeed - snappedSpeed) < SPEED_MAGNET) {
+                    newSpeed = snappedSpeed;
+                }
 
                 if (vessel.id === 'ownShip') {
                     this.ownShip.dragCourse = newCourse;
