@@ -24,7 +24,8 @@ const DASH_PATTERN_SOLID  = [];          // solid
 const LABEL_OFFSET_PX     = 6;           // gap between ring and label
 const VECTOR_LINE_WIDTH   = 1.4 * 1.2 * 2; // consistent width for all vectors
 const CPA_POINT_RADIUS    = 8;          // radius for CPA indicator
-const SPEED_MAGNET        = 0.15;       // snap threshold for drag speed
+// Increased magnet threshold makes snapping easier when dragging vectors
+const SPEED_MAGNET        = 0.30;       // snap threshold for drag speed
 
 function solveCPA(own, tgt) {
     const rx = tgt.x - own.x;
