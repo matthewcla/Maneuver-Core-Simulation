@@ -63,7 +63,7 @@ body {
   --radar-white: #FFFFFF;
   --radar-faint-green: rgba(117, 251, 76, 0.5);
   --radar-faint-white: rgba(255, 255, 255, 0.5);
-  --radar-dark-orange: #FF8C00;
+  --radar-dark-orange: #B0B0B0;
   --radar-faint-orange: rgba(255, 140, 0, 0.5);
   /* fallback for dynamic 100vh calculation */
   --vh: 1vh;

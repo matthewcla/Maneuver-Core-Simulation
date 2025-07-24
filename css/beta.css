@@ -756,11 +756,16 @@ button.controlplay .placeholder {
   display: none;
 }
 
-.control-forward,
-.control-backward {
-  height: 64px;
-  width: 64px;
-}
+  .control-forward,
+  .control-backward {
+    height: 64px;
+    width: 64px;
+  }
+
+  /* Ensure regenerate icon matches desktop color */
+  #regenerate svg {
+    color: var(--primary-500);
+  }
 
 }
 
