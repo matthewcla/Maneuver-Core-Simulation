@@ -23,6 +23,9 @@ const DASH_PATTERN_NONCAR = [4, 4];      // dashed
 const DASH_PATTERN_SOLID  = [];          // solid
 const LABEL_OFFSET_PX     = 6;           // gap between ring and label
 const VECTOR_LINE_WIDTH   = 1.4 * 1.2 * 2; // consistent width for all vectors
+const CPA_POINT_RADIUS    = 8;          // radius for CPA indicator
+// Increased magnet threshold makes snapping easier when dragging vectors
+const SPEED_MAGNET        = 0.30;       // snap threshold for drag speed
 
 function solveCPA(own, tgt) {
     const rx = tgt.x - own.x;
@@ -310,7 +313,7 @@ class Simulator {
         this.radarWhite = getComputedStyle(document.documentElement).getPropertyValue('--radar-white').trim();
         this.radarFaintGreen = getComputedStyle(document.documentElement).getPropertyValue('--radar-faint-green').trim();
         this.radarFaintWhite = getComputedStyle(document.documentElement).getPropertyValue('--radar-faint-white').trim();
-        this.radarDarkOrange = getComputedStyle(document.documentElement).getPropertyValue('--radar-dark-orange').trim();
+        this.radarDarkGrey = getComputedStyle(document.documentElement).getPropertyValue('--radar-dark-grey').trim();
         this.scenarioCfg = ScenarioConfig;
 
         // --- State Data ---
@@ -369,8 +372,8 @@ class Simulator {
         this.vectorTimeIndex = this.vectorTimes.indexOf(this.vectorTimeInMinutes);
         this.rangeIndex = this.rangeScales.indexOf(this.maxRange);
         this.simulationSpeed = 1;
-        this.ffSpeeds = [25, 50];
-        this.revSpeeds = [-25, -50];
+        this.ffSpeeds = [50];
+        this.revSpeeds = [-50];
         this.showRelativeMotion = true;
         this.showCPAInfo = true;
         this.isSimulationRunning = true;
@@ -729,7 +732,7 @@ class Simulator {
      * Cycle forward through fast-forward speeds.
      */
     fastForward() {
-      // Cycle through 25×/50× or reset to normal (1×)
+      // Cycle through 50× or reset to normal (1×)
       if (this.simulationSpeed === this.ffSpeeds[this.ffSpeeds.length - 1]) {
         this.simulationSpeed = 1;
       } else {
@@ -749,7 +752,7 @@ class Simulator {
      * Cycle backward through rewind speeds.
      */
     rewind() {
-      // Cycle through –25×/–50× or reset to normal (1×)
+      // Cycle through –50× or reset to normal (1×)
       if (this.simulationSpeed === this.revSpeeds[this.revSpeeds.length - 1]) {
         this.simulationSpeed = 1;
       } else {
@@ -1020,6 +1023,11 @@ class Simulator {
         track.rmVector.speed = relSpeed;
         track.rmVector.bearing = this.canvasAngleToBearing(relVectorCanvasAngle);
 
+        // Deselect track if it has moved beyond the current radar range
+        if (track.id === this.selectedTrackId && track.range > this.maxRange) {
+            this.selectedTrackId = null;
+        }
+
         const targetPosCanvasAngle = this.toRadians(this.bearingToCanvasAngle(track.bearing));
         const targetPosX = track.range * Math.cos(targetPosCanvasAngle);
         const targetPosY = track.range * Math.sin(targetPosCanvasAngle);
@@ -1049,10 +1057,9 @@ class Simulator {
                 const cpaRange = Math.sqrt(cpaX**2 + cpaY**2);
                 const cpaCanvasAngle = this.toDegrees(Math.atan2(cpaY, cpaX));
                 const cpaBearing = this.canvasAngleToBearing(cpaCanvasAngle);
-                const cpaQuarter = this.getRelativeQuarter(cpaBearing, this.ownShip.course);
                 track.cpa.range = `${cpaRange.toFixed(1)} nm`;
                 track.cpa.time = this.formatTime(tcpa);
-                track.cpa.brg = `${this.formatBearing(cpaBearing)} T / ${cpaQuarter}`;
+                track.cpa.brg = `${this.formatBearing(cpaBearing)} T`;
             }
         }
         const ownshipBearingFromTarget = (track.bearing + 180) % 360;
@@ -1112,6 +1119,9 @@ class Simulator {
         if (this.showWeather) {
             this.drawWeatherInfo(center, radius);
         }
+        if(this.showCPAInfo && this.selectedTrackId !== null) {
+            this.drawCPAIndicator(center, radius);
+        }
         this.drawOwnShipIcon(center, radius);
         this.tracks.forEach(track => {
             if (track.range > this.maxRange) return;
@@ -1120,9 +1130,6 @@ class Simulator {
                 this.drawRelativeMotionVector(center, radius, track);
             }
         });
-        if(this.showCPAInfo && this.selectedTrackId !== null) {
-            this.drawCPAIndicator(center, radius);
-        }
         if (this.selectedTrackId !== null) {
             const track = this.tracks.find(t => t.id === this.selectedTrackId);
             if (track) this.drawBearingLine(center, radius, track);
@@ -1209,7 +1216,7 @@ class Simulator {
 
     drawOwnShipIcon(center, radius) {
         this.ctx.strokeStyle = this.radarGreen;
-        // this.ctx.lineWidth = 1.4;
+        this.ctx.lineWidth = VECTOR_LINE_WIDTH;
         const iconRadius = this.canvas.width * 0.014;
         this.ctx.beginPath();
         this.ctx.arc(center, center, iconRadius, 0, 2 * Math.PI);
@@ -1236,7 +1243,7 @@ class Simulator {
             const oEndY = center - orderDistPixels * Math.sin(orderAngle);
             this.ownShip.orderedVectorEndpoint = { x: oEndX, y: oEndY };
             this.ctx.save();
-            this.ctx.strokeStyle = this.radarDarkOrange;
+            this.ctx.strokeStyle = this.radarDarkGrey;
             this.ctx.lineWidth = VECTOR_LINE_WIDTH;
             this.ctx.beginPath();
             this.ctx.moveTo(center, center);
@@ -1247,11 +1254,12 @@ class Simulator {
             const rect = this.canvas.getBoundingClientRect();
             const tipX = rect.left + (oEndX / this.DPR);
             const tipY = rect.top + (oEndY / this.DPR);
-            const txt = `Crs: ${this.formatBearing(orderedCourse)} T\nSpd: ${orderedSpeed.toFixed(1)} kts`;
-            this.orderTooltip.style.color = this.radarDarkOrange;
+            const txt = `${this.formatBearing(orderedCourse)} T\n${orderedSpeed.toFixed(1)} kts`;
+            this.orderTooltip.style.color = this.radarDarkGrey;
             this.orderTooltip.innerText = txt;
             this.orderTooltip.style.display = 'block';
-            this.orderTooltip.style.transform = `translate(${tipX - this.orderTooltip.offsetWidth - 10}px, ${tipY - this.orderTooltip.offsetHeight - 10}px)`;
+            // Shift tooltip slightly up and left for better visibility
+            this.orderTooltip.style.transform = `translate(${tipX - this.orderTooltip.offsetWidth - 20}px, ${tipY - this.orderTooltip.offsetHeight - 20}px)`;
         } else {
             this.orderTooltip.style.display = 'none';
             this.ownShip.orderedVectorEndpoint = null;
@@ -1293,7 +1301,7 @@ class Simulator {
         const { x, y } = this.getTargetCoords(center, radius, track);
         const targetSize = Math.max(11, radius * 0.038);
         this.ctx.strokeStyle = this.radarGreen;
-        this.ctx.lineWidth = 1.8;
+        this.ctx.lineWidth = VECTOR_LINE_WIDTH;
         this.ctx.strokeRect(x - targetSize / 2, y - targetSize / 2, targetSize, targetSize);
         this.ctx.lineWidth = VECTOR_LINE_WIDTH;
         const timeInHours = this.vectorTimeInMinutes / 60;
@@ -1349,7 +1357,7 @@ class Simulator {
         const cpaY = center - cpaDistCanvas * Math.sin(cpaCanvasAngle);
 
         this.ctx.beginPath();
-        this.ctx.arc(cpaX, cpaY, 4, 0, 2 * Math.PI);
+        this.ctx.arc(cpaX, cpaY, CPA_POINT_RADIUS, 0, 2 * Math.PI);
         this.ctx.fillStyle = this.radarGreen;
         this.ctx.fill();
         this.ctx.save();
@@ -1500,15 +1508,13 @@ class Simulator {
         this.revSpeedIndicator.classList.add('d-none');
 
         if (this.simulationSpeed > 1) {
-            const label = this.simulationSpeed === 25 ? '25x'
-                : this.simulationSpeed === 50 ? '50x'
+            const label = this.simulationSpeed === 50 ? '50x'
                     : `${this.simulationSpeed}x`;
             this.ffSpeedIndicator.textContent = label;
             this.ffSpeedIndicator.classList.remove('d-none');
         } else if (this.simulationSpeed < 0) {
             const absSpeed = Math.abs(this.simulationSpeed);
-            const label = absSpeed === 25 ? '25x'
-                : absSpeed === 50 ? '50x'
+            const label = absSpeed === 50 ? '50x'
                     : `${absSpeed}x`;
             this.revSpeedIndicator.textContent = label;
             this.revSpeedIndicator.classList.remove('d-none');
@@ -1589,7 +1595,7 @@ class Simulator {
             const newCanvasAngleRad = Math.atan2(dy, dx);
             const newBearing = this.canvasAngleToBearing(this.toDegrees(newCanvasAngleRad));
 
-            tooltipText = `Brg: ${this.formatBearing(newBearing)} T\nRng: ${newRange.toFixed(1)} nm`;
+            tooltipText = `${this.formatBearing(newBearing)} T\n${newRange.toFixed(1)} nm`;
         } else if (this.dragType === 'vector') {
             const vessel = (this.draggedItemId === 'ownShip') ? this.ownShip : this.tracks.find(t => t.id === this.draggedItemId);
             if (vessel) {
@@ -1599,14 +1605,18 @@ class Simulator {
                 const newCanvasAngleRad = Math.atan2(dy, dx);
                 const newCourse = this.canvasAngleToBearing(this.toDegrees(newCanvasAngleRad));
                 const distOnCanvas = Math.hypot(dx, dy);
-                const newSpeed = distOnCanvas / pixelsPerNm / (this.vectorTimeInMinutes / 60);
-                tooltipText = `Crs: ${this.formatBearing(newCourse)} T\nSpd: ${newSpeed.toFixed(1)} kts`;
+                let newSpeed = distOnCanvas / pixelsPerNm / (this.vectorTimeInMinutes / 60);
+                const snappedSpeed = Math.round(newSpeed);
+                if (Math.abs(newSpeed - snappedSpeed) < SPEED_MAGNET) {
+                    newSpeed = snappedSpeed;
+                }
+                tooltipText = `${this.formatBearing(newCourse)} T\n${newSpeed.toFixed(1)} kts`;
             }
         } else if (this.draggedItemId === 'trueWind') {
             if (this.dragType === 'windDirection') {
                 tooltipText = `Dir: ${this.formatBearing(this.trueWind.direction)} T`;
             } else if (this.dragType === 'windSpeed') {
-                tooltipText = `Spd: ${this.trueWind.speed.toFixed(1)} kts`;
+                tooltipText = `${this.trueWind.speed.toFixed(1)} kts`;
             }
         }
 
@@ -1618,7 +1628,8 @@ class Simulator {
             }
             this.dragTooltip.innerText = tooltipText;
             this.dragTooltip.style.display = 'block';
-            this.dragTooltip.style.transform = `translate(${e.clientX - this.dragTooltip.offsetWidth - 10}px, ${e.clientY - this.dragTooltip.offsetHeight - 10}px)`;
+            // Shift tooltip slightly up and left for better visibility
+            this.dragTooltip.style.transform = `translate(${e.clientX - this.dragTooltip.offsetWidth - 20}px, ${e.clientY - this.dragTooltip.offsetHeight - 20}px)`;
         } else {
             this.dragTooltip.style.display = 'none';
         }
@@ -1749,7 +1760,11 @@ class Simulator {
                 const newCanvasAngleRad = Math.atan2(dy, dx);
                 const newCourse = this.canvasAngleToBearing(this.toDegrees(newCanvasAngleRad));
                 const distOnCanvas = Math.sqrt(dx * dx + dy * dy);
-                const newSpeed = distOnCanvas / pixelsPerNm / timeInHours;
+                let newSpeed = distOnCanvas / pixelsPerNm / timeInHours;
+                const snappedSpeed = Math.round(newSpeed);
+                if (Math.abs(newSpeed - snappedSpeed) < SPEED_MAGNET) {
+                    newSpeed = snappedSpeed;
+                }
 
                 if (vessel.id === 'ownShip') {
                     this.ownShip.dragCourse = newCourse;
@@ -1789,6 +1804,7 @@ class Simulator {
         }
 
         for (const track of this.tracks) {
+            if (track.range > this.maxRange) continue;
             const {x, y} = this.getTargetCoords(center, radius, track);
             const size = Math.max(11, radius * 0.038) * 1.5;
             if (mouseX > x - size/2 && mouseX < x + size/2 && mouseY > y - size/2 && mouseY < y + size/2) {
@@ -1799,6 +1815,7 @@ class Simulator {
         const allVessels = [this.ownShip, ...this.tracks];
         for (const vessel of allVessels) {
             if (!vessel.vectorEndpoint) continue;
+            if (vessel.id !== 'ownShip' && vessel.range > this.maxRange) continue;
             const startPt = (vessel.id === 'ownShip') ? {x: center, y: center} : this.getTargetCoords(center, radius, vessel);
             const distFromStart = Math.hypot(mouseX - startPt.x, mouseY - startPt.y);
             if (distFromStart < minVecPickDistance) continue;
