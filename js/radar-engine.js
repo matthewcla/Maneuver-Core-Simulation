@@ -313,7 +313,7 @@ class Simulator {
         this.radarWhite = getComputedStyle(document.documentElement).getPropertyValue('--radar-white').trim();
         this.radarFaintGreen = getComputedStyle(document.documentElement).getPropertyValue('--radar-faint-green').trim();
         this.radarFaintWhite = getComputedStyle(document.documentElement).getPropertyValue('--radar-faint-white').trim();
-        this.radarDarkOrange = getComputedStyle(document.documentElement).getPropertyValue('--radar-dark-orange').trim();
+        this.radarDarkGrey = getComputedStyle(document.documentElement).getPropertyValue('--radar-dark-grey').trim();
         this.scenarioCfg = ScenarioConfig;
 
         // --- State Data ---
@@ -1243,7 +1243,7 @@ class Simulator {
             const oEndY = center - orderDistPixels * Math.sin(orderAngle);
             this.ownShip.orderedVectorEndpoint = { x: oEndX, y: oEndY };
             this.ctx.save();
-            this.ctx.strokeStyle = this.radarDarkOrange;
+            this.ctx.strokeStyle = this.radarDarkGrey;
             this.ctx.lineWidth = VECTOR_LINE_WIDTH;
             this.ctx.beginPath();
             this.ctx.moveTo(center, center);
@@ -1255,7 +1255,7 @@ class Simulator {
             const tipX = rect.left + (oEndX / this.DPR);
             const tipY = rect.top + (oEndY / this.DPR);
             const txt = `${this.formatBearing(orderedCourse)} T\n${orderedSpeed.toFixed(1)} kts`;
-            this.orderTooltip.style.color = this.radarDarkOrange;
+            this.orderTooltip.style.color = this.radarDarkGrey;
             this.orderTooltip.innerText = txt;
             this.orderTooltip.style.display = 'block';
             // Shift tooltip slightly up and left for better visibility
