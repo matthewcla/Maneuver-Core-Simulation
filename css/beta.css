@@ -598,6 +598,7 @@ button.controlplay .placeholder {
     padding-left: var(--padding-12);
     padding-right: var(--padding-12);
     padding-bottom: var(--padding-48);
+    background-color: blue;
   }
 
   .beta .maneuver-logo-child {
@@ -609,8 +610,8 @@ button.controlplay .placeholder {
   }
 
   .beta .maneuverlogo {
-    padding-left: 10px;
-    padding-right:10px;
+    /* padding-left: 10px;
+    padding-right:10px; */
     padding-top:14px;
     padding-bottom:var(--padding-12);
     background-color: var(--neutral-800-alpha-80);
