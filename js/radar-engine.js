@@ -24,6 +24,7 @@ const DASH_PATTERN_NONCAR = [4, 4];      // dashed
 const DASH_PATTERN_SOLID  = [];          // solid
 const LABEL_OFFSET_PX     = 6;           // gap between ring and label
 const VECTOR_LINE_WIDTH   = 1.4 * 1.2 * 2; // consistent width for all vectors
+const VECTOR_HANDLE_RADIUS = 6;          // base radius for vector drag handles (CSS px)
 
 function solveCPA(own, tgt) {
     const rx = tgt.x - own.x;
@@ -1230,6 +1231,7 @@ class Simulator {
         const endX = center + vectorDistPixels * Math.cos(courseAngle);
         const endY = center - vectorDistPixels * Math.sin(courseAngle);
         this.ownShip.vectorEndpoint = { x: endX, y: endY };
+        const handleRadius = VECTOR_HANDLE_RADIUS * this.DPR;
         
         
 
@@ -1279,6 +1281,10 @@ class Simulator {
             this.ctx.moveTo(center, center);
             this.ctx.lineTo(dEndX, dEndY);
             this.ctx.stroke();
+            this.ctx.beginPath();
+            this.ctx.arc(dEndX, dEndY, handleRadius, 0, 2 * Math.PI);
+            this.ctx.fillStyle = this.radarWhite;
+            this.ctx.fill();
             this.ctx.restore();
         }
 
@@ -1288,6 +1294,10 @@ class Simulator {
         this.ctx.moveTo(center, center);
         this.ctx.lineTo(endX, endY);
         this.ctx.stroke();
+        this.ctx.beginPath();
+        this.ctx.arc(endX, endY, handleRadius, 0, 2 * Math.PI);
+        this.ctx.fillStyle = this.radarGreen;
+        this.ctx.fill();
     }
 
     getTargetCoords(center, radius, track) {
@@ -1312,11 +1322,15 @@ class Simulator {
         const endX = x + vectorDistPixels * Math.cos(courseAngle);
         const endY = y - vectorDistPixels * Math.sin(courseAngle);
         track.vectorEndpoint = { x: endX, y: endY };
+        const handleRadius = VECTOR_HANDLE_RADIUS * this.DPR;
         this.ctx.beginPath();
         this.ctx.moveTo(x, y);
         this.ctx.lineTo(endX, endY);
         this.ctx.stroke();
+        this.ctx.beginPath();
+        this.ctx.arc(endX, endY, handleRadius, 0, 2 * Math.PI);
         this.ctx.fillStyle = this.radarGreen;
+        this.ctx.fill();
         this.ctx.font = `${Math.max(11, radius * 0.038)}px 'IBM Plex Sans Mono', monospace`;
         this.ctx.textAlign = 'left';
         this.ctx.textBaseline = 'top';
@@ -1792,8 +1806,8 @@ class Simulator {
     getInteractiveItemAt(mouseX, mouseY) {
         const center = this.canvas.width / 2;
         const radius = center * 0.9;
-        const hitTolerance = 15 * this.DPR;
-        const minVecPickDistance = 25 * this.DPR;
+        const hitTolerance = 25 * this.DPR;
+        const minVecPickDistance = 35 * this.DPR;
 
         if (this.showWeather) {
             const distToW = Math.sqrt((mouseX - this.trueWind.wPos.x)**2 + (mouseY - this.trueWind.wPos.y)**2);
@@ -1814,9 +1828,11 @@ class Simulator {
         for (const vessel of allVessels) {
             if (!vessel.vectorEndpoint) continue;
             const startPt = (vessel.id === 'ownShip') ? {x: center, y: center} : this.getTargetCoords(center, radius, vessel);
+            const endPt = vessel.vectorEndpoint;
+            const distToEnd = Math.hypot(mouseX - endPt.x, mouseY - endPt.y);
+            if (distToEnd < hitTolerance) return {type: 'vector', id: vessel.id};
             const distFromStart = Math.hypot(mouseX - startPt.x, mouseY - startPt.y);
             if (distFromStart < minVecPickDistance) continue;
-            const endPt = vessel.vectorEndpoint;
             const dist = this.distToSegment({x: mouseX, y: mouseY}, startPt, endPt);
             if (dist < hitTolerance) return {type: 'vector', id: vessel.id};
         }
