@@ -3,6 +3,7 @@
  * ============================================================
  */
 import { ObjectPool } from './object-pool.js';
+import { ViewportController } from './viewport-controller.js';
 
 const trackPool = new ObjectPool(() => ({
   id: '', x: 0, y: 0, course: 0, speed: 0,
@@ -276,6 +277,9 @@ class Simulator {
         }
         this.dragTooltip = document.getElementById('drag-tooltip');
         this.orderTooltip = document.getElementById('order-tooltip');
+
+        // Viewport controller manages pan/zoom gestures
+        this.viewport = new ViewportController(this.canvas);
         
         // Playback controls
         this.btnPlayPause = document.getElementById('play-pause');
@@ -1089,18 +1093,21 @@ class Simulator {
 
     // --- Drawing ---
     drawRadar() {
-        // Debug: log frame and fill red overlay
-        // console.log('drawRadar called:', { width: this.canvas.width, height: this.canvas.height });
-        // Debug fill to confirm drawing
-        this.ctx.save();
-        this.ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.restore();
-
         const size = this.canvas.width;
         if (size === 0) return;
+
         const center = size / 2;
         const radius = size / 2 * 0.9;
+
+        // clear full canvas before applying transforms
+        this.ctx.save();
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.clearRect(0, 0, size, size);
+        this.ctx.restore();
+
+        this.ctx.save();
+        this.viewport.apply(this.ctx);
+
         if (this.staticDirty || this.staticCanvas.width !== size) {
             this.staticCanvas.width = size;
             this.staticCanvas.height = size;
@@ -1116,11 +1123,11 @@ class Simulator {
         this.tracks.forEach(track => {
             if (track.range > this.maxRange) return;
             this.drawTarget(center, radius, track);
-            if(this.showRelativeMotion) {
+            if (this.showRelativeMotion) {
                 this.drawRelativeMotionVector(center, radius, track);
             }
         });
-        if(this.showCPAInfo && this.selectedTrackId !== null) {
+        if (this.showCPAInfo && this.selectedTrackId !== null) {
             this.drawCPAIndicator(center, radius);
         }
         if (this.selectedTrackId !== null) {
@@ -1131,6 +1138,8 @@ class Simulator {
         if (this.hoveredTrackId !== null && this.hoveredTrackId !== this.selectedTrackId) {
             this.drawSelectionIndicator(center, radius, this.hoveredTrackId, this.radarFaintWhite, 1);
         }
+
+        this.ctx.restore();
     }
 
     drawStaticRadar() {
@@ -1577,8 +1586,9 @@ class Simulator {
 
         let tooltipText = '';
         const rect = this.canvas.getBoundingClientRect();
-        const mouseX = (e.clientX - rect.left) * this.DPR;
-        const mouseY = (e.clientY - rect.top) * this.DPR;
+        let mouseX = (e.clientX - rect.left) * this.DPR;
+        let mouseY = (e.clientY - rect.top) * this.DPR;
+        ({ x: mouseX, y: mouseY } = this.viewport.screenToWorld(mouseX, mouseY));
         const center = this.canvas.width / 2;
         const pixelsPerNm = (center * 0.9) / this.maxRange;
 
@@ -1630,10 +1640,12 @@ class Simulator {
             try { this.canvas.setPointerCapture(e.pointerId); } catch (err) {}
         }
         const rect = this.canvas.getBoundingClientRect();
-        const mouseX = (e.clientX - rect.left) * this.DPR;
-        const mouseY = (e.clientY - rect.top) * this.DPR;
+        let mouseX = (e.clientX - rect.left) * this.DPR;
+        let mouseY = (e.clientY - rect.top) * this.DPR;
+        ({ x: mouseX, y: mouseY } = this.viewport.screenToWorld(mouseX, mouseY));
         const item = this.getInteractiveItemAt(mouseX, mouseY);
         this.pointerDownPos = { x: mouseX, y: mouseY };
+        this.viewport.setEnabled(!item);
         if (item) {
             this.canvas.style.cursor = 'grabbing';
             this.pendingDragId = item.id;
@@ -1674,6 +1686,7 @@ class Simulator {
         this.pendingDragType = null;
         this.dragTooltip.style.display = 'none';
         this.orderTooltip.style.display = 'none';
+        this.viewport.setEnabled(true);
         this.markSceneDirty();
     }
     handleContainerPointerMove(e) {
@@ -1688,8 +1701,9 @@ class Simulator {
     }
     handlePointerMove(e) {
         const rect = this.canvas.getBoundingClientRect();
-        const mouseX = (e.clientX - rect.left) * this.DPR;
-        const mouseY = (e.clientY - rect.top) * this.DPR;
+        let mouseX = (e.clientX - rect.left) * this.DPR;
+        let mouseY = (e.clientY - rect.top) * this.DPR;
+        ({ x: mouseX, y: mouseY } = this.viewport.screenToWorld(mouseX, mouseY));
 
         if (this.pendingDragId && !this.draggedItemId) {
             const dx0 = mouseX - this.pointerDownPos.x;
