@@ -16,6 +16,8 @@ Desktop.ini # Windows desktop icon settings
 *.temp  # Temporary files
 *.cache   # Cache files
 *.bak   # Backup files
+node_modules/
+.parcel-cache/
 
 # Others
 *.log   # Log files
