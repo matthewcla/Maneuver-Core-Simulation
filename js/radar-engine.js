@@ -354,6 +354,11 @@ class Simulator {
         this.DOM_UPDATE_INTERVAL = 200;
         this.sceneDirty = true;
         this.simulationElapsed = 0;
+        // --- Keyframe history ---
+        this.keyframes = [];
+        // seconds of history to retain
+        this.keyframeRetention = 60;
+        this._lastKeyframePrune = 0;
         this.activeEditField = null;
 
         // --- Weather Data ---
@@ -796,6 +801,11 @@ class Simulator {
             this.sceneDirty = true;
         }
 
+        if (timestamp - this._lastKeyframePrune >= 1000) {
+            this.pruneKeyframes(this.simulationElapsed);
+            this._lastKeyframePrune = timestamp;
+        }
+
         if (this.sceneDirty) {
             this.tracks.forEach(t => this.calculateAllData(t));
             this.calculateWindData();
@@ -828,6 +838,13 @@ class Simulator {
     markSceneDirty() {
         this.sceneDirty = true;
         this.startGameLoop();
+    }
+
+    pruneKeyframes(currentSimTime) {
+        const cutoff = currentSimTime - this.keyframeRetention;
+        while (this.keyframes.length > 1 && (this.keyframes[1].time ?? this.keyframes[1].t) < cutoff) {
+            this.keyframes.shift();
+        }
     }
 
     _throttleRAF(fn) {
