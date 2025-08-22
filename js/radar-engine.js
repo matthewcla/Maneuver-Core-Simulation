@@ -6,8 +6,14 @@ import { ObjectPool } from './object-pool.js';
 import { ViewportController } from './viewport-controller.js';
 
 const trackPool = new ObjectPool(() => ({
-  id: '', x: 0, y: 0, course: 0, speed: 0,
-  state: 'MONITORING', isUserControlled: false,
+  id: '',
+  x: 0,
+  y: 0,
+  course: 0,
+  speed: 0,
+  state: 'MONITORING',
+  isUserControlled: false,
+  keyframes: [],
 }));
 const ScenarioConfig = {
     contact_density        : 6,
@@ -144,6 +150,7 @@ class ScenarioGenerator {
     }
     _spawn(own,bearing,range,course,speed){
         const track = trackPool.acquire();
+        track.keyframes = [];
         const id  = String(this.nextId++).padStart(4, '0');
         const rad = bearing * Math.PI / 180;
         Object.assign(track, {
@@ -158,6 +165,11 @@ class ScenarioGenerator {
             initialBearing: bearing,
             initialRange: range,
         });
+        const velRad = (90 - track.course) * Math.PI / 180;
+        const vx = track.speed * Math.cos(velRad);
+        const vy = track.speed * Math.sin(velRad);
+        const t = own._sim?.simulationElapsed ?? 0;
+        track.keyframes.push({ t, x: track.x, y: track.y, vx, vy });
         return track;
     }
     _tuneCPA(own,tgt){
@@ -332,11 +344,11 @@ class Simulator {
             orderedVectorEndpoint: null
         };
         this.tracks = [
-            { id: '01', initialBearing: 327, initialRange: 7.9, course: 255, speed: 6.1 },
-            { id: '02', initialBearing: 345, initialRange: 6.5, course: 250, speed: 7.2 },
-            { id: '03', initialBearing: 190, initialRange: 8.2, course: 75,  speed: 8.0 },
-            { id: '04', initialBearing: 205, initialRange: 5.5, course: 70,  speed: 7.5 },
-            { id: '05', initialBearing: 180, initialRange: 3.1, course: 72,  speed: 8.2 },
+            { id: '01', initialBearing: 327, initialRange: 7.9, course: 255, speed: 6.1, keyframes: [] },
+            { id: '02', initialBearing: 345, initialRange: 6.5, course: 250, speed: 7.2, keyframes: [] },
+            { id: '03', initialBearing: 190, initialRange: 8.2, course: 75,  speed: 8.0, keyframes: [] },
+            { id: '04', initialBearing: 205, initialRange: 5.5, course: 70,  speed: 7.5, keyframes: [] },
+            { id: '05', initialBearing: 180, initialRange: 3.1, course: 72,  speed: 8.2, keyframes: [] },
         ];
 
         this.selectedTrackId = '01';
@@ -427,6 +439,19 @@ class Simulator {
                     const dy = track.y - this.ownShip.y;
                     track.initialRange = Math.sqrt(dx ** 2 + dy ** 2);
                     track.initialBearing = (this.toDegrees(Math.atan2(dx, dy)) + 360) % 360;
+                }
+                track.keyframes = track.keyframes || [];
+                if (track.keyframes.length === 0) {
+                    const velRad = (90 - track.course) * Math.PI / 180;
+                    const vx = track.speed * Math.cos(velRad);
+                    const vy = track.speed * Math.sin(velRad);
+                    track.keyframes.push({
+                        t: this.simulationElapsed,
+                        x: track.x,
+                        y: track.y,
+                        vx,
+                        vy,
+                    });
                 }
                 if (!track._controller) {
                     track._controller = new ContactController(track);
@@ -1936,10 +1961,21 @@ class Simulator {
             initialBearing: Math.random() * 360,
             initialRange: this.maxRange * (0.1 + Math.random() * 0.8),
             course: Math.random() * 360,
-            speed: 2 + Math.random() * 13
+            speed: 2 + Math.random() * 13,
+            keyframes: [],
         };
         newTrack.x = this.ownShip.x + newTrack.initialRange * Math.sin(this.toRadians(newTrack.initialBearing));
         newTrack.y = this.ownShip.y + newTrack.initialRange * Math.cos(this.toRadians(newTrack.initialBearing));
+        const velRad = (90 - newTrack.course) * Math.PI / 180;
+        const vx = newTrack.speed * Math.cos(velRad);
+        const vy = newTrack.speed * Math.sin(velRad);
+        newTrack.keyframes.push({
+            t: this.simulationElapsed,
+            x: newTrack.x,
+            y: newTrack.y,
+            vx,
+            vy,
+        });
         newTrack._controller = new ContactController(newTrack);
         newTrack._sim = this;
         this.tracks.push(newTrack);
