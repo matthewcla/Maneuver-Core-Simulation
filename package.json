@@ -10,7 +10,8 @@
   "name": "maneuver",
   "scripts": {
     "start": "parcel ./*.html ",
-   "build": "parcel build ./*.html --dist-dir ./dist"
+    "prebuild": "node scripts/set-version.js",
+    "build": "parcel build ./*.html --dist-dir ./dist"
   },
   "version": "1.0.0"
 }

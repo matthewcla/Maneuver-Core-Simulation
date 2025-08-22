@@ -1,17 +1,17 @@
 
 // Update CACHE_VERSION on each release to force old caches to clear
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = '__VERSION__';
 const CACHE_NAME = `maneuver-cache-${CACHE_VERSION}`;
 const ASSETS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/js/main.js',
-  '/js/radar-engine.js',
-  '/js/object-pool.js',
-  '/js/cpa-worker.js',
-  '/css/global.css',
-  '/css/beta.css',
+  `/js/main.js?v=${CACHE_VERSION}`,
+  `/js/radar-engine.js?v=${CACHE_VERSION}`,
+  `/js/object-pool.js?v=${CACHE_VERSION}`,
+  `/js/cpa-worker.js?v=${CACHE_VERSION}`,
+  `/css/global.css?v=${CACHE_VERSION}`,
+  `/css/beta.css?v=${CACHE_VERSION}`,
   '/offline.html',
   '/favicons.svg'
 ];

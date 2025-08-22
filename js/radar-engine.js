@@ -2,8 +2,8 @@
  * Scenario generation & COLREGs contact controller
  * ============================================================
  */
-import { ObjectPool } from './object-pool.js';
-import { ViewportController } from './viewport-controller.js';
+import { ObjectPool } from './object-pool.js?v=__VERSION__';
+import { ViewportController } from './viewport-controller.js?v=__VERSION__';
 
 const trackPool = new ObjectPool(() => ({
   id: '',
@@ -47,7 +47,7 @@ function solveCPA(own, tgt) {
 }
 
 const cpaWorker = typeof Worker !== 'undefined'
-  ? new Worker(new URL('./cpa-worker.js', import.meta.url), { type: 'module' })
+  ? new Worker(`./cpa-worker.js?v=__VERSION__`, { type: 'module' })
   : null;
 
 function solveCPAAsync(own, tgt) {
@@ -164,6 +164,7 @@ class ScenarioGenerator {
             _base: { course, speed },
             initialBearing: bearing,
             initialRange: range,
+            _lastKeyframe: { x: own.x + range * Math.sin(rad), y: own.y + range * Math.cos(rad), t: 0 },
         });
         const velRad = (90 - track.course) * Math.PI / 180;
         const vx = track.speed * Math.cos(velRad);
@@ -236,6 +237,7 @@ class ContactController {
         if(Math.abs(this.t.speed-this.t._targetSpeed)>acc){
             this.t.speed+=Math.sign(this.t._targetSpeed - this.t.speed)*acc;
         }else{ this.t.speed=this.t._targetSpeed; }
+        this.t._sim?.updateTrackKeyframe(this.t);
         if(!this._collisionThreat([...this.t._sim.tracks],this.t._sim.scenarioCfg)){
             this.t.state='RESUMING_COURSE';
         }
@@ -250,6 +252,7 @@ class ContactController {
         if(Math.abs(this.t.speed-this.t._base.speed)>acc){
             this.t.speed+=Math.sign(this.t._base.speed - this.t.speed)*acc;
         }else{ this.t.speed=this.t._base.speed; }
+        this.t._sim?.updateTrackKeyframe(this.t);
         if(Math.abs(diffC)<1 && Math.abs(this.t.speed-this.t._base.speed)<0.1){
             this.t.state='MONITORING';
             delete this.t.threat;
@@ -341,7 +344,8 @@ class Simulator {
             orderedSpeed: 12.7,
             dragCourse: null,
             dragSpeed: null,
-            orderedVectorEndpoint: null
+            orderedVectorEndpoint: null,
+            _lastKeyframe: { x: 0, y: 0, t: 0 }
         };
         this.tracks = [
             { id: '01', initialBearing: 327, initialRange: 7.9, course: 255, speed: 6.1, keyframes: [] },
@@ -366,6 +370,11 @@ class Simulator {
         this.DOM_UPDATE_INTERVAL = 200;
         this.sceneDirty = true;
         this.simulationElapsed = 0;
+        // --- Keyframe history ---
+        this.keyframes = [];
+        // seconds of history to retain
+        this.keyframeRetention = 60;
+        this._lastKeyframePrune = 0;
         this.activeEditField = null;
 
         // --- Weather Data ---
@@ -440,6 +449,7 @@ class Simulator {
                     track.initialRange = Math.sqrt(dx ** 2 + dy ** 2);
                     track.initialBearing = (this.toDegrees(Math.atan2(dx, dy)) + 360) % 360;
                 }
+
                 track.keyframes = track.keyframes || [];
                 if (track.keyframes.length === 0) {
                     const velRad = (90 - track.course) * Math.PI / 180;
@@ -453,12 +463,15 @@ class Simulator {
                         vy,
                     });
                 }
+
                 if (!track._controller) {
                     track._controller = new ContactController(track);
                     track._sim = this;
                 }
             });
         }
+
+        this.ownShip._lastKeyframe = { x: this.ownShip.x, y: this.ownShip.y, t: this.simulationElapsed };
 
         this.tracks.forEach(t => this.calculateAllData(t));
         this.calculateWindData();
@@ -821,6 +834,11 @@ class Simulator {
             this.sceneDirty = true;
         }
 
+        if (timestamp - this._lastKeyframePrune >= 1000) {
+            this.pruneKeyframes(this.simulationElapsed);
+            this._lastKeyframePrune = timestamp;
+        }
+
         if (this.sceneDirty) {
             this.tracks.forEach(t => this.calculateAllData(t));
             this.calculateWindData();
@@ -853,6 +871,13 @@ class Simulator {
     markSceneDirty() {
         this.sceneDirty = true;
         this.startGameLoop();
+    }
+
+    pruneKeyframes(currentSimTime) {
+        const cutoff = currentSimTime - this.keyframeRetention;
+        while (this.keyframes.length > 1 && (this.keyframes[1].time ?? this.keyframes[1].t) < cutoff) {
+            this.keyframes.shift();
+        }
     }
 
     _throttleRAF(fn) {
@@ -958,7 +983,7 @@ class Simulator {
             this.ownShip.orderedSpeed = value;
             didUpdate = true;
         } else if (track) {
-            if (id === 'track-brg') {
+                if (id === 'track-brg') {
                 track.bearing = Math.max(0, Math.min(359.9, value));
                 didUpdate = true;
             } else if (id === 'track-rng') {
@@ -967,15 +992,18 @@ class Simulator {
             } else if (id === 'track-crs') {
                 track.course = Math.max(0, Math.min(359.9, value));
                 didUpdate = true;
+                this.updateTrackKeyframe(track);
             } else if (id === 'track-spd') {
                 track.speed = value;
                 didUpdate = true;
+                this.updateTrackKeyframe(track);
             }
 
             if ((id === 'track-brg' || id === 'track-rng') && track.bearing !== undefined && track.range !== undefined) {
                 const angleRad = this.toRadians(track.bearing);
                 track.x = this.ownShip.x + track.range * Math.sin(angleRad);
                 track.y = this.ownShip.y + track.range * Math.cos(angleRad);
+                track._lastKeyframe = { x: track.x, y: track.y, t: this.simulationElapsed };
             }
         }
 
@@ -986,14 +1014,55 @@ class Simulator {
         }
     }
 
+    updateTrackKeyframe(track) {
+        if (!track) return;
+        const now = this.simulationElapsed;
+        const { vx, vy } = this._velocityFromTrack(track);
+        if (!track.keyframes || track.keyframes.length === 0) {
+            track.keyframes = [{ t: now, x: track.x, y: track.y, vx, vy }];
+            return;
+        }
+        const last = track.keyframes[track.keyframes.length - 1];
+        if (Math.abs(vx - last.vx) < 1e-6 && Math.abs(vy - last.vy) < 1e-6) {
+            return;
+        }
+        const dtHours = (now - last.t) / 3600;
+        const x = last.x + last.vx * dtHours;
+        const y = last.y + last.vy * dtHours;
+        track.x = x;
+        track.y = y;
+        track.keyframes.push({ t: now, x, y, vx, vy });
+    }
+
+    _velocityFromTrack(track) {
+        const rad = this.toRadians(track.course);
+        return { vx: track.speed * Math.sin(rad), vy: track.speed * Math.cos(rad) };
+    }
+
     // --- Physics & Calculations ---
+    _positionFromKeyframe(v, nowSeconds) {
+        const kf = v._lastKeyframe || { x: v.x || 0, y: v.y || 0, t: nowSeconds };
+        const dtHours = (nowSeconds - kf.t) / 3600;
+        const rad = this.toRadians(v.course);
+        const vx = v.speed * Math.sin(rad);
+        const vy = v.speed * Math.cos(rad);
+        return {
+            x: kf.x + vx * dtHours,
+            y: kf.y + vy * dtHours,
+        };
+    }
+
     updatePhysics(deltaTime) {
         if (!this.isSimulationRunning) return;
+        const dtSimSeconds = (deltaTime / 1000) * this.simulationSpeed;
+        const newTime = this.simulationElapsed + dtSimSeconds;
+        const absDt = Math.abs(dtSimSeconds);
 
-        const dtSec = (deltaTime / 1000) * Math.abs(this.simulationSpeed);
+        const ownPos = this._positionFromKeyframe(this.ownShip, newTime);
+        this.ownShip.x = ownPos.x;
+        this.ownShip.y = ownPos.y;
 
-        // Gradually adjust ownship toward ordered values
-        const maxTurn = 3 * dtSec;            // degrees per second
+        const maxTurn = 3 * absDt;            // degrees per second
         let courseDiff = (this.ownShip.orderedCourse - this.ownShip.course + 540) % 360 - 180;
         if (Math.abs(courseDiff) <= maxTurn) {
             this.ownShip.course = this.ownShip.orderedCourse;
@@ -1001,7 +1070,7 @@ class Simulator {
             this.ownShip.course = (this.ownShip.course + Math.sign(courseDiff) * maxTurn + 360) % 360;
         }
 
-        const maxSpdChange = 0.1 * dtSec;     // knots per second
+        const maxSpdChange = 0.1 * absDt;     // knots per second
         const spdDiff = this.ownShip.orderedSpeed - this.ownShip.speed;
         if (Math.abs(spdDiff) <= maxSpdChange) {
             this.ownShip.speed = this.ownShip.orderedSpeed;
@@ -1009,25 +1078,33 @@ class Simulator {
             this.ownShip.speed += Math.sign(spdDiff) * maxSpdChange;
         }
 
-        const timeMultiplier = (deltaTime / 3600000) * this.simulationSpeed;
-        const ownShipDist = this.ownShip.speed * timeMultiplier;
-        this.ownShip.x += ownShipDist * Math.sin(this.toRadians(this.ownShip.course));
-        this.ownShip.y += ownShipDist * Math.cos(this.toRadians(this.ownShip.course));
+        this.ownShip._lastKeyframe = { x: this.ownShip.x, y: this.ownShip.y, t: newTime };
 
         this.tracks.forEach(track => {
-            if (this.draggedItemId === track.id) return;
-
-            const dist = track.speed * timeMultiplier;
-            track.x += dist * Math.sin(this.toRadians(track.course));
-            track.y += dist * Math.cos(this.toRadians(track.course));
-            const dtH = (deltaTime/3600000)*Math.abs(this.simulationSpeed);
+            if (this.draggedItemId === track.id) {
+                track._lastKeyframe.t = newTime;
+                return;
+            }
+            const pos = this._positionFromKeyframe(track, newTime);
+            track.x = pos.x;
+            track.y = pos.y;
+            const dtH = absDt / 3600;
             track._controller?.update(dtH, this.tracks, this.scenarioCfg);
+            track._lastKeyframe = { x: track.x, y: track.y, t: newTime };
         });
     }
 
     calculateAllData(track) {
-        const dx = track.x - this.ownShip.x;
-        const dy = track.y - this.ownShip.y;
+        const now = this.simulationElapsed;
+        const ownPos = this._positionFromKeyframe(this.ownShip, now);
+        const trackPos = this._positionFromKeyframe(track, now);
+        this.ownShip.x = ownPos.x;
+        this.ownShip.y = ownPos.y;
+        track.x = trackPos.x;
+        track.y = trackPos.y;
+
+        const dx = trackPos.x - ownPos.x;
+        const dy = trackPos.y - ownPos.y;
         track.range = Math.max(0, Math.min(359.9, Math.sqrt(dx**2 + dy**2)));
         track.bearing = (this.toDegrees(Math.atan2(dx, dy)) + 360) % 360;
 
@@ -1714,11 +1791,16 @@ class Simulator {
             }
         }
         this.canvas.style.cursor = 'grab';
-        if (this.draggedItemId === 'ownShip' && this.dragType === 'vector') {
+        const releasedId = this.draggedItemId;
+        const releasedType = this.dragType;
+        if (releasedId === 'ownShip' && releasedType === 'vector') {
             if (this.ownShip.dragCourse !== null && this.ownShip.dragSpeed !== null) {
                 this.ownShip.orderedCourse = this.ownShip.dragCourse;
                 this.ownShip.orderedSpeed = this.ownShip.dragSpeed;
             }
+        } else if (releasedType === 'vector') {
+            const track = this.tracks.find(t => t.id === releasedId);
+            if (track) this.updateTrackKeyframe(track);
         }
         this.ownShip.dragCourse = null;
         this.ownShip.dragSpeed = null;
@@ -1756,6 +1838,9 @@ class Simulator {
                 if (this.draggedItemId === 'ownShip' && this.dragType === 'vector') {
                     this.ownShip.dragCourse = this.ownShip.orderedCourse;
                     this.ownShip.dragSpeed = this.ownShip.orderedSpeed;
+                } else if (this.dragType === 'vector') {
+                    const track = this.tracks.find(t => t.id === this.draggedItemId);
+                    if (track) this.updateTrackKeyframe(track);
                 }
             }
         }
@@ -1792,6 +1877,7 @@ class Simulator {
                     const deltaY_nm = deltaY_pixels / pixelsPerNm;
                     track.x += deltaX_nm;
                     track.y -= deltaY_nm;
+                    track._lastKeyframe = { x: track.x, y: track.y, t: this.simulationElapsed };
                     this.markSceneDirty();
                 }
             } else if (this.dragType === 'vector') {
@@ -1978,6 +2064,7 @@ class Simulator {
         });
         newTrack._controller = new ContactController(newTrack);
         newTrack._sim = this;
+        this.updateTrackKeyframe(newTrack);
         this.tracks.push(newTrack);
         this.selectedTrackId = newId;
         this.calculateAllData(newTrack);
@@ -2035,7 +2122,7 @@ class Simulator {
     setupRandomScenario(){
         const gen = new ScenarioGenerator(this.scenarioCfg);
         this.tracks = gen.makeScenario(this.ownShip);
-        this.tracks.forEach(t=>{ t._sim=this; t._controller=new ContactController(t); });
+        this.tracks.forEach(t=>{ t._sim=this; t._controller=new ContactController(t); this.updateTrackKeyframe(t); });
         this.selectedTrackId = this.tracks[0].id;
         this.isSimulationRunning = true;
         this.simulationElapsed = 0;
