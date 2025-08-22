@@ -33,7 +33,23 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(resp => resp || fetch(event.request))
-  );
+  const { request } = event;
+  const url = request.url;
+
+  if (request.method === 'GET' && (url.endsWith('.css') || url.endsWith('.js'))) {
+    event.respondWith(
+      fetch(request)
+        .then(networkResponse => {
+          return caches.open(CACHE_NAME).then(cache => {
+            cache.put(request, networkResponse.clone());
+            return networkResponse;
+          });
+        })
+        .catch(() => caches.match(request))
+    );
+  } else {
+    event.respondWith(
+      caches.match(request).then(resp => resp || fetch(request))
+    );
+  }
 });

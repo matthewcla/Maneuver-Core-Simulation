@@ -21,4 +21,5 @@ window.addEventListener('DOMContentLoaded', loadSimulator);
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register(`/sw.js?v=__VERSION__`);
+
 }
