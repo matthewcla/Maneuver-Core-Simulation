@@ -224,6 +224,7 @@ class ContactController {
         if(Math.abs(this.t.speed-this.t._targetSpeed)>acc){
             this.t.speed+=Math.sign(this.t._targetSpeed - this.t.speed)*acc;
         }else{ this.t.speed=this.t._targetSpeed; }
+        this.t._sim?.updateTrackKeyframe(this.t);
         if(!this._collisionThreat([...this.t._sim.tracks],this.t._sim.scenarioCfg)){
             this.t.state='RESUMING_COURSE';
         }
@@ -238,6 +239,7 @@ class ContactController {
         if(Math.abs(this.t.speed-this.t._base.speed)>acc){
             this.t.speed+=Math.sign(this.t._base.speed - this.t.speed)*acc;
         }else{ this.t.speed=this.t._base.speed; }
+        this.t._sim?.updateTrackKeyframe(this.t);
         if(Math.abs(diffC)<1 && Math.abs(this.t.speed-this.t._base.speed)<0.1){
             this.t.state='MONITORING';
             delete this.t.threat;
@@ -942,9 +944,11 @@ class Simulator {
             } else if (id === 'track-crs') {
                 track.course = Math.max(0, Math.min(359.9, value));
                 didUpdate = true;
+                this.updateTrackKeyframe(track);
             } else if (id === 'track-spd') {
                 track.speed = value;
                 didUpdate = true;
+                this.updateTrackKeyframe(track);
             }
 
             if ((id === 'track-brg' || id === 'track-rng') && track.bearing !== undefined && track.range !== undefined) {
@@ -959,6 +963,31 @@ class Simulator {
         if (didUpdate) {
             this.markSceneDirty();
         }
+    }
+
+    updateTrackKeyframe(track) {
+        if (!track) return;
+        const now = this.simulationElapsed;
+        const { vx, vy } = this._velocityFromTrack(track);
+        if (!track.keyframes || track.keyframes.length === 0) {
+            track.keyframes = [{ t: now, x: track.x, y: track.y, vx, vy }];
+            return;
+        }
+        const last = track.keyframes[track.keyframes.length - 1];
+        if (Math.abs(vx - last.vx) < 1e-6 && Math.abs(vy - last.vy) < 1e-6) {
+            return;
+        }
+        const dtHours = (now - last.t) / 3600;
+        const x = last.x + last.vx * dtHours;
+        const y = last.y + last.vy * dtHours;
+        track.x = x;
+        track.y = y;
+        track.keyframes.push({ t: now, x, y, vx, vy });
+    }
+
+    _velocityFromTrack(track) {
+        const rad = this.toRadians(track.course);
+        return { vx: track.speed * Math.sin(rad), vy: track.speed * Math.cos(rad) };
     }
 
     // --- Physics & Calculations ---
@@ -1689,11 +1718,16 @@ class Simulator {
             }
         }
         this.canvas.style.cursor = 'grab';
-        if (this.draggedItemId === 'ownShip' && this.dragType === 'vector') {
+        const releasedId = this.draggedItemId;
+        const releasedType = this.dragType;
+        if (releasedId === 'ownShip' && releasedType === 'vector') {
             if (this.ownShip.dragCourse !== null && this.ownShip.dragSpeed !== null) {
                 this.ownShip.orderedCourse = this.ownShip.dragCourse;
                 this.ownShip.orderedSpeed = this.ownShip.dragSpeed;
             }
+        } else if (releasedType === 'vector') {
+            const track = this.tracks.find(t => t.id === releasedId);
+            if (track) this.updateTrackKeyframe(track);
         }
         this.ownShip.dragCourse = null;
         this.ownShip.dragSpeed = null;
@@ -1731,6 +1765,9 @@ class Simulator {
                 if (this.draggedItemId === 'ownShip' && this.dragType === 'vector') {
                     this.ownShip.dragCourse = this.ownShip.orderedCourse;
                     this.ownShip.dragSpeed = this.ownShip.orderedSpeed;
+                } else if (this.dragType === 'vector') {
+                    const track = this.tracks.find(t => t.id === this.draggedItemId);
+                    if (track) this.updateTrackKeyframe(track);
                 }
             }
         }
@@ -1942,6 +1979,7 @@ class Simulator {
         newTrack.y = this.ownShip.y + newTrack.initialRange * Math.cos(this.toRadians(newTrack.initialBearing));
         newTrack._controller = new ContactController(newTrack);
         newTrack._sim = this;
+        this.updateTrackKeyframe(newTrack);
         this.tracks.push(newTrack);
         this.selectedTrackId = newId;
         this.calculateAllData(newTrack);
@@ -1999,7 +2037,7 @@ class Simulator {
     setupRandomScenario(){
         const gen = new ScenarioGenerator(this.scenarioCfg);
         this.tracks = gen.makeScenario(this.ownShip);
-        this.tracks.forEach(t=>{ t._sim=this; t._controller=new ContactController(t); });
+        this.tracks.forEach(t=>{ t._sim=this; t._controller=new ContactController(t); this.updateTrackKeyframe(t); });
         this.selectedTrackId = this.tracks[0].id;
         this.isSimulationRunning = true;
         this.simulationElapsed = 0;
