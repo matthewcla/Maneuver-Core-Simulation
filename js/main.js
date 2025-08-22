@@ -7,7 +7,7 @@ async function loadSimulator() {
   const loader = document.getElementById('loading');
   if (loader) loader.style.display = 'block';
   try {
-    const mod = await import('./radar-engine.js');
+    const mod = await import(`./radar-engine.js?v=__VERSION__`);
     const { Simulator } = mod;
     window.sim = new Simulator();
   } catch (err) {
@@ -20,5 +20,5 @@ async function loadSimulator() {
 window.addEventListener('DOMContentLoaded', loadSimulator);
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js');
+  navigator.serviceWorker.register(`/sw.js?v=__VERSION__`);
 }
