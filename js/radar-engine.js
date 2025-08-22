@@ -41,7 +41,7 @@ function solveCPA(own, tgt) {
 }
 
 const cpaWorker = typeof Worker !== 'undefined'
-  ? new Worker('./cpa-worker.js', { type: 'module' })
+  ? new Worker(new URL('./cpa-worker.js', import.meta.url), { type: 'module' })
   : null;
 
 function solveCPAAsync(own, tgt) {
@@ -1281,10 +1281,11 @@ class Simulator {
             this.ctx.moveTo(center, center);
             this.ctx.lineTo(dEndX, dEndY);
             this.ctx.stroke();
-            this.ctx.beginPath();
-            this.ctx.arc(dEndX, dEndY, handleRadius, 0, 2 * Math.PI);
-            this.ctx.fillStyle = this.radarWhite;
-            this.ctx.fill();
+            // Removed handle circle drawing for drag endpoint
+            // this.ctx.beginPath();
+            // this.ctx.arc(dEndX, dEndY, handleRadius, 0, 2 * Math.PI);
+            // this.ctx.fillStyle = this.radarWhite;
+            // this.ctx.fill();
             this.ctx.restore();
         }
 
@@ -1294,10 +1295,11 @@ class Simulator {
         this.ctx.moveTo(center, center);
         this.ctx.lineTo(endX, endY);
         this.ctx.stroke();
-        this.ctx.beginPath();
-        this.ctx.arc(endX, endY, handleRadius, 0, 2 * Math.PI);
-        this.ctx.fillStyle = this.radarGreen;
-        this.ctx.fill();
+        // Removed handle circle drawing for static endpoint
+        // this.ctx.beginPath();
+        // this.ctx.arc(endX, endY, handleRadius, 0, 2 * Math.PI);
+        // this.ctx.fillStyle = this.radarGreen;
+        // this.ctx.fill();
     }
 
     getTargetCoords(center, radius, track) {
@@ -1327,10 +1329,11 @@ class Simulator {
         this.ctx.moveTo(x, y);
         this.ctx.lineTo(endX, endY);
         this.ctx.stroke();
-        this.ctx.beginPath();
-        this.ctx.arc(endX, endY, handleRadius, 0, 2 * Math.PI);
-        this.ctx.fillStyle = this.radarGreen;
-        this.ctx.fill();
+        // Removed handle circle drawing for target vector endpoint
+        // this.ctx.beginPath();
+        // this.ctx.arc(endX, endY, handleRadius, 0, 2 * Math.PI);
+        // this.ctx.fillStyle = this.radarGreen;
+        // this.ctx.fill();
         this.ctx.font = `${Math.max(11, radius * 0.038)}px 'IBM Plex Sans Mono', monospace`;
         this.ctx.textAlign = 'left';
         this.ctx.textBaseline = 'top';
