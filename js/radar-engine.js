@@ -2,8 +2,8 @@
  * Scenario generation & COLREGs contact controller
  * ============================================================
  */
-import { ObjectPool } from './object-pool.js';
-import { ViewportController } from './viewport-controller.js';
+import { ObjectPool } from './object-pool.js?v=__VERSION__';
+import { ViewportController } from './viewport-controller.js?v=__VERSION__';
 
 const trackPool = new ObjectPool(() => ({
   id: '', x: 0, y: 0, course: 0, speed: 0,
@@ -41,7 +41,7 @@ function solveCPA(own, tgt) {
 }
 
 const cpaWorker = typeof Worker !== 'undefined'
-  ? new Worker(new URL('./cpa-worker.js', import.meta.url), { type: 'module' })
+  ? new Worker(`./cpa-worker.js?v=__VERSION__`, { type: 'module' })
   : null;
 
 function solveCPAAsync(own, tgt) {
