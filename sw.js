@@ -34,17 +34,20 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const { request } = event;
-  const url = request.url;
+  const url = new URL(request.url);
 
-  if (request.method === 'GET' && (url.endsWith('.css') || url.endsWith('.js'))) {
+  if (
+    request.method === 'GET' &&
+    (url.pathname.endsWith('.css') || url.pathname.endsWith('.js'))
+  ) {
     event.respondWith(
       fetch(request)
-        .then(networkResponse => {
-          return caches.open(CACHE_NAME).then(cache => {
+        .then(networkResponse =>
+          caches.open(CACHE_NAME).then(cache => {
             cache.put(request, networkResponse.clone());
             return networkResponse;
-          });
-        })
+          })
+        )
         .catch(() => caches.match(request))
     );
   } else {
