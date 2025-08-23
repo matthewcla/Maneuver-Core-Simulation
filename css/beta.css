@@ -599,9 +599,7 @@ button.controlplay .placeholder {
   .beta{
     flex-direction: column;
     align-items: flex-end;
-    padding-left: var(--padding-12);
-    padding-right: var(--padding-12);
-    padding-bottom: var(--padding-48);
+    padding: 0;
   }
 
   .beta .maneuver-logo-child {
