@@ -2,17 +2,11 @@ body {
   background: var(  --neutral-900);
 }
 
-.radarcanvas {
-  display: block;
-  width: 100vw;
-  height: 100vh;
-  margin: 0;
-  position: absolute;
-  inset: 0;
-}
-
 #radarCanvas {
   display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
   user-select: none;
@@ -24,14 +18,15 @@ body {
   -webkit-tap-highlight-color: transparent;
   touch-action: none;
   margin: 0;
-  position: absolute;
-  inset: 0;
   z-index: 0;
   object-fit: cover;
 }
 .radar {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   overflow: visible;
   z-index: 0;
   /* Prevent text selection and default gestures */
@@ -99,7 +94,6 @@ button.buttonbase {
 .radarcontrols,
 #radar-settings-menu {
   display: flex;
-  align-self: stretch;
   flex-direction: column;
   gap: var(--space-2);
   z-index: 1;
@@ -107,6 +101,8 @@ button.buttonbase {
 
 .radarcontrols {
   position: relative;
+  margin: var(--space-3);
+  align-self: flex-end;
 }
 
 #radar-range svg {
@@ -419,7 +415,6 @@ button.buttonbase {
   -webkit-overflow-scrolling: touch;
 }
 .command-center {
-  align-self: stretch;
   gap: var(--gap-8);
   position: relative;
   z-index: 2;
@@ -427,6 +422,8 @@ button.buttonbase {
   font-size: var(--font-size-18);
   color: var(--primary-500);
   font-family: var(--font-ibm-plex-mono);
+  margin: var(--space-3);
+  align-self: flex-end;
 }
 .maneuver-logo-child {
   /* width: 20px;
@@ -446,7 +443,6 @@ button.buttonbase {
   gap: var(--space-2);
 }
 
-.beta,
 .maneuver-logo,
 .maneuverlogo {
   display: flex;
@@ -462,14 +458,16 @@ button.buttonbase {
   z-index: 3;
 }
 .beta {
+  position: relative;
+  z-index: 1;
   width: 100vw;
   height: 100vh;
-  position: relative;
+  overflow: hidden;
   background-color: var(--neutral-900);
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding: var(--space-3);
-  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
   gap: var(--space-2);
   line-height: normal;
   letter-spacing: normal;
