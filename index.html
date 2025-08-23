@@ -14,11 +14,11 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
     <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"/>
 
-    <link rel="stylesheet" href="./css/global.css?v=__VERSION__" />
-    <link rel="stylesheet" href="./css/beta.css?v=__VERSION__" />
-    <link rel="modulepreload" href="./js/radar-engine.js?v=__VERSION__" />
-    <link rel="modulepreload" href="./js/object-pool.js?v=__VERSION__" />
-    <link rel="modulepreload" href="./js/cpa-worker.js?v=__VERSION__" />
+    <link rel="stylesheet" href="./css/global.css?v=b24a6b5" />
+    <link rel="stylesheet" href="./css/beta.css?v=b24a6b5" />
+    <link rel="modulepreload" href="./js/radar-engine.js?v=b24a6b5" />
+    <link rel="modulepreload" href="./js/object-pool.js?v=b24a6b5" />
+    <link rel="modulepreload" href="./js/cpa-worker.js?v=b24a6b5" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=IBM Plex Mono:wght@400;500&display=swap"
@@ -133,10 +133,32 @@
               <div id="sim-clock" class="placeholder">00:01:04</div>
             </button>
             <div class="tracking">
-              <button type="button" id="past" class="control-backward" aria-label="Rewind" title="Rewind"><img class="controlbackward-icon" loading="lazy" alt="" src="./public/controlbackward.svg"/>
+              <button type="button" id="past" class="control-backward" aria-label="Rewind" title="Rewind">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+                  <g clip-path="url(#cbk)">
+                    <path d="M29.9996 19.3335V28.6668L24.6663 24.0001L29.9996 19.3335Z" fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M22.6666 19.3335V28.6668L17.3333 24.0001L22.6666 19.3335Z" fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                  </g>
+                  <defs>
+                    <clipPath id="cbk">
+                      <rect width="48" height="48" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
                 <span id="rev-speed-indicator" class="position-absolute d-none" style="bottom:0; right:0.25rem; font-size:0.75rem;"></span>
               </button>
-              <button type="button" id="future" class="control-forward" aria-label="Fast forward" title="Fast forward"><img class="controlforward-icon" loading="lazy" alt="" src="./public/controlforward.svg"/>
+              <button type="button" id="future" class="control-forward" aria-label="Fast forward" title="Fast forward">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+                  <g clip-path="url(#cfw)">
+                    <path d="M18.75 19.3335V28.6668L24.0833 24.0001L18.75 19.3335Z" fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M26.0835 19.3335V28.6668L31.4168 24.0001L26.0835 19.3335Z" fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                  </g>
+                  <defs>
+                    <clipPath id="cfw">
+                      <rect width="48" height="48" fill="white"/>
+                    </clipPath>
+                  </defs>
+                </svg>
                 <span id="ff-speed-indicator" class="position-absolute d-none" style="bottom:0; right:0.25rem; font-size:0.75rem;"></span>
               </button>
             </div>
@@ -269,6 +291,6 @@
       </div>
     </div>
     <div id="loading" style="display:none">Loading…</div>
-    <script type="module" src="js/main.js?v=__VERSION__"></script>
+    <script type="module" src="js/main.js?v=b24a6b5"></script>
   </body>
 </html>

@@ -32,6 +32,13 @@ const LABEL_OFFSET_PX     = 6;           // gap between ring and label
 const VECTOR_LINE_WIDTH   = 1.4 * 1.2 * 2; // consistent width for all vectors
 const VECTOR_HANDLE_RADIUS = 6;          // base radius for vector drag handles (CSS px)
 
+// Stroke widths (CSS px)
+const STROKE_RADAR_BG       = 1.5;
+const STROKE_RADAR_RING     = 2.5;
+const STROKE_SHIP_OUTLINE   = 2.5;
+const STROKE_SHIP_HALO      = 3.5;
+const STROKE_SHIP_HALO_HOVER = 2.5;
+
 function solveCPA(own, tgt) {
     const rx = tgt.x - own.x;
     const ry = tgt.y - own.y;
@@ -1237,10 +1244,10 @@ class Simulator {
         if (this.selectedTrackId !== null) {
             const track = this.tracks.find(t => t.id === this.selectedTrackId);
             if (track) this.drawBearingLine(center, radius, track);
-            this.drawSelectionIndicator(center, radius, this.selectedTrackId, this.radarWhite, 1.5);
+            this.drawSelectionIndicator(center, radius, this.selectedTrackId, this.radarWhite, STROKE_SHIP_HALO * this.DPR);
         }
         if (this.hoveredTrackId !== null && this.hoveredTrackId !== this.selectedTrackId) {
-            this.drawSelectionIndicator(center, radius, this.hoveredTrackId, this.radarFaintWhite, 1);
+            this.drawSelectionIndicator(center, radius, this.hoveredTrackId, this.radarFaintWhite, STROKE_SHIP_HALO_HOVER * this.DPR);
         }
 
         this.ctx.restore();
@@ -1257,7 +1264,7 @@ class Simulator {
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, width, height);
         ctx.strokeStyle = this.radarFaintGreen;
-        ctx.lineWidth = 2.7;
+        ctx.lineWidth = STROKE_RADAR_RING * this.DPR;
 
         ctx.beginPath();
         ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
@@ -1309,7 +1316,7 @@ class Simulator {
 
     drawRangeRings(center, radius) {
         this.ctx.strokeStyle = this.radarFaintGreen;
-        this.ctx.lineWidth = 2.7;
+        this.ctx.lineWidth = STROKE_RADAR_RING * this.DPR;
         this.ctx.beginPath();
         this.ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
         this.ctx.stroke();
@@ -1426,7 +1433,7 @@ class Simulator {
         const { x, y } = this.getTargetCoords(center, radius, track);
         const targetSize = Math.max(11, radius * 0.038);
         this.ctx.strokeStyle = this.radarGreen;
-        this.ctx.lineWidth = 1.8;
+        this.ctx.lineWidth = STROKE_SHIP_OUTLINE * this.DPR;
         this.ctx.strokeRect(x - targetSize / 2, y - targetSize / 2, targetSize, targetSize);
         this.ctx.lineWidth = VECTOR_LINE_WIDTH;
         const timeInHours = this.vectorTimeInMinutes / 60;
@@ -1492,7 +1499,7 @@ class Simulator {
         this.ctx.fill();
         this.ctx.save();
         this.ctx.strokeStyle = this.radarFaintGreen;
-        this.ctx.lineWidth = 1;
+        this.ctx.lineWidth = STROKE_RADAR_BG * this.DPR;
         this.ctx.setLineDash([2, 3]);
         this.ctx.beginPath();
         this.ctx.moveTo(center.x, center.y);
@@ -1505,7 +1512,7 @@ class Simulator {
         const { x, y } = this.getTargetCoords(center, radius, track);
         this.ctx.save();
         this.ctx.strokeStyle = this.radarWhite;
-        this.ctx.lineWidth = 1;
+        this.ctx.lineWidth = STROKE_RADAR_BG * this.DPR;
         this.ctx.setLineDash([2, 4]);
         this.ctx.beginPath();
         this.ctx.moveTo(center.x, center.y);

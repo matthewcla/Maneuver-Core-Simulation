@@ -86,6 +86,16 @@ button.buttonbase {
   width: 20px;
 }
 
+.radarcontrols svg path,
+.sim-controls svg path {
+  stroke-width: var(--stroke-control-outline);
+}
+
+.radarcontrols button.active svg path,
+.sim-controls button.active svg path {
+  stroke-width: var(--stroke-control-outline-active);
+}
+
 .radarcontrols,
 #radar-settings-menu {
   display: flex;
