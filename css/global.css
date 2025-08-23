@@ -70,4 +70,12 @@ body {
   /* global UI scale set by JavaScript */
   --ui-scale: 1;
   --base: calc(1 * var(--ui-scale));
+
+  /* Stroke widths */
+  --stroke-radar-bg: calc(1.5px * var(--ui-scale));
+  --stroke-radar-ring: calc(2.5px * var(--ui-scale));
+  --stroke-ship-outline: calc(2.5px * var(--ui-scale));
+  --stroke-ship-halo: calc(3.5px * var(--ui-scale));
+  --stroke-control-outline: calc(2px * var(--ui-scale));
+  --stroke-control-outline-active: calc(3.5px * var(--ui-scale));
 }
