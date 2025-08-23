@@ -4,18 +4,17 @@ body {
 
 .radarcanvas {
   display: block;
-  width: calc(900px * var(--ui-scale));
-  height: calc(900px * var(--ui-scale));
-  margin-left: auto;
-  margin-right: auto;
-  position: relative;
-  
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  position: absolute;
+  inset: 0;
 }
 
 #radarCanvas {
   display: block;
-  width: calc(900px * var(--ui-scale));
-  height: calc(900px * var(--ui-scale));
+  width: 100vw;
+  height: 100vh;
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -24,15 +23,15 @@ body {
   -webkit-user-drag: none;
   -webkit-tap-highlight-color: transparent;
   touch-action: none;
-  margin-left: auto;
-  margin-right: auto;
-  position: relative;
-  left:28px;
+  margin: 0;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  object-fit: cover;
 }
 .radar {
-  align-self: stretch;
-  flex: 1;
-  min-width: 0;
+  position: absolute;
+  inset: 0;
   overflow: visible;
   z-index: 0;
   /* Prevent text selection and default gestures */
@@ -94,6 +93,10 @@ button.buttonbase {
   flex-direction: column;
   gap: var(--space-2);
   z-index: 1;
+}
+
+.radarcontrols {
+  position: relative;
 }
 
 #radar-range svg {
@@ -408,6 +411,7 @@ button.buttonbase {
 .command-center {
   align-self: stretch;
   gap: var(--gap-8);
+  position: relative;
   z-index: 2;
   text-align: left;
   font-size: var(--font-size-18);

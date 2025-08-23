@@ -2,8 +2,8 @@
  * Scenario generation & COLREGs contact controller
  * ============================================================
  */
-import { ObjectPool } from './object-pool.js?v=__VERSION__';
-import { ViewportController } from './viewport-controller.js?v=__VERSION__';
+import { ObjectPool } from './object-pool.js?v=87ab9a6';
+import { ViewportController } from './viewport-controller.js?v=87ab9a6';
 
 const trackPool = new ObjectPool(() => ({
   id: '',
@@ -47,7 +47,7 @@ function solveCPA(own, tgt) {
 }
 
 const cpaWorker = typeof Worker !== 'undefined'
-  ? new Worker(`./cpa-worker.js?v=__VERSION__`, { type: 'module' })
+  ? new Worker(`./cpa-worker.js?v=87ab9a6`, { type: 'module' })
   : null;
 
 function solveCPAAsync(own, tgt) {
@@ -1196,25 +1196,26 @@ class Simulator {
 
     // --- Drawing ---
     drawRadar() {
-        const size = this.canvas.width;
-        if (size === 0) return;
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+        if (width === 0 || height === 0) return;
 
-        const center = size / 2;
-        const radius = size / 2 * 0.9;
+        const center = { x: width / 2, y: height / 2 };
+        const radius = Math.min(width, height) / 2 * 0.9;
 
         // clear full canvas before applying transforms
         this.ctx.save();
         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-        this.ctx.clearRect(0, 0, size, size);
+        this.ctx.clearRect(0, 0, width, height);
         this.ctx.restore();
 
         this.ctx.save();
         this.viewport.apply(this.ctx);
 
-        if (this.staticDirty || this.staticCanvas.width !== size) {
-            this.staticCanvas.width = size;
-            this.staticCanvas.height = size;
-            this.drawStaticRadar();
+        if (this.staticDirty || this.staticCanvas.width !== width || this.staticCanvas.height !== height) {
+            this.staticCanvas.width = width;
+            this.staticCanvas.height = height;
+            this.drawStaticRadar(center, radius);
             this.staticDirty = false;
         }
         this.ctx.drawImage(this.staticCanvas, 0, 0);
@@ -1245,26 +1246,26 @@ class Simulator {
         this.ctx.restore();
     }
 
-    drawStaticRadar() {
-        const size = this.staticCanvas.width;
-        if (size === 0) return;
-        const center = size / 2;
-        const radius = size / 2 * 0.9;
+    drawStaticRadar(center, radius) {
+        const width = this.staticCanvas.width;
+        const height = this.staticCanvas.height;
+        if (width === 0 || height === 0) return;
+        const minDim = Math.min(width, height);
         const ctx = this.staticCtx;
         ctx.save();
         // --- Outer and inner range rings ---
         ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, size, size);
+        ctx.fillRect(0, 0, width, height);
         ctx.strokeStyle = this.radarFaintGreen;
         ctx.lineWidth = 2.7;
 
         ctx.beginPath();
-        ctx.arc(center, center, radius, 0, 2 * Math.PI);
+        ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
         ctx.stroke();
 
         for (let i = 1; i < 3; i++) {
             ctx.beginPath();
-            ctx.arc(center, center, radius * (i / 3), 0, 2 * Math.PI);
+            ctx.arc(center.x, center.y, radius * (i / 3), 0, 2 * Math.PI);
             ctx.stroke();
         }
 
@@ -1276,7 +1277,7 @@ class Simulator {
         for (let i = 1; i <= 3; i++) {
             const ringRadius = radius * (i / 3);
             const range = this.maxRange * (i / 3);
-            ctx.fillText(range.toFixed(1), center + ringRadius + LABEL_OFFSET_PX, center);
+            ctx.fillText(range.toFixed(1), center.x + ringRadius + LABEL_OFFSET_PX, center.y);
         }
 
         // --- Radial bearing lines ---
@@ -1285,7 +1286,7 @@ class Simulator {
                 const isCardinal = CARDINAL_BEARINGS.includes(deg);
                 ctx.setLineDash(isCardinal ? DASH_PATTERN_SOLID : DASH_PATTERN_NONCAR);
                 const ang = this.toRadians(deg);
-                const originalRadius = isCardinal ? (size / 2) : radius + (size / 2 - radius) / 2;
+                const originalRadius = isCardinal ? (minDim / 2) : radius + (minDim / 2 - radius) / 2;
                 const startRadius = radius;
                 let endRadius = originalRadius;
                 if (!isCardinal) {
@@ -1293,12 +1294,12 @@ class Simulator {
                 }
                 ctx.beginPath();
                 ctx.moveTo(
-                    center + startRadius * Math.cos(ang),
-                    center - startRadius * Math.sin(ang)
+                    center.x + startRadius * Math.cos(ang),
+                    center.y - startRadius * Math.sin(ang)
                 );
                 ctx.lineTo(
-                    center + endRadius * Math.cos(ang),
-                    center - endRadius * Math.sin(ang)
+                    center.x + endRadius * Math.cos(ang),
+                    center.y - endRadius * Math.sin(ang)
                 );
                 ctx.stroke();
             }
@@ -1306,7 +1307,18 @@ class Simulator {
         ctx.restore();
     }
 
-    drawRangeRings(center, radius) { this.ctx.strokeStyle = this.radarFaintGreen; this.ctx.lineWidth = 2.7; this.ctx.beginPath(); this.ctx.arc(center, center, radius, 0, 2 * Math.PI); this.ctx.stroke(); for (let i = 1; i < 3; i++) { this.ctx.beginPath(); this.ctx.arc(center, center, radius * (i / 3), 0, 2 * Math.PI); this.ctx.stroke(); } }
+    drawRangeRings(center, radius) {
+        this.ctx.strokeStyle = this.radarFaintGreen;
+        this.ctx.lineWidth = 2.7;
+        this.ctx.beginPath();
+        this.ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+        this.ctx.stroke();
+        for (let i = 1; i < 3; i++) {
+            this.ctx.beginPath();
+            this.ctx.arc(center.x, center.y, radius * (i / 3), 0, 2 * Math.PI);
+            this.ctx.stroke();
+        }
+    }
     drawRangeLabels(center, radius) {
         this.ctx.fillStyle = this.radarFaintGreen;
         this.ctx.font = `bold ${Math.max(11, radius * 0.038)}px 'IBM Plex Sans Mono',monospace`;
@@ -1315,27 +1327,25 @@ class Simulator {
         for (let i = 1; i <= 3; i++) {
             const ringRadius = radius * (i / 3);
             const range = this.maxRange * (i / 3);
-            this.ctx.fillText(range.toFixed(1), center + ringRadius + LABEL_OFFSET_PX, center);
+            this.ctx.fillText(range.toFixed(1), center.x + ringRadius + LABEL_OFFSET_PX, center.y);
         }
     }
 
     drawOwnShipIcon(center, radius) {
         this.ctx.strokeStyle = this.radarGreen;
-        // this.ctx.lineWidth = 1.4;
-        const iconRadius = this.canvas.width * 0.014;
+        const minDim = Math.min(this.canvas.width, this.canvas.height);
+        const iconRadius = minDim * 0.014;
         this.ctx.beginPath();
-        this.ctx.arc(center, center, iconRadius, 0, 2 * Math.PI);
+        this.ctx.arc(center.x, center.y, iconRadius, 0, 2 * Math.PI);
         this.ctx.stroke();
         const timeInHours = this.vectorTimeInMinutes / 60;
         const pixelsPerNm = radius / this.maxRange;
         const vectorDistPixels = this.ownShip.speed * timeInHours * pixelsPerNm;
         const courseAngle = this.toRadians(this.bearingToCanvasAngle(this.ownShip.course));
-        const endX = center + vectorDistPixels * Math.cos(courseAngle);
-        const endY = center - vectorDistPixels * Math.sin(courseAngle);
+        const endX = center.x + vectorDistPixels * Math.cos(courseAngle);
+        const endY = center.y - vectorDistPixels * Math.sin(courseAngle);
         this.ownShip.vectorEndpoint = { x: endX, y: endY };
         const handleRadius = VECTOR_HANDLE_RADIUS * this.DPR;
-        
-        
 
         // Draw ordered course/speed vector if still manoeuvring
         const orderedCourse = this.ownShip.orderedCourse;
@@ -1345,14 +1355,14 @@ class Simulator {
         if (diffCourse > 0.5 || diffSpeed > 0.05) {
             const orderDistPixels = orderedSpeed * timeInHours * pixelsPerNm;
             const orderAngle = this.toRadians(this.bearingToCanvasAngle(orderedCourse));
-            const oEndX = center + orderDistPixels * Math.cos(orderAngle);
-            const oEndY = center - orderDistPixels * Math.sin(orderAngle);
+            const oEndX = center.x + orderDistPixels * Math.cos(orderAngle);
+            const oEndY = center.y - orderDistPixels * Math.sin(orderAngle);
             this.ownShip.orderedVectorEndpoint = { x: oEndX, y: oEndY };
             this.ctx.save();
             this.ctx.strokeStyle = this.radarDarkOrange;
             this.ctx.lineWidth = VECTOR_LINE_WIDTH;
             this.ctx.beginPath();
-            this.ctx.moveTo(center, center);
+            this.ctx.moveTo(center.x, center.y);
             this.ctx.lineTo(oEndX, oEndY);
             this.ctx.stroke();
             this.ctx.restore();
@@ -1374,13 +1384,13 @@ class Simulator {
         if (dragging && this.ownShip.dragCourse !== null && this.ownShip.dragSpeed !== null) {
             const dragDistPixels = this.ownShip.dragSpeed * timeInHours * pixelsPerNm;
             const dragAngle = this.toRadians(this.bearingToCanvasAngle(this.ownShip.dragCourse));
-            const dEndX = center + dragDistPixels * Math.cos(dragAngle);
-            const dEndY = center - dragDistPixels * Math.sin(dragAngle);
+            const dEndX = center.x + dragDistPixels * Math.cos(dragAngle);
+            const dEndY = center.y - dragDistPixels * Math.sin(dragAngle);
             this.ctx.save();
             this.ctx.strokeStyle = this.radarWhite;
             this.ctx.lineWidth = VECTOR_LINE_WIDTH;
             this.ctx.beginPath();
-            this.ctx.moveTo(center, center);
+            this.ctx.moveTo(center.x, center.y);
             this.ctx.lineTo(dEndX, dEndY);
             this.ctx.stroke();
             // Removed handle circle drawing for drag endpoint
@@ -1394,7 +1404,7 @@ class Simulator {
         this.ctx.strokeStyle = this.radarGreen;
         this.ctx.lineWidth = VECTOR_LINE_WIDTH;
         this.ctx.beginPath();
-        this.ctx.moveTo(center, center);
+        this.ctx.moveTo(center.x, center.y);
         this.ctx.lineTo(endX, endY);
         this.ctx.stroke();
         // Removed handle circle drawing for static endpoint
@@ -1407,8 +1417,8 @@ class Simulator {
     getTargetCoords(center, radius, track) {
         const angleRad = this.toRadians(this.bearingToCanvasAngle(track.bearing));
         const distOnCanvas = (track.range / this.maxRange) * radius;
-        const x = center + distOnCanvas * Math.cos(angleRad);
-        const y = center - distOnCanvas * Math.sin(angleRad);
+        const x = center.x + distOnCanvas * Math.cos(angleRad);
+        const y = center.y - distOnCanvas * Math.sin(angleRad);
         return { x, y };
     }
 
@@ -1473,8 +1483,8 @@ class Simulator {
         const cpaCanvasAngle = this.toRadians(this.bearingToCanvasAngle(cpaBearing));
         const cpaRange = Math.sqrt(track.cpaPosition.x**2 + track.cpaPosition.y**2);
         const cpaDistCanvas = cpaRange * pixelsPerNm;
-        const cpaX = center + cpaDistCanvas * Math.cos(cpaCanvasAngle);
-        const cpaY = center - cpaDistCanvas * Math.sin(cpaCanvasAngle);
+        const cpaX = center.x + cpaDistCanvas * Math.cos(cpaCanvasAngle);
+        const cpaY = center.y - cpaDistCanvas * Math.sin(cpaCanvasAngle);
 
         this.ctx.beginPath();
         this.ctx.arc(cpaX, cpaY, 4, 0, 2 * Math.PI);
@@ -1485,7 +1495,7 @@ class Simulator {
         this.ctx.lineWidth = 1;
         this.ctx.setLineDash([2, 3]);
         this.ctx.beginPath();
-        this.ctx.moveTo(center, center);
+        this.ctx.moveTo(center.x, center.y);
         this.ctx.lineTo(cpaX, cpaY);
         this.ctx.stroke();
         this.ctx.restore();
@@ -1498,7 +1508,7 @@ class Simulator {
         this.ctx.lineWidth = 1;
         this.ctx.setLineDash([2, 4]);
         this.ctx.beginPath();
-        this.ctx.moveTo(center, center);
+        this.ctx.moveTo(center.x, center.y);
         this.ctx.lineTo(x, y);
         this.ctx.stroke();
         this.ctx.restore();
@@ -1511,21 +1521,21 @@ class Simulator {
         const pixelsPerKnot = 4;
         const arrowLength = this.trueWind.speed * pixelsPerKnot;
 
-        const wX = center + Math.cos(windFromAngle) * radius;
-        const wY = center - Math.sin(windFromAngle) * radius;
-        this.trueWind.wPos = {x: wX, y: wY};
+        const wX = center.x + Math.cos(windFromAngle) * radius;
+        const wY = center.y - Math.sin(windFromAngle) * radius;
+        this.trueWind.wPos = { x: wX, y: wY };
 
         const startX = wX;
         const startY = wY;
         const endX = startX - Math.cos(windFromAngle) * arrowLength;
         const endY = startY + Math.sin(windFromAngle) * arrowLength;
-        this.trueWind.arrowEndpoint = {x: endX, y: endY};
+        this.trueWind.arrowEndpoint = { x: endX, y: endY };
 
         this.ctx.save();
         this.ctx.strokeStyle = this.radarFaintGreen;
-        this.ctx.fillStyle   = this.radarFaintGreen;
-        this.ctx.font        = `${Math.max(12, radius * 0.08)}px 'IBM Plex Sans Mono', monospace`;
-        this.ctx.textAlign   = 'center';
+        this.ctx.fillStyle = this.radarFaintGreen;
+        this.ctx.font = `${Math.max(12, radius * 0.08)}px 'IBM Plex Sans Mono', monospace`;
+        this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText('W', wX, wY);
         this.ctx.lineWidth = VECTOR_LINE_WIDTH;
@@ -1548,15 +1558,15 @@ class Simulator {
             const vectorDistPixels = this.relativeWind.speed * timeInHours * pixelsPerNm;
             const relWindCanvasAngle = this.toRadians(this.bearingToCanvasAngle(this.relativeWind.vectorDirection));
 
-            const vecEndX = center + vectorDistPixels * Math.cos(relWindCanvasAngle);
-            const vecEndY = center - vectorDistPixels * Math.sin(relWindCanvasAngle);
+            const vecEndX = center.x + vectorDistPixels * Math.cos(relWindCanvasAngle);
+            const vecEndY = center.y - vectorDistPixels * Math.sin(relWindCanvasAngle);
 
             this.ctx.save();
             this.ctx.strokeStyle = this.radarFaintGreen;
             this.ctx.lineWidth = VECTOR_LINE_WIDTH;
             this.ctx.setLineDash([5, 5]);
             this.ctx.beginPath();
-            this.ctx.moveTo(center, center);
+            this.ctx.moveTo(center.x, center.y);
             this.ctx.lineTo(vecEndX, vecEndY);
             this.ctx.stroke();
             this.ctx.restore();
@@ -1648,32 +1658,17 @@ class Simulator {
     }
 
     scaleUI() {
-        const BASE = 900;
-        const containerHeight = this.mainContainer.clientHeight;
-        const wrapperWidth = this.radarWrapper.clientWidth;
-        const dim = Math.min(wrapperWidth, containerHeight);
-        const scale = Math.max(0.7, Math.min(1.5, dim / BASE));
-
-        document.documentElement.style.setProperty('--ui-scale', scale);
-        this.uiScaleFactor = scale;
-
-        // size the canvas display to match container square
-        this.canvas.style.width  = `${dim}px`;
-        this.canvas.style.height = `${dim}px`;
-
-        // Canvas resolution depends on its current size in the DOM, which is now controlled by JS.
-        const size = dim;
-
-        if (size > 0) {
-            this.canvas.width  = size * this.DPR;
-            this.canvas.height = size * this.DPR;
-            this.staticCanvas.width = this.canvas.width;
-            this.staticCanvas.height = this.canvas.height;
-            this.staticDirty = true;
-        }
+        const width = this.radarWrapper.clientWidth;
+        const height = this.mainContainer.clientHeight;
+        this.canvas.style.width = `${width}px`;
+        this.canvas.style.height = `${height}px`;
+        this.canvas.width = width * this.DPR;
+        this.canvas.height = height * this.DPR;
+        this.staticCanvas.width = this.canvas.width;
+        this.staticCanvas.height = this.canvas.height;
+        this.staticDirty = true;
 
         this.prepareStaticStyles();
-
         this.markSceneDirty();
     }
 
@@ -1708,12 +1703,13 @@ class Simulator {
         let mouseX = (e.clientX - rect.left) * this.DPR;
         let mouseY = (e.clientY - rect.top) * this.DPR;
         ({ x: mouseX, y: mouseY } = this.viewport.screenToWorld(mouseX, mouseY));
-        const center = this.canvas.width / 2;
-        const pixelsPerNm = (center * 0.9) / this.maxRange;
+        const center = { x: this.canvas.width / 2, y: this.canvas.height / 2 };
+        const radius = Math.min(this.canvas.width, this.canvas.height) / 2 * 0.9;
+        const pixelsPerNm = radius / this.maxRange;
 
         if (this.dragType === 'icon') {
-            const dx = mouseX - center;
-            const dy = -(mouseY - center);
+            const dx = mouseX - center.x;
+            const dy = -(mouseY - center.y);
             const newRange = Math.hypot(dx, dy) / pixelsPerNm;
             const newCanvasAngleRad = Math.atan2(dy, dx);
             const newBearing = this.canvasAngleToBearing(this.toDegrees(newCanvasAngleRad));
@@ -1722,7 +1718,7 @@ class Simulator {
         } else if (this.dragType === 'vector') {
             const vessel = (this.draggedItemId === 'ownShip') ? this.ownShip : this.tracks.find(t => t.id === this.draggedItemId);
             if (vessel) {
-                const startPoint = (vessel.id === 'ownShip') ? { x: center, y: center } : this.getTargetCoords(center, (center * 0.9), vessel);
+                const startPoint = (vessel.id === 'ownShip') ? { x: center.x, y: center.y } : this.getTargetCoords(center, radius, vessel);
                 const dx = mouseX - startPoint.x;
                 const dy = -(mouseY - startPoint.y);
                 const newCanvasAngleRad = Math.atan2(dy, dx);
@@ -1847,20 +1843,20 @@ class Simulator {
 
         if (this.draggedItemId) {
             this.updateDragTooltip(e);
-            const center = this.canvas.width / 2;
-            const pixelsPerNm = (center * 0.9) / this.maxRange;
+            const center = { x: this.canvas.width / 2, y: this.canvas.height / 2 };
+            const radius = Math.min(this.canvas.width, this.canvas.height) / 2 * 0.9;
+            const pixelsPerNm = radius / this.maxRange;
             if (this.draggedItemId === 'trueWind') {
-                const dx = mouseX - center;
-                const dy = -(mouseY - center);
+                const dx = mouseX - center.x;
+                const dy = -(mouseY - center.y);
                 const newCanvasAngleRad = Math.atan2(dy, dx);
                 if (this.dragType === 'windDirection') {
                     this.trueWind.direction = this.canvasAngleToBearing(this.toDegrees(newCanvasAngleRad));
                 } else if (this.dragType === 'windSpeed') {
                     const pixelsPerKnot = 4;
                     const windFromAngle = this.toRadians(this.bearingToCanvasAngle(this.trueWind.direction));
-                    const radius = center * 0.9;
-                    const mouseVecX = mouseX - center;
-                    const mouseVecY = -(mouseY - center);
+                    const mouseVecX = mouseX - center.x;
+                    const mouseVecY = -(mouseY - center.y);
                     const windVecX = Math.cos(windFromAngle);
                     const windVecY = Math.sin(windFromAngle);
                     const projectedLength = mouseVecX * windVecX + mouseVecY * windVecY;
@@ -1883,7 +1879,7 @@ class Simulator {
             } else if (this.dragType === 'vector') {
                 const timeInHours = this.vectorTimeInMinutes / 60;
                 const vessel = (this.draggedItemId === 'ownShip') ? this.ownShip : this.tracks.find(t => t.id === this.draggedItemId);
-                const startPoint = (vessel.id === 'ownShip') ? { x: center, y: center } : this.getTargetCoords(center, (center * 0.9), vessel);
+                const startPoint = (vessel.id === 'ownShip') ? { x: center.x, y: center.y } : this.getTargetCoords(center, radius, vessel);
 
                 const dx = mouseX - startPoint.x;
                 const dy = -(mouseY - startPoint.y);
@@ -1918,8 +1914,8 @@ class Simulator {
     }
 
     getInteractiveItemAt(mouseX, mouseY) {
-        const center = this.canvas.width / 2;
-        const radius = center * 0.9;
+        const center = { x: this.canvas.width / 2, y: this.canvas.height / 2 };
+        const radius = Math.min(this.canvas.width, this.canvas.height) / 2 * 0.9;
         const hitTolerance = 25 * this.DPR;
         const minVecPickDistance = 35 * this.DPR;
 
@@ -1931,20 +1927,20 @@ class Simulator {
         }
 
         for (const track of this.tracks) {
-            const {x, y} = this.getTargetCoords(center, radius, track);
+            const { x, y } = this.getTargetCoords(center, radius, track);
             const size = Math.max(11, radius * 0.038) * 1.5;
-            if (mouseX > x - size/2 && mouseX < x + size/2 && mouseY > y - size/2 && mouseY < y + size/2) {
-                return {type: 'icon', id: track.id};
+            if (mouseX > x - size / 2 && mouseX < x + size / 2 && mouseY > y - size / 2 && mouseY < y + size / 2) {
+                return { type: 'icon', id: track.id };
             }
         }
 
         const allVessels = [this.ownShip, ...this.tracks];
         for (const vessel of allVessels) {
             if (!vessel.vectorEndpoint) continue;
-            const startPt = (vessel.id === 'ownShip') ? {x: center, y: center} : this.getTargetCoords(center, radius, vessel);
+            const startPt = (vessel.id === 'ownShip') ? { x: center.x, y: center.y } : this.getTargetCoords(center, radius, vessel);
             const endPt = vessel.vectorEndpoint;
             const distToEnd = Math.hypot(mouseX - endPt.x, mouseY - endPt.y);
-            if (distToEnd < hitTolerance) return {type: 'vector', id: vessel.id};
+            if (distToEnd < hitTolerance) return { type: 'vector', id: vessel.id };
             const distFromStart = Math.hypot(mouseX - startPt.x, mouseY - startPt.y);
             if (distFromStart < minVecPickDistance) continue;
             const dist = this.distToSegment({x: mouseX, y: mouseY}, startPt, endPt);
@@ -2201,7 +2197,8 @@ class Simulator {
     prepareStaticStyles() {
         this.ctx.strokeStyle = this.radarFaintGreen;
         this.ctx.fillStyle   = this.radarFaintGreen;
-        this.ctx.font        = `${Math.max(12, this.canvas.width * 0.04)}px 'IBM Plex Sans Mono', monospace`;
+        const minDim = Math.min(this.canvas.width, this.canvas.height);
+        this.ctx.font        = `${Math.max(12, minDim * 0.04)}px 'IBM Plex Sans Mono', monospace`;
     }
 }
 
