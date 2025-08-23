@@ -1,7 +1,7 @@
 body {
   margin: 0;
   line-height: normal;
-  height: 100vh;
+  height: calc(var(--vh) * 100);
   overflow: hidden;
 }
 
