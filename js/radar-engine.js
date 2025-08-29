@@ -290,14 +290,15 @@ class Simulator {
         this.uiUpdatePending = false;
         // --- DOM Element References ---
         this.canvas = document.getElementById('radarCanvas');
-        this.ctx = this.canvas.getContext('2d');
-        
         if (!this.canvas) {
             console.error('radarCanvas element not found in DOM');
+            return;
         }
+        this.ctx = this.canvas.getContext('2d');
         console.log('Simulator init: 2D context:', this.ctx);
         if (!this.ctx) {
             console.error('Failed to get 2D context for radarCanvas');
+            return;
         }
         this.dragTooltip = document.getElementById('drag-tooltip');
         this.orderTooltip = document.getElementById('order-tooltip');
