@@ -268,8 +268,19 @@
     <script src="js/arena.js"></script>
     <script src="js/main.js"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
+      function loadSimulator() {
         window.sim = new Simulator(document.getElementById('radarCanvas'));
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        if (window.TypeForm) {
+          loadSimulator();
+        } else {
+          const script = document.createElement('script');
+          script.src = 'https://embed.typeform.com/embed.js';
+          script.onload = loadSimulator;
+          document.head.appendChild(script);
+        }
       });
     </script>
   </body>
