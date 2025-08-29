@@ -16,6 +16,7 @@ const trackPool = new ObjectPool(() => ({
   keyframes: [],
 }));
 const ScenarioConfig = {
+    v                    : 1,
     contact_density        : 6,
     cpa_leeway             : 0.3,
     time_to_cpa_range      : [15, 30],
