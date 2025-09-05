@@ -20,5 +20,7 @@ async function loadSimulator() {
 window.addEventListener('DOMContentLoaded', loadSimulator);
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js');
+  navigator.serviceWorker
+    .register('/sw.js')
+    .catch(err => console.error('SW registration failed', err));
 }
