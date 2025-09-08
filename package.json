@@ -9,8 +9,8 @@
   "license": "ISC",
   "name": "maneuver",
   "scripts": {
-    "start": "parcel ./*.html ",
-   "build": "parcel build ./*.html --dist-dir ./dist"
+    "start": "parcel ./*.html",
+    "build": "parcel build ./*.html --dist-dir ./dist && node scripts/set-sw-cache-version.js"
   },
   "version": "1.0.0"
 }

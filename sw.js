@@ -1,6 +1,6 @@
 
-// Update CACHE_VERSION on each release to force old caches to clear
-const CACHE_VERSION = 'v1';
+// CACHE_VERSION is replaced during build to bust old caches on new releases
+const CACHE_VERSION = '__CACHE_VERSION__';
 const CACHE_NAME = `maneuver-cache-${CACHE_VERSION}`;
 const ASSETS = [
   '/',

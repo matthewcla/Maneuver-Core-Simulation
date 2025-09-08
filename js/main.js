@@ -21,6 +21,6 @@ window.addEventListener('DOMContentLoaded', loadSimulator);
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker
-    .register('/sw.js')
+    .register(new URL('../sw.js', import.meta.url))
     .catch(err => console.error('SW registration failed', err));
 }
