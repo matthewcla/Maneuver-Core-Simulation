@@ -19,6 +19,7 @@ async function loadSimulator() {
 
 window.addEventListener('DOMContentLoaded', loadSimulator);
 
+// Register service worker relative to this module
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker
     .register(new URL('../sw.js', import.meta.url))

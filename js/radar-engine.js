@@ -39,7 +39,7 @@ function solveCPA(own, tgt) {
 }
 
 const cpaWorker = typeof Worker !== 'undefined'
-  ? new Worker('./cpa-worker.js', { type: 'module' })
+  ? new Worker(new URL('./cpa-worker.js', import.meta.url), { type: 'module' })
   : null;
 
 function solveCPAAsync(own, tgt) {
