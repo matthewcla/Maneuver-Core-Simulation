@@ -10,7 +10,8 @@
   "name": "maneuver",
   "scripts": {
     "start": "parcel ./*.html",
-    "build": "parcel build ./*.html --dist-dir ./dist && node scripts/set-sw-cache-version.js"
+    "build": "parcel build ./*.html --dist-dir ./dist && node scripts/set-sw-cache-version.js",
+    "test": "node --test"
   },
   "version": "1.0.0"
 }
