@@ -7,8 +7,9 @@ async function loadSimulator() {
   const loader = document.getElementById('loading');
   if (loader) loader.style.display = 'block';
   try {
-    const mod = await import('./radar-engine.js');
-    const { Simulator } = mod;
+    const { Simulator } = await import(
+      new URL('./radar-engine.js', import.meta.url).href
+    );
     window.sim = new Simulator();
   } catch (err) {
     console.error('Failed to load simulator module', err);
