@@ -3,6 +3,7 @@ body {
   line-height: normal;
   height: 100vh;
   overflow: hidden;
+  background: #00001;
 }
 
 :root {
