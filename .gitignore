@@ -19,3 +19,8 @@ Desktop.ini # Windows desktop icon settings
 
 # Others
 *.log   # Log files
+
+# Build artifacts
+node_modules/
+dist/
+.parcel-cache/
