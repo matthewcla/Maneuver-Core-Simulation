@@ -14,11 +14,25 @@ const swTemplatePath = path.join(__dirname, '..', 'sw.js');
 const distPath = path.join(__dirname, '..', 'dist');
 const swDestPath = path.join(distPath, 'sw.js');
 
-const swSource = fs.readFileSync(swTemplatePath, 'utf8');
-const result = swSource.replace('__CACHE_VERSION__', version);
+// Recursively grab all built asset file paths within dist
+const walk = dir => fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+  const fullPath = path.join(dir, entry.name);
+  return entry.isDirectory() ? walk(fullPath) : [fullPath];
+});
+
+const assetFiles = fs.existsSync(distPath) ? walk(distPath) : [];
+const assets = ['/', ...assetFiles
+  .map(f => '/' + path.relative(distPath, f).replace(/\\/g, '/'))
+  .filter(f => f !== '/sw.js')
+];
+
+let swSource = fs.readFileSync(swTemplatePath, 'utf8');
+swSource = swSource
+  .replace('__CACHE_VERSION__', version)
+  .replace(/const ASSETS = \[[\s\S]*?\];/, `const ASSETS = [\n${assets.map(a => `  '${a}'`).join(',\n')}\n];`);
 
 if (!fs.existsSync(distPath)) {
   fs.mkdirSync(distPath, { recursive: true });
 }
-fs.writeFileSync(swDestPath, result);
-console.log(`Service worker generated with CACHE_VERSION=${version}`);
+fs.writeFileSync(swDestPath, swSource);
+console.log(`Service worker generated with CACHE_VERSION=${version}, ${assets.length} assets cached.`);
