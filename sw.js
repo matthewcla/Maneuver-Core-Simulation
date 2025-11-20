@@ -1,19 +1,19 @@
 
 // Update CACHE_VERSION on each release to force old caches to clear
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `maneuver-cache-${CACHE_VERSION}`;
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/js/main.js',
-  '/js/radar-engine.js',
-  '/js/object-pool.js',
-  '/js/cpa-worker.js',
-  '/css/global.css',
-  '/css/beta.css',
-  '/offline.html',
-  '/favicons.svg'
+  './',
+  'index.html',
+  'manifest.webmanifest',
+  'js/main.js?v=1.0',
+  'js/radar-engine.js?v=1.0',
+  'js/object-pool.js?v=1.0',
+  'js/cpa-worker.js?v=1.0',
+  'css/global.css?v=1.0',
+  'css/beta.css?v=1.0',
+  'offline.html',
+  'favicons.svg'
 ];
 
 self.addEventListener('install', event => {
