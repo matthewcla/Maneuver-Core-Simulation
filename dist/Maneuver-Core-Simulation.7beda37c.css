@@ -1,0 +1,738 @@
+body {
+  background: var(--neutral-900);
+}
+
+.radarcanvas {
+  width: calc(900px * var(--ui-scale));
+  height: calc(900px * var(--ui-scale));
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  position: relative;
+}
+
+#radarCanvas {
+  width: calc(900px * var(--ui-scale));
+  height: calc(900px * var(--ui-scale));
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  position: relative;
+  left: 28px;
+}
+
+.radar {
+  z-index: 0;
+  flex: 1;
+  align-self: stretch;
+  min-width: 0;
+  overflow: visible;
+}
+
+.iconsettings {
+  object-fit: cover;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.buttonbase, .menusettings {
+  flex-direction: column;
+  justify-content: center;
+  display: flex;
+}
+
+button.buttonbase {
+  border-radius: var(--br-4);
+  background-color: var(--neutral-800-alpha-80);
+  align-items: center;
+  width: 48px;
+  height: 48px;
+}
+
+.menusettings {
+  align-items: flex-start;
+}
+
+.iconmaximize {
+  object-fit: cover;
+  width: 20px;
+  max-height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.buttontogglefullscreen, .radarcontrols {
+  justify-content: flex-start;
+  align-items: flex-start;
+  display: flex;
+}
+
+.buttontogglefullscreen {
+  flex-direction: row;
+  width: 48px;
+  height: 48px;
+}
+
+.radarcontrols svg {
+  color: var(--primary-500);
+  fill: currentColor;
+  width: 20px;
+  height: 20px;
+}
+
+.radarcontrols, #radar-settings-menu {
+  align-self: stretch;
+  gap: var(--space-2);
+  z-index: 1;
+  flex-direction: column;
+  display: flex;
+}
+
+#radar-range svg {
+  display: none;
+}
+
+#radar-range.range-3 .range-3, #radar-range.range-6 .range-6, #radar-range.range-12 .range-12, #radar-range.range-24 .range-24 {
+  display: block;
+}
+
+#polar-plots svg {
+  width: 23px;
+  height: 23px;
+}
+
+#radar-settings svg, #polar-plots svg, #track-ids svg, #full-screen svg {
+  color: #666;
+  fill: currentColor;
+}
+
+#radar-settings.active svg, #radar-settings svg, #polar-plots.active svg, #track-ids.active svg, #full-screen.active svg {
+  color: var(--primary-500);
+  fill: currentColor;
+}
+
+#full-screen svg {
+  color: var(--primary-500);
+}
+
+#full-screen.active svg.maximize, #full-screen svg.minimize {
+  display: none;
+}
+
+#full-screen.active svg.minimize {
+  display: block;
+}
+
+#radar-settings-menu {
+  display: none;
+}
+
+#radar-settings-menu.active {
+  display: flex;
+}
+
+.iconplay {
+  flex-shrink: 0;
+  width: 11px;
+  height: 11px;
+  position: relative;
+  overflow: hidden;
+}
+
+.placeholder {
+  line-height: 24px;
+  position: relative;
+}
+
+.controlplay {
+  border-right: 1px solid var(--color-darkslategray);
+  box-sizing: border-box;
+  justify-content: center;
+  align-self: stretch;
+  align-items: center;
+  gap: var(--gap-4);
+  flex-direction: row;
+  flex: auto;
+  min-width: 0;
+  display: flex;
+}
+
+.controlbackward-icon {
+  flex: 1;
+  align-self: stretch;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.controlsplayback, .tracking {
+  flex-direction: row;
+  flex: 1;
+  justify-content: flex-start;
+  align-items: flex-start;
+  display: flex;
+}
+
+.tracking {
+  align-self: stretch;
+}
+
+.controlsplayback {
+  border-radius: var(--br-4);
+  background-color: var(--neutral-800-alpha-80);
+  height: 48px;
+  overflow: hidden;
+}
+
+.iconregenerate {
+  width: 20px;
+  max-height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.iconregenerate svg {
+  color: var(--primary-500);
+  fill: currentColor;
+}
+
+.buttonbase2 {
+  border-radius: var(--br-4);
+  background-color: var(--primary-500-alpha-70);
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  display: flex;
+}
+
+.sim-controls {
+  justify-content: flex-start;
+  align-self: stretch;
+  align-items: flex-start;
+  gap: var(--gap-8);
+  flex-direction: row;
+  display: flex;
+}
+
+.label {
+  text-transform: uppercase;
+  font-weight: 500;
+  line-height: 18px;
+  position: relative;
+}
+
+.panel-header {
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  display: flex;
+}
+
+.labeltext, .metric-value {
+  position: relative;
+}
+
+.metric-value {
+  font-size: var(--font-size-18);
+  line-height: 24px;
+  font-family: var(--font-ibm-plex-mono);
+  color: var(--primary-500);
+  text-align: right;
+  flex: 1;
+}
+
+.metric-row {
+  justify-content: flex-start;
+  align-self: stretch;
+  align-items: center;
+  gap: var(--gap-12);
+  flex-direction: row;
+  display: flex;
+  overflow: hidden;
+}
+
+.card {
+  border-radius: var(--br-4);
+  background-color: var(--neutral-800-alpha-80);
+  padding: var(--space-3) var(--padding-16) var(--padding-16);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.card, .datacontainer {
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  display: flex;
+}
+
+.datacontainer {
+  padding: var(--padding-4) 0 0;
+  font-size: var(--font-size-14);
+  color: var(--primary-600);
+  align-self: stretch;
+}
+
+.track {
+  text-transform: uppercase;
+}
+
+.track, .track-label {
+  font-size: var(--font-size-11);
+  font-weight: 500;
+  line-height: 18px;
+  font-family: var(--font-ibm-plex-sans);
+  color: var(--neutral-900);
+  text-align: left;
+  position: relative;
+}
+
+.metrictracklabel, .panel-header1 {
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  display: flex;
+}
+
+.metrictracklabel {
+  cursor: pointer;
+  padding: var(--padding-1) var(--padding-4);
+  background-color: var(--primary-500-alpha-90);
+  border-radius: var(--br-2);
+  gap: var(--gap-4);
+  border: 0;
+}
+
+.panel-header1 {
+  align-self: stretch;
+}
+
+.cardtrack, .datacontainer1 {
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  display: flex;
+}
+
+.datacontainer1 {
+  padding: var(--padding-4) 0 0;
+  font-size: var(--font-size-14);
+  color: var(--primary-600);
+  align-self: stretch;
+}
+
+.datacontainer {
+  padding: var(--padding-4) 0 0;
+  align-self: stretch;
+}
+
+.card {
+  border-radius: var(--br-4);
+  padding: var(--space-3) var(--padding-16) var(--padding-16);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.card.secondary {
+  border-radius: var(--br-4);
+  background-color: var(--neutral-800-alpha-80);
+  padding: var(--space-3) var(--padding-16) var(--padding-16);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.iconswitchon {
+  width: 14px;
+  max-height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.buttonswitch {
+  border-radius: var(--br-2);
+  background-color: var(--neutral-900);
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  display: flex;
+}
+
+.control, .panel-header2 {
+  flex-direction: row;
+  align-self: stretch;
+  align-items: center;
+}
+
+.control {
+  flex: 1;
+  justify-content: flex-end;
+  display: flex;
+}
+
+.panel-header2 {
+  gap: var(--gap-10);
+}
+
+.secondary, .metric-row, .panel-header2 {
+  justify-content: flex-start;
+  display: flex;
+}
+
+.metric-row12 {
+  align-self: stretch;
+  align-items: center;
+  gap: var(--gap-12);
+  flex-direction: row;
+}
+
+.command-center, .telemetry {
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--font-size-12);
+  color: var(--neutral-300);
+  font-family: var(--font-ibm-plex-sans);
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  flex-direction: column;
+  display: flex;
+  overflow-x: auto;
+  flex-wrap: nowrap !important;
+}
+
+.command-center {
+  align-self: stretch;
+  gap: var(--gap-8);
+  z-index: 2;
+  text-align: left;
+  font-size: var(--font-size-18);
+  color: var(--primary-500);
+  font-family: var(--font-ibm-plex-mono);
+}
+
+.maneuver-logo-item {
+  position: relative;
+}
+
+.maneuver-logo {
+  justify-content: flex-start;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.beta, .maneuver-logo, .maneuverlogo {
+  flex-direction: row;
+  display: flex;
+}
+
+.maneuverlogo {
+  z-index: 3;
+  justify-content: flex-start;
+  align-items: center;
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  margin: 0 !important;
+}
+
+.beta {
+  background-color: var(--neutral-900);
+  width: 100vw;
+  height: 100vh;
+  padding: var(--space-3);
+  box-sizing: border-box;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: var(--space-2);
+  letter-spacing: normal;
+  line-height: normal;
+  position: relative;
+}
+
+#ff-speed-indicator, #rev-speed-indicator {
+  display: none;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+button.controlplay {
+  border-right: 1px solid var(--color-darkslategray);
+}
+
+#play-pause .pause, #play-pause .play {
+  color: var(--primary-500);
+  fill: currentColor;
+  height: 12px;
+  display: block;
+}
+
+#play-pause.selected .pause, #play-pause .play {
+  display: none;
+}
+
+#play-pause .pause, #play-pause.selected .play {
+  display: block;
+}
+
+button.control-backward, button.control-forward {
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+button.controlplay .placeholder {
+  font-family: var(--font-ibm-plex-mono);
+  font-size: var(--font-size-18);
+  color: var(--primary-500);
+}
+
+.tracking .selected {
+  background-color: var(--primary-500-alpha-70);
+}
+
+.unselected {
+  opacity: .5;
+}
+
+.iconnumber {
+  object-fit: cover;
+  width: 20px;
+  max-height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.label, .metric-row, .metric-value {
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.control-backward {
+  border-right: 1px solid #333;
+}
+
+@media screen and (width >= 793px) {
+  .controlsplayback {
+    height: 48px;
+  }
+
+  .radarcontrols .buttonbase img {
+    width: 24px;
+  }
+
+  .sim-controls .buttonbase2 img {
+    width: 26px;
+  }
+
+  .control-forward, .control-backward, .buttonbase2 {
+    width: 48px;
+    height: 48px;
+  }
+
+  .add-remove-tracks {
+    display: none;
+  }
+
+  .controlplay.pause {
+    opacity: .5;
+  }
+}
+
+.card {
+  width: 304px;
+}
+
+@media screen and (width <= 792px) {
+  .beta {
+    padding-left: var(--padding-12);
+    padding-right: var(--padding-12);
+    padding-bottom: var(--padding-48);
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .beta .maneuver-logo-child {
+    width: 32px !important;
+  }
+
+  #wind-data-container {
+    display: none !important;
+  }
+
+  .beta .maneuverlogo {
+    padding-top: 14px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: var(--padding-12);
+    background-color: var(--neutral-800-alpha-80);
+    border-radius: 100px;
+    display: block;
+  }
+
+  .maneuver-logo-item {
+    display: none;
+  }
+
+  .radarcontrols {
+    flex-direction: row;
+  }
+
+  .radarcontrols .buttonbase {
+    width: 56px;
+    height: 56px;
+  }
+
+  .beta, .command-center, .telemetry {
+    gap: var(--gap-12);
+  }
+
+  #radar-settings-menu {
+    flex-direction: row;
+  }
+
+  body #radarCanvas {
+    width: calc(100% + 10px);
+    max-width: none;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .telemetry {
+    min-width: 0;
+    width: calc(100vw - 2 * var(--padding-12));
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    flex-direction: row;
+    flex: auto;
+    align-items: stretch;
+    display: flex;
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+  }
+
+  .card {
+    width: 180px;
+  }
+
+  .card.wide {
+    width: 220px;
+  }
+
+  .secondary .metric-value {
+    font-size: var(--font-size-14);
+    line-height: 18px;
+    font-family: var(--font-ibm-plex-mono);
+    color: var(--primary-500);
+    text-align: right;
+    flex: 1;
+  }
+
+  .radar {
+    flex: auto;
+    justify-content: center;
+    align-items: center;
+    min-width: 100%;
+    display: flex;
+    position: relative;
+  }
+
+  .card {
+    flex: 1;
+  }
+
+  .command-center > .sim-controls {
+    order: 2;
+  }
+
+  .command-center > .telemetry {
+    order: 1;
+    align-self: stretch;
+    min-width: 0;
+  }
+
+  .telemetry {
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+  }
+
+  .telemetry > .cardownship, .telemetry > .cardtrack, .telemetry > .secondary {
+    scroll-snap-align: start;
+    flex: none;
+  }
+
+  .controlsplayback, .sim-controls .buttonbase2 {
+    height: 64px;
+  }
+
+  .radarcontrols .buttonbase img {
+    width: 24px;
+  }
+
+  .sim-controls .buttonbase2 {
+    width: 64px;
+  }
+
+  .sim-controls .buttonbase2 img {
+    width: 26px;
+  }
+
+  .controlbackward-icon {
+    all: unset;
+  }
+
+  .add-remove-tracks {
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: var(--gap-8);
+    flex-direction: row;
+    flex: 1;
+    display: flex;
+  }
+
+  #full-screen {
+    display: none;
+  }
+
+  .control-forward, .control-backward {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+#drag-tooltip, #order-tooltip {
+  background-color: var(--neutral-900-alpha-80);
+  color: var(--primary-500);
+  font-size: var(--font-size-14);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--br-2);
+  pointer-events: none;
+  z-index: 3;
+  white-space: nowrap;
+  font-family: var(--font-ibm-plex-sans);
+  display: none;
+  position: absolute;
+}
+/*# sourceMappingURL=Maneuver-Core-Simulation.7beda37c.css.map */
