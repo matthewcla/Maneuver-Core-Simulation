@@ -171,6 +171,112 @@ class ScenarioGenerator {
     _randInt(a, b) {
         return Math.floor(this._rand(a, b + 1));
     }
+    generateTSS(level) {
+        // 1. Define Boundaries
+        // Simple E/W TSS. 
+        // Separation zone: y = -1.0 to 1.0 (2nm wide)
+        // Eastbound lane: y = 1.0 to 4.0
+        // Westbound lane: y = -4.0 to -1.0
+        const boundaries = [
+            {
+                start: {
+                    x: -10,
+                    y: 1
+                },
+                end: {
+                    x: 10,
+                    y: 1
+                },
+                type: 'separation'
+            },
+            {
+                start: {
+                    x: -10,
+                    y: -1
+                },
+                end: {
+                    x: 10,
+                    y: -1
+                },
+                type: 'separation'
+            },
+            {
+                start: {
+                    x: -10,
+                    y: 4
+                },
+                end: {
+                    x: 10,
+                    y: 4
+                },
+                type: 'outer'
+            },
+            {
+                start: {
+                    x: -10,
+                    y: -4
+                },
+                end: {
+                    x: 10,
+                    y: -4
+                },
+                type: 'outer'
+            }
+        ];
+        // 2. Spawn Traffic
+        const tracks = [];
+        const baseSpeed = 8 + level * 2;
+        const density = 2 + level; // Ships per lane approx
+        // Eastbound Traffic (Course 090) in y [1, 4]
+        for(let i = 0; i < density; i++){
+            const y = this._rand(1.2, 3.8);
+            const x = this._rand(-12, 12);
+            const spd = Math.max(5, baseSpeed + this._rand(-2, 2));
+            tracks.push(this._spawnSimple(x, y, 90, spd));
+        }
+        // Westbound Traffic (Course 270) in y [-4, -1]
+        for(let i = 0; i < density; i++){
+            const y = this._rand(-3.8, -1.2);
+            const x = this._rand(-12, 12);
+            const spd = Math.max(5, baseSpeed + this._rand(-2, 2));
+            tracks.push(this._spawnSimple(x, y, 270, spd));
+        }
+        // 3. Ownship & Waypoint
+        // Ownship starts South (e.g., y = -6, x = random), heading North (000)
+        const ownshipStart = {
+            x: this._rand(-2, 2),
+            y: -6,
+            course: 0,
+            speed: 10
+        };
+        const waypoint = {
+            x: this._rand(-2, 2),
+            y: 6,
+            radius: 0.5
+        };
+        return {
+            boundaries,
+            tracks,
+            ownshipStart,
+            waypoint
+        };
+    }
+    _spawnSimple(x, y, course, speed) {
+        const id = String(this.nextId++).padStart(4, '0');
+        return {
+            id,
+            x,
+            y,
+            course: course % 360,
+            speed,
+            state: 'MONITORING',
+            isUserControlled: false,
+            _base: {
+                course,
+                speed
+            } // removed dummy initialBearing/Range to prevent overwrite in _initialize
+        };
+    }
 }
 class ContactController {
     constructor(track){
@@ -274,7 +380,10 @@ class ContactController {
  * @class Simulator
  * Encapsulates the entire state and logic for the ship maneuvering simulator.
  */ class Simulator {
-    constructor(){
+    constructor(config = {}){
+        // --- Configuration & Mode ---
+        this.config = config;
+        console.log('Simulator initialized in mode:', this.config.mode || 'default');
         // --- Suppress rendering flag for editable fields ---
         this.suppressEditRender = false;
         // Flag and helper for debounced UI updates
@@ -283,10 +392,32 @@ class ContactController {
         this.canvas = document.getElementById('radarCanvas');
         this.ctx = this.canvas.getContext('2d');
         if (!this.canvas) console.error('radarCanvas element not found in DOM');
-        console.log('Simulator init: 2D context:', this.ctx);
+        // console.log('Simulator init: 2D context:', this.ctx); // Reduced noise
         if (!this.ctx) console.error('Failed to get 2D context for radarCanvas');
         this.dragTooltip = document.getElementById('drag-tooltip');
         this.orderTooltip = document.getElementById('order-tooltip');
+        // --- Gap Runner Overlays ---
+        this.levelOverlay = document.getElementById('level-overlay');
+        this.levelMessage = document.getElementById('level-message');
+        this.gameOverOverlay = document.getElementById('game-over-overlay');
+        this.gameOverMessage = document.getElementById('game-over-message');
+        this.btnRestart = document.getElementById('btn-restart');
+        // Gap Runner State
+        this.gapRunnerScore = 0;
+        this.currentLevelScore = 0;
+        this.levelStartTime = 0;
+        this.penaltyRegistry = new Set();
+        // Gap Runner DOM Container (Consolidated)
+        this.hudElements = {
+            container: document.getElementById('gap-runner-hud'),
+            level: document.getElementById('hud-level'),
+            score: document.getElementById('hud-score'),
+            time: document.getElementById('hud-time'),
+            damageOverlay: document.getElementById('damage-overlay')
+        };
+        this.btnRestart?.addEventListener('click', ()=>{
+            location.reload();
+        });
         // Playback controls
         this.btnPlayPause = document.getElementById('play-pause');
         this.btnRange = document.getElementById('radar-range');
@@ -329,6 +460,18 @@ class ContactController {
             dragCourse: null,
             dragSpeed: null,
             orderedVectorEndpoint: null
+        };
+        // --- Gap Runner State ---
+        this.gapRunnerScore = 0;
+        this.currentLevelScore = 0;
+        this.levelStartTime = 0;
+        this.penaltyRegistry = new Set();
+        this.hudElements = {
+            container: document.getElementById('gap-runner-hud'),
+            level: document.getElementById('hud-level'),
+            score: document.getElementById('hud-score'),
+            time: document.getElementById('hud-time'),
+            damageOverlay: document.getElementById('damage-overlay')
         };
         this.tracks = [
             {
@@ -454,6 +597,7 @@ class ContactController {
     // --- Main Initialization ---
     _initialize() {
         this._attachEventListeners();
+        if (this.config.mode === 'gap_runner') this.loadGapRunnerScenario(1);
         const BASE_CANVAS_SIZE = 900;
         this.canvas.width = BASE_CANVAS_SIZE * this.DPR;
         this.canvas.height = BASE_CANVAS_SIZE * this.DPR;
@@ -461,6 +605,10 @@ class ContactController {
         this.staticCanvas.height = this.canvas.height;
         this.drawStaticRadar();
         this.staticDirty = false;
+        if (this.config.mode !== 'gap_runner') {
+            this.hudElements?.container?.classList.add('hidden');
+            document.body.classList.remove('gap-runner-active');
+        }
         this.simulationElapsed = 0;
         this.updateSimClock();
         if (this.tracks.length > 0) this.tracks.forEach((track)=>{
@@ -486,6 +634,48 @@ class ContactController {
         this.lastTimestamp = performance.now();
         if (this.isSimulationRunning) this.startGameLoop();
         if (document.fonts && document.fonts.ready) document.fonts.ready.then(()=>this.scaleUI());
+    }
+    loadGapRunnerScenario(level = 1) {
+        this.gapRunnerActive = true;
+        this.gapRunnerLevel = level;
+        // Reset Scoring State
+        this.currentLevelScore = 5000 + level * 1000; // 5000 + level * 1000
+        this.levelStartTime = performance.now();
+        this.penaltyRegistry.clear();
+        // User request: "Initialize total score... loadGapRunnerScenario: Reest currentLevelScore... CompleteLevel: Add remaining current to total".
+        // If I call loadGapRunnerScenario(level+1), I should NOT reset gapRunnerScore.
+        // But if I call it with level 1 (Restart), I probably should.
+        if (level === 1) this.gapRunnerScore = 0;
+        // UI Setup
+        document.body.classList.add('gap-runner-active');
+        this.hudElements.container?.classList.remove('hidden');
+        if (this.hudElements.level) this.hudElements.level.textContent = level;
+        this.updateGapRunnerHUD();
+        // Ensure overlays are hidden
+        this.levelOverlay?.classList.add('hidden');
+        this.gameOverOverlay?.classList.add('hidden');
+        const generator = new ScenarioGenerator(this.scenarioCfg);
+        const data = generator.generateTSS(level);
+        this.tssData = {
+            boundaries: data.boundaries,
+            waypoint: data.waypoint
+        };
+        // Reset Ownship
+        this.ownShip.x = data.ownshipStart.x;
+        this.ownShip.y = data.ownshipStart.y;
+        this.ownShip.course = data.ownshipStart.course;
+        this.ownShip.speed = data.ownshipStart.speed;
+        this.ownShip.orderedCourse = data.ownshipStart.course;
+        this.ownShip.orderedSpeed = data.ownshipStart.speed;
+        // Reset Tracks
+        this.tracks = data.tracks;
+        this.tracks.forEach((t)=>{
+            t._controller = new ContactController(t);
+            t._sim = this;
+            this.calculateAllData(t);
+        });
+        this.markSceneDirty();
+        console.log("Loaded GapRunner Scenario Level " + level);
     }
     // --- Event Listener Setup ---
     _attachEventListeners() {
@@ -711,6 +901,10 @@ class ContactController {
             this.canvas.height = this.canvas.height;
         }
         this.ctx = null;
+        // Cleanup UI
+        document.body.classList.remove('gap-runner-active');
+        this.hudElements?.container?.classList.add('hidden');
+        this.hudElements?.damageOverlay?.classList.remove('active');
     }
     // --- Vector Time Toggle ---
     toggleVectorTime() {
@@ -931,9 +1125,37 @@ class ContactController {
         this._scheduleUIUpdate();
         if (didUpdate) this.markSceneDirty();
     }
+    updateGapRunnerHUD() {
+        if (!this.hudElements.score) return;
+        // Total Score = Banked Score + Current Level Projected Score
+        const total = Math.floor(this.gapRunnerScore + this.currentLevelScore);
+        this.hudElements.score.textContent = total.toLocaleString();
+        const now = performance.now();
+        const elapsed = Math.floor((now - this.levelStartTime) / 1000);
+        const mm = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const ss = (elapsed % 60).toString().padStart(2, '0');
+        this.hudElements.time.textContent = `${mm}:${ss}`;
+    }
+    triggerDamageOverlay() {
+        const ov = this.hudElements.damageOverlay;
+        if (!ov) return;
+        ov.classList.remove('hidden');
+        // Force reflow
+        ov.offsetWidth;
+        ov.classList.add('active');
+        // Remove after short flash
+        setTimeout(()=>{
+            ov.classList.remove('active');
+            setTimeout(()=>ov.classList.add('hidden'), 300); // Wait for transition
+        }, 500);
+    }
     // --- Physics & Calculations ---
     updatePhysics(deltaTime) {
         if (!this.isSimulationRunning) return;
+        if (this.config.mode === 'gap_runner') {
+            this.checkGapRunnerStatus(deltaTime);
+            if (!this.isSimulationRunning) return;
+        }
         const dtSec = deltaTime / 1000 * Math.abs(this.simulationSpeed);
         // Gradually adjust ownship toward ordered values
         const maxTurn = 3 * dtSec; // degrees per second
@@ -956,6 +1178,115 @@ class ContactController {
             const dtH = deltaTime / 3600000 * Math.abs(this.simulationSpeed);
             track._controller?.update(dtH, this.tracks, this.scenarioCfg);
         });
+    }
+    checkGapRunnerStatus(deltaTime) {
+        if (!this.tssData?.waypoint) return;
+        // --- Score Decay ---
+        const DECAY_RATE = 10; // points per second
+        const decay = DECAY_RATE * (deltaTime / 1000);
+        this.currentLevelScore = Math.max(0, this.currentLevelScore - decay);
+        // --- CPA Safety Checks ---
+        const toRad = (d)=>d * Math.PI / 180;
+        const ownVx = this.ownShip.speed * Math.sin(toRad(this.ownShip.course));
+        const ownVy = this.ownShip.speed * Math.cos(toRad(this.ownShip.course));
+        const paramOwn = {
+            x: this.ownShip.x,
+            y: this.ownShip.y,
+            vx: ownVx,
+            vy: ownVy
+        };
+        for (const track of this.tracks){
+            // Only check monitoring tracks or non-hazard/non-user?
+            // Hazards are stationary (usually), still shouldn't hit them.
+            if (this.penaltyRegistry.has(track.id)) continue;
+            const tvx = track.speed * Math.sin(toRad(track.course));
+            const tvy = track.speed * Math.cos(toRad(track.course));
+            const paramTgt = {
+                x: track.x,
+                y: track.y,
+                vx: tvx,
+                vy: tvy
+            };
+            // solveCPA is available in file scope
+            const { t, d } = solveCPA(paramOwn, paramTgt);
+            // Penalty if predicted CPA < 1.0 NM and it is in the future (t > 0)
+            if (d < 1.0 && t > 0) {
+                this.currentLevelScore = Math.max(0, this.currentLevelScore - 500);
+                this.penaltyRegistry.add(track.id);
+                this.triggerDamageOverlay();
+            }
+        }
+        this.updateGapRunnerHUD();
+        // 1. Win Check (Ownship reaches Waypoint)
+        const dx = this.ownShip.x - this.tssData.waypoint.x;
+        const dy = this.ownShip.y - this.tssData.waypoint.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        // Win condition: within 0.5 NM
+        if (dist < 0.5) {
+            this.completeLevel();
+            return;
+        }
+        // 2. Loss Check (Collision with Traffic)
+        const COLLISION_THRESHOLD = 0.1; // NM
+        for (const track of this.tracks){
+            const tdx = this.ownShip.x - track.x;
+            const tdy = this.ownShip.y - track.y;
+            const tdist = Math.sqrt(tdx * tdx + tdy * tdy);
+            if (tdist < COLLISION_THRESHOLD) {
+                this.gameOver();
+                return;
+            }
+        }
+    }
+    applyPenalty(trackId, amount) {
+        this.penaltyRegistry.add(trackId);
+        this.currentLevelScore = Math.max(0, this.currentLevelScore - amount);
+        this.flashDamage();
+        this.updateGapRunnerHUD();
+    }
+    flashDamage() {
+        if (!this.hudElements.damageOverlay) return;
+        this.hudElements.damageOverlay.classList.remove('hidden');
+        // Trigger reflow
+        this.hudElements.damageOverlay.offsetWidth;
+        this.hudElements.damageOverlay.classList.add('active');
+        setTimeout(()=>{
+            this.hudElements.damageOverlay.classList.remove('active');
+            setTimeout(()=>{
+                this.hudElements.damageOverlay.classList.add('hidden');
+            }, 300); // Wait for transition
+        }, 300); // 300ms flash
+    }
+    updateGapRunnerHUD() {
+        if (!this.hudElements.score) return;
+        // Total Score = Banked Score + Current Level Projected Score
+        const total = Math.floor(this.gapRunnerScore + this.currentLevelScore);
+        this.hudElements.score.textContent = total.toLocaleString();
+        const now = performance.now();
+        const elapsed = Math.floor((now - this.levelStartTime) / 1000);
+        const mm = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const ss = (elapsed % 60).toString().padStart(2, '0');
+        this.hudElements.time.textContent = `${mm}:${ss}`;
+    }
+    completeLevel() {
+        this.isSimulationRunning = false;
+        // Accumulate Score
+        this.gapRunnerScore += Math.floor(this.currentLevelScore);
+        this.updateGapRunnerHUD();
+        if (this.levelOverlay && this.levelMessage) {
+            this.levelMessage.textContent = `Level ${this.gapRunnerLevel} Complete!`;
+            this.levelOverlay.classList.remove('hidden');
+        }
+        setTimeout(()=>{
+            this.levelOverlay?.classList.add('hidden');
+            this.loadGapRunnerScenario(this.gapRunnerLevel + 1);
+            this.isSimulationRunning = true;
+        }, 2500);
+    }
+    gameOver() {
+        this.isSimulationRunning = false;
+        // this.gapRunnerActive = false; // Keep active so we don't return to sim mode, just stuck in game over
+        if (this.gameOverOverlay) this.gameOverOverlay.classList.remove('hidden');
     }
     calculateAllData(track) {
         const dx = track.x - this.ownShip.x;
@@ -1078,6 +1409,11 @@ class ContactController {
         }
         this.ctx.drawImage(this.staticCanvas, 0, 0);
         if (this.showWeather) this.drawWeatherInfo(center, radius);
+        // --- TSS Rendering ---
+        if (this.tssData) {
+            this.drawTSS(center, radius);
+            if (this.tssData.waypoint) this.drawWaypoint(center, radius);
+        }
         this.drawOwnShipIcon(center, radius);
         this.tracks.forEach((track)=>{
             if (track.range > this.maxRange) return;
@@ -1091,6 +1427,68 @@ class ContactController {
             this.drawSelectionIndicator(center, radius, this.selectedTrackId, this.radarWhite, 1.5);
         }
         if (this.hoveredTrackId !== null && this.hoveredTrackId !== this.selectedTrackId) this.drawSelectionIndicator(center, radius, this.hoveredTrackId, this.radarFaintWhite, 1);
+    }
+    getScreenPos(wx, wy, center, radius) {
+        const dx = wx - this.ownShip.x;
+        const dy = wy - this.ownShip.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        // Optimize: if distance is huge, maybe don't calculate? But canvas handles clipping.
+        const bearing = (this.toDegrees(Math.atan2(dx, dy)) + 360) % 360;
+        const angleRad = this.toRadians(this.bearingToCanvasAngle(bearing));
+        const distOnCanvas = dist / this.maxRange * radius;
+        return {
+            x: center + distOnCanvas * Math.cos(angleRad),
+            y: center - distOnCanvas * Math.sin(angleRad)
+        };
+    }
+    drawTSS(center, radius) {
+        if (!this.tssData.boundaries) return;
+        this.ctx.save();
+        this.ctx.lineWidth = 2;
+        this.tssData.boundaries.forEach((b)=>{
+            const p1 = this.getScreenPos(b.start.x, b.start.y, center, radius);
+            const p2 = this.getScreenPos(b.end.x, b.end.y, center, radius);
+            this.ctx.beginPath();
+            this.ctx.moveTo(p1.x, p1.y);
+            this.ctx.lineTo(p2.x, p2.y);
+            if (b.type === 'separation') {
+                this.ctx.strokeStyle = this.radarDarkOrange; // Or maybe a distinct color
+                this.ctx.setLineDash([
+                    10,
+                    10
+                ]);
+            } else {
+                this.ctx.strokeStyle = this.radarFaintWhite;
+                this.ctx.setLineDash([
+                    5,
+                    5
+                ]);
+            }
+            this.ctx.stroke();
+        });
+        this.ctx.restore();
+    }
+    drawWaypoint(center, radius) {
+        const wp = this.tssData.waypoint;
+        const p = this.getScreenPos(wp.x, wp.y, center, radius);
+        this.ctx.save();
+        this.ctx.strokeStyle = this.radarGreen;
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([
+            5,
+            5
+        ]);
+        this.ctx.beginPath();
+        // Visual radius somewhat arbitrary or based on zoom? 
+        // Request said: "distinct circle, e.g., green dash line with no fill. Use the same green as the vector color"
+        const r = wp.radius / this.maxRange * radius; // Scale radius
+        this.ctx.arc(p.x, p.y, Math.max(5, r), 0, 2 * Math.PI);
+        this.ctx.stroke();
+        // Maybe a label?
+        this.ctx.fillStyle = this.radarGreen;
+        this.ctx.font = '12px monospace';
+        this.ctx.fillText("WPT", p.x + r + 5, p.y);
+        this.ctx.restore();
     }
     drawStaticRadar() {
         const size = this.staticCanvas.width;

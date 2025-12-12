@@ -735,4 +735,154 @@ button.controlplay .placeholder {
   display: none;
   position: absolute;
 }
+
+.main-menu {
+  z-index: 10000;
+  opacity: 1;
+  background-color: #000;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  transition: opacity .3s ease-in-out;
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.main-menu.hidden, .level-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.level-overlay {
+  z-index: 10000;
+  opacity: 1;
+  background-color: #000000d9;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  transition: opacity .3s ease-in-out;
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.menu-content {
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  display: flex;
+}
+
+.menu-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+}
+
+.menu-title {
+  color: var(--radar-white, #e0e0e0);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin: 0;
+  font-family: IBM Plex Sans, sans-serif;
+  font-size: 3rem;
+  font-weight: 500;
+}
+
+.menu-buttons {
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 300px;
+  display: flex;
+}
+
+.menu-button {
+  border: 1px solid var(--radar-green, #0f0);
+  color: var(--radar-green, #0f0);
+  cursor: pointer;
+  text-transform: uppercase;
+  background: none;
+  width: 100%;
+  padding: 1rem 2rem;
+  font-family: IBM Plex Mono, monospace;
+  font-size: 1.25rem;
+  transition: all .2s;
+}
+
+.menu-button:hover {
+  background: #00ff001a;
+  box-shadow: 0 0 10px #00ff004d;
+}
+
+.menu-button:active {
+  background: #0f03;
+  transform: translateY(2px);
+}
+
+.hud {
+  z-index: 10;
+  background-color: var(--neutral-800-alpha-80);
+  padding: var(--padding-8) var(--padding-12);
+  border-radius: var(--br-4);
+  font-family: var(--font-ibm-plex-mono);
+  font-size: var(--font-size-14);
+  color: var(--primary-500);
+  pointer-events: none;
+  background: #141414cc;
+  flex-direction: column;
+  gap: 4px;
+  display: flex;
+  position: absolute;
+  top: 70px;
+  left: 24px;
+}
+
+.hud.hidden {
+  display: none;
+}
+
+.hud-row {
+  justify-content: space-between;
+  min-width: 140px;
+  display: flex;
+}
+
+.damage-overlay {
+  pointer-events: none;
+  z-index: 20;
+  opacity: 0;
+  background-color: #ff00004d;
+  width: 100vw;
+  height: 100vh;
+  transition: opacity .3s;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.damage-overlay.active {
+  opacity: 1;
+}
+
+.damage-overlay.hidden {
+  display: none;
+}
+
+@media screen and (width <= 792px) {
+  body.gap-runner-active .maneuverlogo {
+    display: none !important;
+  }
+
+  body.gap-runner-active .hud {
+    top: 24px;
+    left: 24px;
+  }
+}
 /*# sourceMappingURL=Maneuver-Core-Simulation.7beda37c.css.map */

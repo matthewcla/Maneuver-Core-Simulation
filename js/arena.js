@@ -3,20 +3,20 @@
  * ============================================================
  */
 const ScenarioConfig = {
-    contact_density        : 6,
-    cpa_leeway             : 0.3,
-    time_to_cpa_range      : [15, 30],
-    vector_randomization   : 0.15,
+    contact_density: 6,
+    cpa_leeway: 0.3,
+    time_to_cpa_range: [15, 30],
+    vector_randomization: 0.15,
     maneuvering_probability: 0.35,
-    constraint_density     : 2,
+    constraint_density: 2,
 };
 
 // --- Polar grid rendering constants ---
-const CARDINAL_BEARINGS   = [0, 90, 180, 270];
+const CARDINAL_BEARINGS = [0, 90, 180, 270];
 const DASH_PATTERN_NONCAR = [4, 4];      // dashed
-const DASH_PATTERN_SOLID  = [];          // solid
-const LABEL_OFFSET_PX     = 6;           // gap between ring and label
-const VECTOR_LINE_WIDTH   = 1.4 * 1.2 * 2; // consistent width for all vectors
+const DASH_PATTERN_SOLID = [];          // solid
+const LABEL_OFFSET_PX = 6;           // gap between ring and label
+const VECTOR_LINE_WIDTH = 1.4 * 1.2 * 2; // consistent width for all vectors
 
 function solveCPA(own, tgt) {
     const rx = tgt.x - own.x;
@@ -24,102 +24,102 @@ function solveCPA(own, tgt) {
     const vx = tgt.vx - own.vx;
     const vy = tgt.vy - own.vy;
 
-    const v2   = vx*vx + vy*vy;
-    const tCPA = v2 < 1e-6 ? 1e9 : - (rx*vx + ry*vy) / v2;
-    const xCPA = rx + vx*tCPA;
-    const yCPA = ry + vy*tCPA;
-    const dCPA = Math.sqrt(xCPA*xCPA + yCPA*yCPA);
+    const v2 = vx * vx + vy * vy;
+    const tCPA = v2 < 1e-6 ? 1e9 : - (rx * vx + ry * vy) / v2;
+    const xCPA = rx + vx * tCPA;
+    const yCPA = ry + vy * tCPA;
+    const dCPA = Math.sqrt(xCPA * xCPA + yCPA * yCPA);
     return { t: tCPA, d: dCPA };
 }
 
 const fsApi = {
-  request(el = document.documentElement) {
-    return  el.requestFullscreen?.()     ||
-            el.webkitRequestFullscreen?.()||
-            el.mozRequestFullScreen?.()  ||
+    request(el = document.documentElement) {
+        return el.requestFullscreen?.() ||
+            el.webkitRequestFullscreen?.() ||
+            el.mozRequestFullScreen?.() ||
             el.msRequestFullscreen?.();
-  },
-  exit() {
-    return  document.exitFullscreen?.()   ||
-            document.webkitExitFullscreen?.()||
+    },
+    exit() {
+        return document.exitFullscreen?.() ||
+            document.webkitExitFullscreen?.() ||
             document.mozCancelFullScreen?.() ||
             document.msExitFullscreen?.();
-  },
-  isActive() {
-    return document.fullscreenElement     ||
-           document.webkitFullscreenElement||
-           document.mozFullScreenElement   ||
-           document.msFullscreenElement;
-  }
+    },
+    isActive() {
+        return document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement;
+    }
 };
 
 class ScenarioGenerator {
-    constructor(cfg){
+    constructor(cfg) {
         this.cfg = cfg;
         this.nextId = 1;
     }
-    makeScenario(ownship){
+    makeScenario(ownship) {
         const tracks = [];
-        const archetypes = ['STARBOARD_CROSS','HEAD_ON','OVERTAKE','CONSTRAINED'];
-        const type = archetypes[Math.floor(Math.random()*archetypes.length)];
+        const archetypes = ['STARBOARD_CROSS', 'HEAD_ON', 'OVERTAKE', 'CONSTRAINED'];
+        const type = archetypes[Math.floor(Math.random() * archetypes.length)];
         const primary = this._makePrimary(type, ownship);
         tracks.push(primary);
-        const nExtra = this._randInt(this.cfg.contact_density-1, this.cfg.contact_density+1);
-        for(let i=0;i<nExtra;i++){
+        const nExtra = this._randInt(this.cfg.contact_density - 1, this.cfg.contact_density + 1);
+        for (let i = 0; i < nExtra; i++) {
             const c = this._makeSecondary(ownship, tracks);
             tracks.push(c);
         }
-        for(let i=0;i<this.cfg.constraint_density;i++){
+        for (let i = 0; i < this.cfg.constraint_density; i++) {
             tracks.push(this._makeHazard(ownship));
         }
         return tracks;
     }
-    _makePrimary(type,own){
-        const rng = this._rand(4,8);
+    _makePrimary(type, own) {
+        const rng = this._rand(4, 8);
         let brg, crs, spd;
-        switch(type){
+        switch (type) {
             case 'STARBOARD_CROSS':
-                brg = this._rand(20,60);
-                crs = (own.course + 270 + this._rand(-10,10))%360; break;
+                brg = this._rand(20, 60);
+                crs = (own.course + 270 + this._rand(-10, 10)) % 360; break;
             case 'HEAD_ON':
-                brg = this._rand(350,10);
-                crs = (own.course + 180 + this._rand(-5,5))%360; break;
+                brg = this._rand(350, 10);
+                crs = (own.course + 180 + this._rand(-5, 5)) % 360; break;
             case 'OVERTAKE':
-                brg = this._rand(150,210);
-                crs = own.course + this._rand(-5,5);
-                spd = own.speed - this._rand(2,4); break;
+                brg = this._rand(150, 210);
+                crs = own.course + this._rand(-5, 5);
+                spd = own.speed - this._rand(2, 4); break;
             case 'CONSTRAINED':
             default:
-                brg = this._rand(40,60);
-                crs = (own.course + 270)%360; break;
+                brg = this._rand(40, 60);
+                crs = (own.course + 270) % 360; break;
         }
-        spd = spd ?? this._rand(5,12);
+        spd = spd ?? this._rand(5, 12);
         const tgt = this._spawn(own, brg, rng, crs, spd);
         this._tuneCPA(own, tgt);
         tgt.archetype = type;
         return tgt;
     }
-    _makeSecondary(own, existing){
-        const brg = this._rand(0,360);
-        const rng = this._rand(2, own.maxRange??12);
-        const crs = this._rand(0,360);
-        const spd = this._rand(3,15);
+    _makeSecondary(own, existing) {
+        const brg = this._rand(0, 360);
+        const rng = this._rand(2, own.maxRange ?? 12);
+        const crs = this._rand(0, 360);
+        const spd = this._rand(3, 15);
         const c = this._spawn(own, brg, rng, crs, spd);
-        if(Math.random()<this.cfg.maneuvering_probability && existing.length){
-            const tgt = existing[Math.floor(Math.random()*existing.length)];
-            c.course = (Math.atan2(tgt.y-c.y, tgt.x-c.x)*180/Math.PI + 360 + this._rand(-5,5))%360;
+        if (Math.random() < this.cfg.maneuvering_probability && existing.length) {
+            const tgt = existing[Math.floor(Math.random() * existing.length)];
+            c.course = (Math.atan2(tgt.y - c.y, tgt.x - c.x) * 180 / Math.PI + 360 + this._rand(-5, 5)) % 360;
         }
         return c;
     }
-    _makeHazard(own){
-        const brg = this._rand(0,360);
-        const rng = this._rand(3, own.maxRange??12);
+    _makeHazard(own) {
+        const brg = this._rand(0, 360);
+        const rng = this._rand(3, own.maxRange ?? 12);
         const h = this._spawn(own, brg, rng, 0, 0);
         h.isHazard = true;
         return h;
     }
-    _spawn(own,bearing,range,course,speed){
-        const id  = String(this.nextId++).padStart(4, '0');
+    _spawn(own, bearing, range, course, speed) {
+        const id = String(this.nextId++).padStart(4, '0');
         const rad = bearing * Math.PI / 180;
         return {
             id,
@@ -134,28 +134,77 @@ class ScenarioGenerator {
             initialRange: range,
         };
     }
-    _tuneCPA(own,tgt){
-        for(let i=0;i<90;i++){
-            const ownVec=this._vel(own), tgtVec=this._vel(tgt);
-            const {t,d}=solveCPA({...own,...ownVec},{...tgt,...tgtVec});
-            const minT=this.cfg.time_to_cpa_range[0]/60,
-                maxT=this.cfg.time_to_cpa_range[1]/60;
-            if(d<this.cfg.cpa_leeway && t>minT && t<maxT) return;
-            tgt.course=(tgt.course+this._rand(-4,4))%360;
+    _tuneCPA(own, tgt) {
+        for (let i = 0; i < 90; i++) {
+            const ownVec = this._vel(own), tgtVec = this._vel(tgt);
+            const { t, d } = solveCPA({ ...own, ...ownVec }, { ...tgt, ...tgtVec });
+            const minT = this.cfg.time_to_cpa_range[0] / 60,
+                maxT = this.cfg.time_to_cpa_range[1] / 60;
+            if (d < this.cfg.cpa_leeway && t > minT && t < maxT) return;
+            tgt.course = (tgt.course + this._rand(-4, 4)) % 360;
         }
     }
-    _vel(v){const rad=(90-v.course)*Math.PI/180;return{vx:v.speed*Math.cos(rad),vy:v.speed*Math.sin(rad)}}
-    _rand(a,b){return a+Math.random()*(b-a)}
-    _randInt(a,b){return Math.floor(this._rand(a,b+1))}
+    _vel(v) { const rad = (90 - v.course) * Math.PI / 180; return { vx: v.speed * Math.cos(rad), vy: v.speed * Math.sin(rad) } }
+    _rand(a, b) { return a + Math.random() * (b - a) }
+    _randInt(a, b) { return Math.floor(this._rand(a, b + 1)) }
+    generateTSS(level) {
+        // 1. Define Boundaries
+        // Simple E/W TSS. 
+        // Separation zone: y = -1.0 to 1.0 (2nm wide)
+        // Eastbound lane: y = 1.0 to 4.0
+        // Westbound lane: y = -4.0 to -1.0
+        const boundaries = [
+            { start: { x: -10, y: 1 }, end: { x: 10, y: 1 }, type: 'separation' },
+            { start: { x: -10, y: -1 }, end: { x: 10, y: -1 }, type: 'separation' },
+            { start: { x: -10, y: 4 }, end: { x: 10, y: 4 }, type: 'outer' },
+            { start: { x: -10, y: -4 }, end: { x: 10, y: -4 }, type: 'outer' }
+        ];
+
+        // 2. Spawn Traffic
+        const tracks = [];
+        const baseSpeed = 8 + level * 2;
+        const density = 2 + level; // Ships per lane approx
+
+        // Eastbound Traffic (Course 090) in y [1, 4]
+        for (let i = 0; i < density; i++) {
+            const y = this._rand(1.2, 3.8);
+            const x = this._rand(-12, 12);
+            const spd = Math.max(5, baseSpeed + this._rand(-2, 2));
+            tracks.push(this._spawnSimple(x, y, 90, spd));
+        }
+
+        // Westbound Traffic (Course 270) in y [-4, -1]
+        for (let i = 0; i < density; i++) {
+            const y = this._rand(-3.8, -1.2);
+            const x = this._rand(-12, 12);
+            const spd = Math.max(5, baseSpeed + this._rand(-2, 2));
+            tracks.push(this._spawnSimple(x, y, 270, spd));
+        }
+
+        // 3. Ownship & Waypoint
+        // Ownship starts South (e.g., y = -6, x = random), heading North (000)
+        const ownshipStart = { x: this._rand(-2, 2), y: -6, course: 0, speed: 10 };
+        const waypoint = { x: this._rand(-2, 2), y: 6, radius: 0.5 };
+
+        return { boundaries, tracks, ownshipStart, waypoint };
+    }
+    _spawnSimple(x, y, course, speed) {
+        const id = String(this.nextId++).padStart(4, '0');
+        return {
+            id, x, y, course: course % 360, speed,
+            state: 'MONITORING', isUserControlled: false,
+            _base: { course, speed } // removed dummy initialBearing/Range to prevent overwrite in _initialize
+        };
+    }
 }
 
 class ContactController {
-    constructor(track){this.t=track;}
-    update(dtHours,allContacts,cfg){
-        if(this.t.isUserControlled||this.t.isHazard) return;
-        switch(this.t.state){
+    constructor(track) { this.t = track; }
+    update(dtHours, allContacts, cfg) {
+        if (this.t.isUserControlled || this.t.isHazard) return;
+        switch (this.t.state) {
             case 'MONITORING':
-                if(this._collisionThreat(allContacts,cfg)){ this._planManeuver(); }
+                if (this._collisionThreat(allContacts, cfg)) { this._planManeuver(); }
                 break;
             case 'CALCULATING_MANEUVER': break;
             case 'EXECUTING_MANEUVER':
@@ -164,69 +213,69 @@ class ContactController {
                 this._returnToBase(dtHours); break;
         }
     }
-    _collisionThreat(all,cfg){
-        const own=this._asParticle(this.t);
-        for(const other of all){
-            if(other===this.t||other.isHazard) continue;
-            const tgt=this._asParticle(other);
-            const {t,d}=solveCPA(own,tgt);
-            if(d<cfg.cpa_leeway && t>0 && t<cfg.time_to_cpa_range[1]/60){
-                this.t.threat=other; return true;
+    _collisionThreat(all, cfg) {
+        const own = this._asParticle(this.t);
+        for (const other of all) {
+            if (other === this.t || other.isHazard) continue;
+            const tgt = this._asParticle(other);
+            const { t, d } = solveCPA(own, tgt);
+            if (d < cfg.cpa_leeway && t > 0 && t < cfg.time_to_cpa_range[1] / 60) {
+                this.t.threat = other; return true;
             }
         } return false;
     }
-    _planManeuver(){
-        const rel=(this.t.threat&&this._relativeSituation(this.t,this.t.threat))||'UNKNOWN';
-        let deltaCrs=0, deltaSpd=0;
-        switch(rel){
-            case 'HEAD_ON': deltaCrs=30; break;
-            case 'CROSS_GIVEWAY': deltaCrs=35; break;
-            case 'OVERTAKING': deltaCrs=0; deltaSpd=-0.4*this.t.speed; break;
-            default: deltaCrs=25;
+    _planManeuver() {
+        const rel = (this.t.threat && this._relativeSituation(this.t, this.t.threat)) || 'UNKNOWN';
+        let deltaCrs = 0, deltaSpd = 0;
+        switch (rel) {
+            case 'HEAD_ON': deltaCrs = 30; break;
+            case 'CROSS_GIVEWAY': deltaCrs = 35; break;
+            case 'OVERTAKING': deltaCrs = 0; deltaSpd = -0.4 * this.t.speed; break;
+            default: deltaCrs = 25;
         }
-        this.t._targetCourse=(this.t.course+deltaCrs+360)%360;
-        this.t._targetSpeed=Math.max(2,this.t.speed+deltaSpd);
-        this.t.state='EXECUTING_MANEUVER';
+        this.t._targetCourse = (this.t.course + deltaCrs + 360) % 360;
+        this.t._targetSpeed = Math.max(2, this.t.speed + deltaSpd);
+        this.t.state = 'EXECUTING_MANEUVER';
     }
-    _applyManeuver(dt){
-        const rateTurn=10*dt*60;
-        const acc=1*dt*60;
-        const diffC=((this.t._targetCourse - this.t.course + 540)%360)-180;
-        if(Math.abs(diffC)>rateTurn){
-            this.t.course=(this.t.course+Math.sign(diffC)*rateTurn+360)%360;
-        }else{ this.t.course=this.t._targetCourse; }
-        if(Math.abs(this.t.speed-this.t._targetSpeed)>acc){
-            this.t.speed+=Math.sign(this.t._targetSpeed - this.t.speed)*acc;
-        }else{ this.t.speed=this.t._targetSpeed; }
-        if(!this._collisionThreat([...this.t._sim.tracks],this.t._sim.scenarioCfg)){
-            this.t.state='RESUMING_COURSE';
+    _applyManeuver(dt) {
+        const rateTurn = 10 * dt * 60;
+        const acc = 1 * dt * 60;
+        const diffC = ((this.t._targetCourse - this.t.course + 540) % 360) - 180;
+        if (Math.abs(diffC) > rateTurn) {
+            this.t.course = (this.t.course + Math.sign(diffC) * rateTurn + 360) % 360;
+        } else { this.t.course = this.t._targetCourse; }
+        if (Math.abs(this.t.speed - this.t._targetSpeed) > acc) {
+            this.t.speed += Math.sign(this.t._targetSpeed - this.t.speed) * acc;
+        } else { this.t.speed = this.t._targetSpeed; }
+        if (!this._collisionThreat([...this.t._sim.tracks], this.t._sim.scenarioCfg)) {
+            this.t.state = 'RESUMING_COURSE';
         }
     }
-    _returnToBase(dt){
-        const rateTurn=5*dt*60;
-        const acc=0.5*dt*60;
-        const diffC=((this.t._base.course - this.t.course + 540)%360)-180;
-        if(Math.abs(diffC)>rateTurn){
-            this.t.course=(this.t.course+Math.sign(diffC)*rateTurn+360)%360;
-        }else{ this.t.course=this.t._base.course; }
-        if(Math.abs(this.t.speed-this.t._base.speed)>acc){
-            this.t.speed+=Math.sign(this.t._base.speed - this.t.speed)*acc;
-        }else{ this.t.speed=this.t._base.speed; }
-        if(Math.abs(diffC)<1 && Math.abs(this.t.speed-this.t._base.speed)<0.1){
-            this.t.state='MONITORING';
+    _returnToBase(dt) {
+        const rateTurn = 5 * dt * 60;
+        const acc = 0.5 * dt * 60;
+        const diffC = ((this.t._base.course - this.t.course + 540) % 360) - 180;
+        if (Math.abs(diffC) > rateTurn) {
+            this.t.course = (this.t.course + Math.sign(diffC) * rateTurn + 360) % 360;
+        } else { this.t.course = this.t._base.course; }
+        if (Math.abs(this.t.speed - this.t._base.speed) > acc) {
+            this.t.speed += Math.sign(this.t._base.speed - this.t.speed) * acc;
+        } else { this.t.speed = this.t._base.speed; }
+        if (Math.abs(diffC) < 1 && Math.abs(this.t.speed - this.t._base.speed) < 0.1) {
+            this.t.state = 'MONITORING';
             delete this.t.threat;
         }
     }
-    _relativeSituation(a,b){
-        const brg=(Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI+360)%360;
-        const diffHdgs=Math.abs(((a.course - b.course + 540)%360)-180);
-        if(diffHdgs>150&&diffHdgs<210) return 'HEAD_ON';
-        const relBrg=(brg - a.course + 360)%360;
-        if(relBrg>112.5&&relBrg<247.5) return 'OVERTAKING';
-        if(relBrg>0&&relBrg<112.5) return 'CROSS_GIVEWAY';
+    _relativeSituation(a, b) {
+        const brg = (Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI + 360) % 360;
+        const diffHdgs = Math.abs(((a.course - b.course + 540) % 360) - 180);
+        if (diffHdgs > 150 && diffHdgs < 210) return 'HEAD_ON';
+        const relBrg = (brg - a.course + 360) % 360;
+        if (relBrg > 112.5 && relBrg < 247.5) return 'OVERTAKING';
+        if (relBrg > 0 && relBrg < 112.5) return 'CROSS_GIVEWAY';
         return 'OTHER';
     }
-    _asParticle(v){const rad=(90-v.course)*Math.PI/180;return{x:v.x,y:v.y,vx:v.speed*Math.cos(rad),vy:v.speed*Math.sin(rad)}}
+    _asParticle(v) { const rad = (90 - v.course) * Math.PI / 180; return { x: v.x, y: v.y, vx: v.speed * Math.cos(rad), vy: v.speed * Math.sin(rad) } }
 }
 
 /**
@@ -234,7 +283,11 @@ class ContactController {
  * Encapsulates the entire state and logic for the ship maneuvering simulator.
  */
 class Simulator {
-    constructor() {
+    constructor(config = {}) {
+        // --- Configuration & Mode ---
+        this.config = config;
+        console.log('Simulator initialized in mode:', this.config.mode || 'default');
+
         // --- Suppress rendering flag for editable fields ---
         this.suppressEditRender = false;
         // Flag and helper for debounced UI updates
@@ -242,21 +295,47 @@ class Simulator {
         // --- DOM Element References ---
         this.canvas = document.getElementById('radarCanvas');
         this.ctx = this.canvas.getContext('2d');
-        
+
         if (!this.canvas) {
             console.error('radarCanvas element not found in DOM');
         }
-        console.log('Simulator init: 2D context:', this.ctx);
+        // console.log('Simulator init: 2D context:', this.ctx); // Reduced noise
         if (!this.ctx) {
             console.error('Failed to get 2D context for radarCanvas');
         }
         this.dragTooltip = document.getElementById('drag-tooltip');
         this.orderTooltip = document.getElementById('order-tooltip');
-        
+
+        // --- Gap Runner Overlays ---
+        this.levelOverlay = document.getElementById('level-overlay');
+        this.levelMessage = document.getElementById('level-message');
+        this.gameOverOverlay = document.getElementById('game-over-overlay');
+        this.gameOverMessage = document.getElementById('game-over-message');
+        this.btnRestart = document.getElementById('btn-restart');
+
+        // Gap Runner State
+        this.gapRunnerScore = 0;
+        this.currentLevelScore = 0;
+        this.levelStartTime = 0;
+        this.penaltyRegistry = new Set();
+
+        // Gap Runner DOM Container (Consolidated)
+        this.hudElements = {
+            container: document.getElementById('gap-runner-hud'),
+            level: document.getElementById('hud-level'),
+            score: document.getElementById('hud-score'),
+            time: document.getElementById('hud-time'),
+            damageOverlay: document.getElementById('damage-overlay')
+        };
+
+        this.btnRestart?.addEventListener('click', () => {
+            location.reload();
+        });
+
         // Playback controls
         this.btnPlayPause = document.getElementById('play-pause');
         this.btnRange = document.getElementById('radar-range');
-        this.btnAddTrack  = document.getElementById('add-track');
+        this.btnAddTrack = document.getElementById('add-track');
         this.btnDropTrack = document.getElementById('remove-track');
         this.btnScen = document.getElementById('regenerate');
         this.btnFf = document.getElementById('future');
@@ -279,7 +358,7 @@ class Simulator {
         this.chkPolarPlot = document.getElementById('polar-plots');
         this.chkTrackIds = document.getElementById('track-ids');
         this.btnFullscreen = document.getElementById('full-screen');
-        
+
 
         // --- Configuration ---
         this.radarGreen = getComputedStyle(document.documentElement).getPropertyValue('--radar-green').trim();
@@ -302,12 +381,25 @@ class Simulator {
             dragSpeed: null,
             orderedVectorEndpoint: null
         };
+
+        // --- Gap Runner State ---
+        this.gapRunnerScore = 0;
+        this.currentLevelScore = 0;
+        this.levelStartTime = 0;
+        this.penaltyRegistry = new Set();
+        this.hudElements = {
+            container: document.getElementById('gap-runner-hud'),
+            level: document.getElementById('hud-level'),
+            score: document.getElementById('hud-score'),
+            time: document.getElementById('hud-time'),
+            damageOverlay: document.getElementById('damage-overlay')
+        };
         this.tracks = [
             { id: '01', initialBearing: 327, initialRange: 7.9, course: 255, speed: 6.1 },
             { id: '02', initialBearing: 345, initialRange: 6.5, course: 250, speed: 7.2 },
-            { id: '03', initialBearing: 190, initialRange: 8.2, course: 75,  speed: 8.0 },
-            { id: '04', initialBearing: 205, initialRange: 5.5, course: 70,  speed: 7.5 },
-            { id: '05', initialBearing: 180, initialRange: 3.1, course: 72,  speed: 8.2 },
+            { id: '03', initialBearing: 190, initialRange: 8.2, course: 75, speed: 8.0 },
+            { id: '04', initialBearing: 205, initialRange: 5.5, course: 70, speed: 7.5 },
+            { id: '05', initialBearing: 180, initialRange: 3.1, course: 72, speed: 8.2 },
         ];
 
         this.selectedTrackId = '01';
@@ -321,7 +413,7 @@ class Simulator {
         this.dragThreshold = 6 * this.DPR;
         this.lastMousePos = { x: 0, y: 0 };
         this.lastTimestamp = 0;
-        this.lastDomUpdate  = 0;
+        this.lastDomUpdate = 0;
         this.DOM_UPDATE_INTERVAL = 200;
         this.sceneDirty = true;
         this.simulationElapsed = 0;
@@ -331,8 +423,8 @@ class Simulator {
         this.trueWind = {
             direction: 70,
             speed: 15,
-            wPos: {x: 0, y: 0},
-            arrowEndpoint: {x: 0, y: 0}
+            wPos: { x: 0, y: 0 },
+            arrowEndpoint: { x: 0, y: 0 }
         };
         this.relativeWind = {};
 
@@ -356,8 +448,8 @@ class Simulator {
         this.uiScaleFactor = 1;
 
         // Sync data panel visibility with feature toggles
-        this.rmDataContainer.open   = this.showRelativeMotion;
-        this.cpaDataContainer.open  = this.showCPAInfo;
+        this.rmDataContainer.open = this.showRelativeMotion;
+        this.cpaDataContainer.open = this.showCPAInfo;
         this.windDataContainer.open = this.showWeather;
 
         // Pre-rendered radar backdrop
@@ -378,6 +470,10 @@ class Simulator {
     _initialize() {
         this._attachEventListeners();
 
+        if (this.config.mode === 'gap_runner') {
+            this.loadGapRunnerScenario(1);
+        }
+
         const BASE_CANVAS_SIZE = 900;
         this.canvas.width = BASE_CANVAS_SIZE * this.DPR;
         this.canvas.height = BASE_CANVAS_SIZE * this.DPR;
@@ -385,6 +481,11 @@ class Simulator {
         this.staticCanvas.height = this.canvas.height;
         this.drawStaticRadar();
         this.staticDirty = false;
+
+        if (this.config.mode !== 'gap_runner') {
+            this.hudElements?.container?.classList.add('hidden');
+            document.body.classList.remove('gap-runner-active');
+        }
 
         this.simulationElapsed = 0;
         this.updateSimClock();
@@ -420,6 +521,59 @@ class Simulator {
         if (document.fonts && document.fonts.ready) {
             document.fonts.ready.then(() => this.scaleUI());
         }
+    }
+
+    loadGapRunnerScenario(level = 1) {
+        this.gapRunnerActive = true;
+        this.gapRunnerLevel = level;
+
+        // Reset Scoring State
+        this.currentLevelScore = 5000 + (level * 1000); // 5000 + level * 1000
+        this.levelStartTime = performance.now();
+        this.penaltyRegistry.clear();
+        // User request: "Initialize total score... loadGapRunnerScenario: Reest currentLevelScore... CompleteLevel: Add remaining current to total".
+        // If I call loadGapRunnerScenario(level+1), I should NOT reset gapRunnerScore.
+        // But if I call it with level 1 (Restart), I probably should.
+        if (level === 1) {
+            this.gapRunnerScore = 0;
+        }
+
+        // UI Setup
+        document.body.classList.add('gap-runner-active');
+        this.hudElements.container?.classList.remove('hidden');
+        if (this.hudElements.level) this.hudElements.level.textContent = level;
+        this.updateGapRunnerHUD();
+
+        // Ensure overlays are hidden
+        this.levelOverlay?.classList.add('hidden');
+        this.gameOverOverlay?.classList.add('hidden');
+
+        const generator = new ScenarioGenerator(this.scenarioCfg);
+        const data = generator.generateTSS(level);
+
+        this.tssData = {
+            boundaries: data.boundaries,
+            waypoint: data.waypoint
+        };
+
+        // Reset Ownship
+        this.ownShip.x = data.ownshipStart.x;
+        this.ownShip.y = data.ownshipStart.y;
+        this.ownShip.course = data.ownshipStart.course;
+        this.ownShip.speed = data.ownshipStart.speed;
+        this.ownShip.orderedCourse = data.ownshipStart.course;
+        this.ownShip.orderedSpeed = data.ownshipStart.speed;
+
+        // Reset Tracks
+        this.tracks = data.tracks;
+        this.tracks.forEach(t => {
+            t._controller = new ContactController(t);
+            t._sim = this;
+            this.calculateAllData(t);
+        });
+
+        this.markSceneDirty();
+        console.log("Loaded GapRunner Scenario Level " + level);
     }
 
     // --- Event Listener Setup ---
@@ -606,7 +760,7 @@ class Simulator {
                 const tooltipHeight = this.dragTooltip.offsetHeight;
                 let x = e.clientX + buffer;
                 if (e.clientX + tooltipWidth + buffer > window.innerWidth) {
-                  x = e.clientX - tooltipWidth - buffer;
+                    x = e.clientX - tooltipWidth - buffer;
                 }
                 const y = e.clientY - tooltipHeight - buffer;
                 this.dragTooltip.style.transform = `translate(${x}px, ${y}px)`;
@@ -619,7 +773,7 @@ class Simulator {
                     const tooltipHeight = this.dragTooltip.offsetHeight;
                     let x = e.clientX + buffer;
                     if (e.clientX + tooltipWidth + buffer > window.innerWidth) {
-                      x = e.clientX - tooltipWidth - buffer;
+                        x = e.clientX - tooltipWidth - buffer;
                     }
                     const y = e.clientY - tooltipHeight - buffer;
                     this.dragTooltip.style.transform = `translate(${x}px, ${y}px)`;
@@ -633,7 +787,7 @@ class Simulator {
             });
         });
 
-        ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange']
+        ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange']
             .forEach(evt => document.addEventListener(evt, () => this._syncFullscreenUI()));
         this._syncFullscreenUI();
 
@@ -659,10 +813,15 @@ class Simulator {
         this.targets = null;
         // wipe canvas to release GPU memory
         if (this.canvas) {
-          this.canvas.width = this.canvas.width;
-          this.canvas.height = this.canvas.height;
+            this.canvas.width = this.canvas.width;
+            this.canvas.height = this.canvas.height;
         }
         this.ctx = null;
+
+        // Cleanup UI
+        document.body.classList.remove('gap-runner-active');
+        this.hudElements?.container?.classList.add('hidden');
+        this.hudElements?.damageOverlay?.classList.remove('active');
     }
 
     // --- Vector Time Toggle ---
@@ -677,68 +836,68 @@ class Simulator {
      * Toggle play/pause of the simulation.
      */
     togglePlayPause() {
-      // If FF/RW active, reset to normal play and resume play immediately
-      if (this.simulationSpeed !== 1) {
-        // Stop fast-forward/rewind and resume normal play immediately
-        this.simulationSpeed = 1;
+        // If FF/RW active, reset to normal play and resume play immediately
+        if (this.simulationSpeed !== 1) {
+            // Stop fast-forward/rewind and resume normal play immediately
+            this.simulationSpeed = 1;
+            this.updateSpeedIndicator();
+            this.updateButtonStyles();
+            this.isSimulationRunning = true;
+            this.btnPlayPause.classList.remove('pause');
+            this.startGameLoop();
+            return;
+        }
+        // Toggle play/pause
+        if (this.isSimulationRunning) {
+            this.isSimulationRunning = false;
+            this.btnPlayPause.classList.add('pause');
+        } else {
+            this.isSimulationRunning = true;
+            this.btnPlayPause.classList.remove('pause');
+            this.startGameLoop();
+        }
         this.updateSpeedIndicator();
         this.updateButtonStyles();
-        this.isSimulationRunning = true;
-        this.btnPlayPause.classList.remove('pause');
-        this.startGameLoop();
-        return;
-      }
-      // Toggle play/pause
-      if (this.isSimulationRunning) {
-        this.isSimulationRunning = false;
-        this.btnPlayPause.classList.add('pause');
-      } else {
-        this.isSimulationRunning = true;
-        this.btnPlayPause.classList.remove('pause');
-        this.startGameLoop();
-      }
-      this.updateSpeedIndicator();
-      this.updateButtonStyles();
     }
 
     /**
      * Cycle forward through fast-forward speeds.
      */
     fastForward() {
-      // Cycle through 25×/50× or reset to normal (1×)
-      if (this.simulationSpeed === this.ffSpeeds[this.ffSpeeds.length - 1]) {
-        this.simulationSpeed = 1;
-      } else {
-        if (!this.isSimulationRunning) this.isSimulationRunning = true;
-        const idx = this.ffSpeeds.indexOf(this.simulationSpeed);
-        this.simulationSpeed = idx === -1
-          ? this.ffSpeeds[0]
-          : (this.ffSpeeds[idx + 1] || 1);
-      }
-      this.updateSpeedIndicator();
-      this.updateButtonStyles();
-      this.markSceneDirty();
-      this.btnPlayPause.classList.remove('pause');
+        // Cycle through 25×/50× or reset to normal (1×)
+        if (this.simulationSpeed === this.ffSpeeds[this.ffSpeeds.length - 1]) {
+            this.simulationSpeed = 1;
+        } else {
+            if (!this.isSimulationRunning) this.isSimulationRunning = true;
+            const idx = this.ffSpeeds.indexOf(this.simulationSpeed);
+            this.simulationSpeed = idx === -1
+                ? this.ffSpeeds[0]
+                : (this.ffSpeeds[idx + 1] || 1);
+        }
+        this.updateSpeedIndicator();
+        this.updateButtonStyles();
+        this.markSceneDirty();
+        this.btnPlayPause.classList.remove('pause');
     }
 
     /**
      * Cycle backward through rewind speeds.
      */
     rewind() {
-      // Cycle through –25×/–50× or reset to normal (1×)
-      if (this.simulationSpeed === this.revSpeeds[this.revSpeeds.length - 1]) {
-        this.simulationSpeed = 1;
-      } else {
-        if (!this.isSimulationRunning) this.isSimulationRunning = true;
-        const idx = this.revSpeeds.indexOf(this.simulationSpeed);
-        this.simulationSpeed = idx === -1
-          ? this.revSpeeds[0]
-          : (this.revSpeeds[idx + 1] || 1);
-      }
-      this.updateSpeedIndicator();
-      this.updateButtonStyles();
-      this.markSceneDirty();
-      this.btnPlayPause.classList.remove('pause');
+        // Cycle through –25×/–50× or reset to normal (1×)
+        if (this.simulationSpeed === this.revSpeeds[this.revSpeeds.length - 1]) {
+            this.simulationSpeed = 1;
+        } else {
+            if (!this.isSimulationRunning) this.isSimulationRunning = true;
+            const idx = this.revSpeeds.indexOf(this.simulationSpeed);
+            this.simulationSpeed = idx === -1
+                ? this.revSpeeds[0]
+                : (this.revSpeeds[idx + 1] || 1);
+        }
+        this.updateSpeedIndicator();
+        this.updateButtonStyles();
+        this.markSceneDirty();
+        this.btnPlayPause.classList.remove('pause');
     }
 
     // TODO: Optimize the simulation loop to handle ~50-100 tracks smoothly.
@@ -932,9 +1091,43 @@ class Simulator {
         }
     }
 
+    updateGapRunnerHUD() {
+        if (!this.hudElements.score) return;
+
+        // Total Score = Banked Score + Current Level Projected Score
+        const total = Math.floor(this.gapRunnerScore + this.currentLevelScore);
+        this.hudElements.score.textContent = total.toLocaleString();
+
+        const now = performance.now();
+        const elapsed = Math.floor((now - this.levelStartTime) / 1000);
+        const mm = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const ss = (elapsed % 60).toString().padStart(2, '0');
+        this.hudElements.time.textContent = `${mm}:${ss}`;
+    }
+
+    triggerDamageOverlay() {
+        const ov = this.hudElements.damageOverlay;
+        if (!ov) return;
+        ov.classList.remove('hidden');
+        // Force reflow
+        void ov.offsetWidth;
+        ov.classList.add('active');
+
+        // Remove after short flash
+        setTimeout(() => {
+            ov.classList.remove('active');
+            setTimeout(() => ov.classList.add('hidden'), 300); // Wait for transition
+        }, 500);
+    }
+
     // --- Physics & Calculations ---
     updatePhysics(deltaTime) {
         if (!this.isSimulationRunning) return;
+
+        if (this.config.mode === 'gap_runner') {
+            this.checkGapRunnerStatus(deltaTime);
+            if (!this.isSimulationRunning) return;
+        }
 
         const dtSec = (deltaTime / 1000) * Math.abs(this.simulationSpeed);
 
@@ -966,15 +1159,140 @@ class Simulator {
             const dist = track.speed * timeMultiplier;
             track.x += dist * Math.sin(this.toRadians(track.course));
             track.y += dist * Math.cos(this.toRadians(track.course));
-            const dtH = (deltaTime/3600000)*Math.abs(this.simulationSpeed);
+            const dtH = (deltaTime / 3600000) * Math.abs(this.simulationSpeed);
             track._controller?.update(dtH, this.tracks, this.scenarioCfg);
         });
+    }
+
+    checkGapRunnerStatus(deltaTime) {
+        if (!this.tssData?.waypoint) return;
+
+        // --- Score Decay ---
+        const DECAY_RATE = 10; // points per second
+        const decay = DECAY_RATE * (deltaTime / 1000);
+        this.currentLevelScore = Math.max(0, this.currentLevelScore - decay);
+
+        // --- CPA Safety Checks ---
+        const toRad = (d) => d * Math.PI / 180;
+        const ownVx = this.ownShip.speed * Math.sin(toRad(this.ownShip.course));
+        const ownVy = this.ownShip.speed * Math.cos(toRad(this.ownShip.course));
+        const paramOwn = { x: this.ownShip.x, y: this.ownShip.y, vx: ownVx, vy: ownVy };
+
+        for (const track of this.tracks) {
+            // Only check monitoring tracks or non-hazard/non-user?
+            // Hazards are stationary (usually), still shouldn't hit them.
+            if (this.penaltyRegistry.has(track.id)) continue;
+
+            const tvx = track.speed * Math.sin(toRad(track.course));
+            const tvy = track.speed * Math.cos(toRad(track.course));
+            const paramTgt = { x: track.x, y: track.y, vx: tvx, vy: tvy };
+
+            // solveCPA is available in file scope
+            const { t, d } = solveCPA(paramOwn, paramTgt);
+
+            // Penalty if predicted CPA < 1.0 NM and it is in the future (t > 0)
+            if (d < 1.0 && t > 0) {
+                this.currentLevelScore = Math.max(0, this.currentLevelScore - 500);
+                this.penaltyRegistry.add(track.id);
+                this.triggerDamageOverlay();
+            }
+        }
+
+        this.updateGapRunnerHUD();
+
+        // 1. Win Check (Ownship reaches Waypoint)
+        const dx = this.ownShip.x - this.tssData.waypoint.x;
+        const dy = this.ownShip.y - this.tssData.waypoint.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Win condition: within 0.5 NM
+        if (dist < 0.5) {
+            this.completeLevel();
+            return;
+        }
+
+        // 2. Loss Check (Collision with Traffic)
+        const COLLISION_THRESHOLD = 0.1; // NM
+
+        for (const track of this.tracks) {
+            const tdx = this.ownShip.x - track.x;
+            const tdy = this.ownShip.y - track.y;
+            const tdist = Math.sqrt(tdx * tdx + tdy * tdy);
+
+            if (tdist < COLLISION_THRESHOLD) {
+                this.gameOver();
+                return;
+            }
+        }
+    }
+
+    applyPenalty(trackId, amount) {
+        this.penaltyRegistry.add(trackId);
+        this.currentLevelScore = Math.max(0, this.currentLevelScore - amount);
+        this.flashDamage();
+        this.updateGapRunnerHUD();
+    }
+
+    flashDamage() {
+        if (!this.hudElements.damageOverlay) return;
+        this.hudElements.damageOverlay.classList.remove('hidden');
+        // Trigger reflow
+        void this.hudElements.damageOverlay.offsetWidth;
+        this.hudElements.damageOverlay.classList.add('active');
+
+        setTimeout(() => {
+            this.hudElements.damageOverlay.classList.remove('active');
+            setTimeout(() => {
+                this.hudElements.damageOverlay.classList.add('hidden');
+            }, 300); // Wait for transition
+        }, 300); // 300ms flash
+    }
+
+    updateGapRunnerHUD() {
+        if (!this.hudElements.score) return;
+
+        // Total Score = Banked Score + Current Level Projected Score
+        const total = Math.floor(this.gapRunnerScore + this.currentLevelScore);
+        this.hudElements.score.textContent = total.toLocaleString();
+
+        const now = performance.now();
+        const elapsed = Math.floor((now - this.levelStartTime) / 1000);
+        const mm = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const ss = (elapsed % 60).toString().padStart(2, '0');
+        this.hudElements.time.textContent = `${mm}:${ss}`;
+    }
+
+    completeLevel() {
+        this.isSimulationRunning = false;
+
+        // Accumulate Score
+        this.gapRunnerScore += Math.floor(this.currentLevelScore);
+        this.updateGapRunnerHUD();
+
+        if (this.levelOverlay && this.levelMessage) {
+            this.levelMessage.textContent = `Level ${this.gapRunnerLevel} Complete!`;
+            this.levelOverlay.classList.remove('hidden');
+        }
+
+        setTimeout(() => {
+            this.levelOverlay?.classList.add('hidden');
+            this.loadGapRunnerScenario(this.gapRunnerLevel + 1);
+            this.isSimulationRunning = true;
+        }, 2500);
+    }
+
+    gameOver() {
+        this.isSimulationRunning = false;
+        // this.gapRunnerActive = false; // Keep active so we don't return to sim mode, just stuck in game over
+        if (this.gameOverOverlay) {
+            this.gameOverOverlay.classList.remove('hidden');
+        }
     }
 
     calculateAllData(track) {
         const dx = track.x - this.ownShip.x;
         const dy = track.y - this.ownShip.y;
-        track.range = Math.max(0, Math.min(359.9, Math.sqrt(dx**2 + dy**2)));
+        track.range = Math.max(0, Math.min(359.9, Math.sqrt(dx ** 2 + dy ** 2)));
         track.bearing = (this.toDegrees(Math.atan2(dx, dy)) + 360) % 360;
 
         const ownShipCanvasAngle = this.toRadians(this.bearingToCanvasAngle(this.ownShip.course));
@@ -987,7 +1305,7 @@ class Simulator {
 
         const relVelX = targetVelX - ownShipVelX;
         const relVelY = targetVelY - ownShipVelY;
-        const relSpeed = Math.sqrt(relVelX**2 + relVelY**2);
+        const relSpeed = Math.sqrt(relVelX ** 2 + relVelY ** 2);
         const relVectorCanvasAngle = this.toDegrees(Math.atan2(relVelY, relVelX));
 
         if (!track.rmVector) track.rmVector = { x: 0, y: 0, speed: 0, bearing: 0 };
@@ -1009,7 +1327,7 @@ class Simulator {
             track.cpa.brg = '--';
             track.hasPassedCPA = true;
         } else {
-            const tcpa = -dotProduct / (relSpeed**2);
+            const tcpa = -dotProduct / (relSpeed ** 2);
             track.hasPassedCPA = tcpa < 0;
             const cpaX = targetPosX + tcpa * relVelX;
             const cpaY = targetPosY + tcpa * relVelY;
@@ -1022,7 +1340,7 @@ class Simulator {
                 track.cpa.time = '--:--:--';
                 track.cpa.brg = '--';
             } else {
-                const cpaRange = Math.sqrt(cpaX**2 + cpaY**2);
+                const cpaRange = Math.sqrt(cpaX ** 2 + cpaY ** 2);
                 const cpaCanvasAngle = this.toDegrees(Math.atan2(cpaY, cpaX));
                 const cpaBearing = this.canvasAngleToBearing(cpaCanvasAngle);
                 const cpaQuarter = this.getRelativeQuarter(cpaBearing, this.ownShip.course);
@@ -1039,7 +1357,7 @@ class Simulator {
 
         track.rm.dir = `${this.formatBearing(track.rmVector.bearing)} T`;
         track.rm.spd = `${relSpeed.toFixed(1)} kts`;
-        track.rm.rate = this.getBearingRate({x: relVelX, y: relVelY}, {x: targetPosX, y: targetPosY}, track.range);
+        track.rm.rate = this.getBearingRate({ x: relVelX, y: relVelY }, { x: targetPosX, y: targetPosY }, track.range);
         track.rm.angle = `${this.formatBearing(targetAngle)} deg`;
         // track.rm.aspect = this.getAspect(targetAngle);
     }
@@ -1057,7 +1375,7 @@ class Simulator {
         const relWindVelX = trueWindVelX - ownShipVelX;
         const relWindVelY = trueWindVelY - ownShipVelY;
 
-        this.relativeWind.speed = Math.sqrt(relWindVelX**2 + relWindVelY**2);
+        this.relativeWind.speed = Math.sqrt(relWindVelX ** 2 + relWindVelY ** 2);
         const relWindVectorCanvasAngle = this.toDegrees(Math.atan2(relWindVelY, relWindVelX));
 
         this.relativeWind.vectorDirection = this.canvasAngleToBearing(relWindVectorCanvasAngle);
@@ -1088,15 +1406,24 @@ class Simulator {
         if (this.showWeather) {
             this.drawWeatherInfo(center, radius);
         }
+
+        // --- TSS Rendering ---
+        if (this.tssData) {
+            this.drawTSS(center, radius);
+            if (this.tssData.waypoint) {
+                this.drawWaypoint(center, radius);
+            }
+        }
+
         this.drawOwnShipIcon(center, radius);
         this.tracks.forEach(track => {
             if (track.range > this.maxRange) return;
             this.drawTarget(center, radius, track);
-            if(this.showRelativeMotion) {
+            if (this.showRelativeMotion) {
                 this.drawRelativeMotionVector(center, radius, track);
             }
         });
-        if(this.showCPAInfo && this.selectedTrackId !== null) {
+        if (this.showCPAInfo && this.selectedTrackId !== null) {
             this.drawCPAIndicator(center, radius);
         }
         if (this.selectedTrackId !== null) {
@@ -1107,6 +1434,69 @@ class Simulator {
         if (this.hoveredTrackId !== null && this.hoveredTrackId !== this.selectedTrackId) {
             this.drawSelectionIndicator(center, radius, this.hoveredTrackId, this.radarFaintWhite, 1);
         }
+    }
+
+    getScreenPos(wx, wy, center, radius) {
+        const dx = wx - this.ownShip.x;
+        const dy = wy - this.ownShip.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        // Optimize: if distance is huge, maybe don't calculate? But canvas handles clipping.
+
+        const bearing = (this.toDegrees(Math.atan2(dx, dy)) + 360) % 360;
+        const angleRad = this.toRadians(this.bearingToCanvasAngle(bearing));
+        const distOnCanvas = (dist / this.maxRange) * radius;
+        return {
+            x: center + distOnCanvas * Math.cos(angleRad),
+            y: center - distOnCanvas * Math.sin(angleRad)
+        };
+    }
+
+    drawTSS(center, radius) {
+        if (!this.tssData.boundaries) return;
+        this.ctx.save();
+        this.ctx.lineWidth = 2;
+
+        this.tssData.boundaries.forEach(b => {
+            const p1 = this.getScreenPos(b.start.x, b.start.y, center, radius);
+            const p2 = this.getScreenPos(b.end.x, b.end.y, center, radius);
+
+            this.ctx.beginPath();
+            this.ctx.moveTo(p1.x, p1.y);
+            this.ctx.lineTo(p2.x, p2.y);
+
+            if (b.type === 'separation') {
+                this.ctx.strokeStyle = this.radarDarkOrange; // Or maybe a distinct color
+                this.ctx.setLineDash([10, 10]);
+            } else {
+                this.ctx.strokeStyle = this.radarFaintWhite;
+                this.ctx.setLineDash([5, 5]);
+            }
+            this.ctx.stroke();
+        });
+        this.ctx.restore();
+    }
+
+    drawWaypoint(center, radius) {
+        const wp = this.tssData.waypoint;
+        const p = this.getScreenPos(wp.x, wp.y, center, radius);
+
+        this.ctx.save();
+        this.ctx.strokeStyle = this.radarGreen;
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([5, 5]);
+        this.ctx.beginPath();
+        // Visual radius somewhat arbitrary or based on zoom? 
+        // Request said: "distinct circle, e.g., green dash line with no fill. Use the same green as the vector color"
+        const r = (wp.radius / this.maxRange) * radius; // Scale radius
+        this.ctx.arc(p.x, p.y, Math.max(5, r), 0, 2 * Math.PI);
+        this.ctx.stroke();
+
+        // Maybe a label?
+        this.ctx.fillStyle = this.radarGreen;
+        this.ctx.font = '12px monospace';
+        this.ctx.fillText("WPT", p.x + r + 5, p.y);
+
+        this.ctx.restore();
     }
 
     drawStaticRadar() {
@@ -1197,14 +1587,14 @@ class Simulator {
         const endX = center + vectorDistPixels * Math.cos(courseAngle);
         const endY = center - vectorDistPixels * Math.sin(courseAngle);
         this.ownShip.vectorEndpoint = { x: endX, y: endY };
-        
-        
+
+
 
         // Draw ordered course/speed vector if still manoeuvring
         const orderedCourse = this.ownShip.orderedCourse;
-        const orderedSpeed  = this.ownShip.orderedSpeed;
+        const orderedSpeed = this.ownShip.orderedSpeed;
         const diffCourse = Math.abs(((orderedCourse - this.ownShip.course + 540) % 360) - 180);
-        const diffSpeed  = Math.abs(orderedSpeed - this.ownShip.speed);
+        const diffSpeed = Math.abs(orderedSpeed - this.ownShip.speed);
         if (diffCourse > 0.5 || diffSpeed > 0.05) {
             const orderDistPixels = orderedSpeed * timeInHours * pixelsPerNm;
             const orderAngle = this.toRadians(this.bearingToCanvasAngle(orderedCourse));
@@ -1319,7 +1709,7 @@ class Simulator {
 
         const cpaBearing = (this.toDegrees(Math.atan2(track.cpaPosition.x, track.cpaPosition.y)) + 360) % 360;
         const cpaCanvasAngle = this.toRadians(this.bearingToCanvasAngle(cpaBearing));
-        const cpaRange = Math.sqrt(track.cpaPosition.x**2 + track.cpaPosition.y**2);
+        const cpaRange = Math.sqrt(track.cpaPosition.x ** 2 + track.cpaPosition.y ** 2);
         const cpaDistCanvas = cpaRange * pixelsPerNm;
         const cpaX = center + cpaDistCanvas * Math.cos(cpaCanvasAngle);
         const cpaY = center - cpaDistCanvas * Math.sin(cpaCanvasAngle);
@@ -1361,19 +1751,19 @@ class Simulator {
 
         const wX = center + Math.cos(windFromAngle) * radius;
         const wY = center - Math.sin(windFromAngle) * radius;
-        this.trueWind.wPos = {x: wX, y: wY};
+        this.trueWind.wPos = { x: wX, y: wY };
 
         const startX = wX;
         const startY = wY;
         const endX = startX - Math.cos(windFromAngle) * arrowLength;
         const endY = startY + Math.sin(windFromAngle) * arrowLength;
-        this.trueWind.arrowEndpoint = {x: endX, y: endY};
+        this.trueWind.arrowEndpoint = { x: endX, y: endY };
 
         this.ctx.save();
         this.ctx.strokeStyle = this.radarFaintGreen;
-        this.ctx.fillStyle   = this.radarFaintGreen;
-        this.ctx.font        = `${Math.max(12, radius * 0.08)}px 'IBM Plex Sans Mono', monospace`;
-        this.ctx.textAlign   = 'center';
+        this.ctx.fillStyle = this.radarFaintGreen;
+        this.ctx.font = `${Math.max(12, radius * 0.08)}px 'IBM Plex Sans Mono', monospace`;
+        this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText('W', wX, wY);
         this.ctx.lineWidth = VECTOR_LINE_WIDTH;
@@ -1460,7 +1850,7 @@ class Simulator {
     }
 
     updateButtonStyles() {
-    
+
         this.btnPlayPause.className = `controlplay ${this.isSimulationRunning ? 'selected' : 'unselected'}`;
         if (this.iconPlay && this.iconPause) {
             this.iconPlay.classList.toggle('d-none', this.isSimulationRunning);
@@ -1506,14 +1896,14 @@ class Simulator {
         this.uiScaleFactor = scale;
 
         // size the canvas display to match container square
-        this.canvas.style.width  = `${dim}px`;
+        this.canvas.style.width = `${dim}px`;
         this.canvas.style.height = `${dim}px`;
 
         // Canvas resolution depends on its current size in the DOM, which is now controlled by JS.
         const size = dim;
 
         if (size > 0) {
-            this.canvas.width  = size * this.DPR;
+            this.canvas.width = size * this.DPR;
             this.canvas.height = size * this.DPR;
             this.staticCanvas.width = this.canvas.width;
             this.staticCanvas.height = this.canvas.height;
@@ -1603,7 +1993,7 @@ class Simulator {
     handlePointerDown(e) {
         if (e.button !== 0 && e.buttons !== undefined && e.buttons !== 1) return;
         if (this.canvas.setPointerCapture && e.pointerId !== undefined) {
-            try { this.canvas.setPointerCapture(e.pointerId); } catch (err) {}
+            try { this.canvas.setPointerCapture(e.pointerId); } catch (err) { }
         }
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = (e.clientX - rect.left) * this.DPR;
@@ -1758,29 +2148,29 @@ class Simulator {
         const minVecPickDistance = 25 * this.DPR;
 
         if (this.showWeather) {
-            const distToW = Math.sqrt((mouseX - this.trueWind.wPos.x)**2 + (mouseY - this.trueWind.wPos.y)**2);
+            const distToW = Math.sqrt((mouseX - this.trueWind.wPos.x) ** 2 + (mouseY - this.trueWind.wPos.y) ** 2);
             if (distToW < hitTolerance) return { type: 'windDirection', id: 'trueWind' };
-            const distToArrowhead = Math.sqrt((mouseX - this.trueWind.arrowEndpoint.x)**2 + (mouseY - this.trueWind.arrowEndpoint.y)**2);
+            const distToArrowhead = Math.sqrt((mouseX - this.trueWind.arrowEndpoint.x) ** 2 + (mouseY - this.trueWind.arrowEndpoint.y) ** 2);
             if (distToArrowhead < hitTolerance) return { type: 'windSpeed', id: 'trueWind' };
         }
 
         for (const track of this.tracks) {
-            const {x, y} = this.getTargetCoords(center, radius, track);
+            const { x, y } = this.getTargetCoords(center, radius, track);
             const size = Math.max(11, radius * 0.038) * 1.5;
-            if (mouseX > x - size/2 && mouseX < x + size/2 && mouseY > y - size/2 && mouseY < y + size/2) {
-                return {type: 'icon', id: track.id};
+            if (mouseX > x - size / 2 && mouseX < x + size / 2 && mouseY > y - size / 2 && mouseY < y + size / 2) {
+                return { type: 'icon', id: track.id };
             }
         }
 
         const allVessels = [this.ownShip, ...this.tracks];
         for (const vessel of allVessels) {
             if (!vessel.vectorEndpoint) continue;
-            const startPt = (vessel.id === 'ownShip') ? {x: center, y: center} : this.getTargetCoords(center, radius, vessel);
+            const startPt = (vessel.id === 'ownShip') ? { x: center, y: center } : this.getTargetCoords(center, radius, vessel);
             const distFromStart = Math.hypot(mouseX - startPt.x, mouseY - startPt.y);
             if (distFromStart < minVecPickDistance) continue;
             const endPt = vessel.vectorEndpoint;
-            const dist = this.distToSegment({x: mouseX, y: mouseY}, startPt, endPt);
-            if (dist < hitTolerance) return {type: 'vector', id: vessel.id};
+            const dist = this.distToSegment({ x: mouseX, y: mouseY }, startPt, endPt);
+            if (dist < hitTolerance) return { type: 'vector', id: vessel.id };
         }
         return null;
     }
@@ -1789,7 +2179,7 @@ class Simulator {
     toggleVectorTime() {
         const currentIndex = this.vectorTimes.indexOf(this.vectorTimeInMinutes);
         this.vectorTimeInMinutes = this.vectorTimes[(currentIndex + 1) % this.vectorTimes.length];
-        this._setText('btn-vector-time', this.vectorTimeInMinutes+' min');
+        this._setText('btn-vector-time', this.vectorTimeInMinutes + ' min');
         this.markSceneDirty();
     }
 
@@ -1800,14 +2190,14 @@ class Simulator {
 
         // Update button class to reflect current range
         const rounded = Math.round(this.maxRange);
-        const rangeClasses = ['range-3','range-6','range-12','range-24'];
+        const rangeClasses = ['range-3', 'range-6', 'range-12', 'range-24'];
         this.btnRange.classList.remove(...rangeClasses);
         this.btnRange.classList.add(`range-${rounded}`);
         this.staticDirty = true;
         this.markSceneDirty();
     }
 
-    
+
     toggleWeather() {
         this.showWeather = !this.showWeather;
         this.markSceneDirty();
@@ -1870,7 +2260,7 @@ class Simulator {
     }
 
     addTrack() {
-        const existingNums = this.tracks.map(t => parseInt(t.id, 10)).sort((a,b) => a - b);
+        const existingNums = this.tracks.map(t => parseInt(t.id, 10)).sort((a, b) => a - b);
         let newNum = 1;
         while (existingNums.includes(newNum)) newNum++;
         const newId = String(newNum).padStart(4, '0');
@@ -1934,14 +2324,14 @@ class Simulator {
     _syncFullscreenUI() {
         const entering = !!fsApi.isActive();
         this.btnFullscreen.setAttribute('data-state', entering ? 'exit' : 'enter');
-        this.btnFullscreen.title     = entering ? 'Exit full screen' : 'Enter full screen';
+        this.btnFullscreen.title = entering ? 'Exit full screen' : 'Enter full screen';
         this.btnFullscreen.ariaLabel = this.btnFullscreen.title;
     }
 
-    setupRandomScenario(){
+    setupRandomScenario() {
         const gen = new ScenarioGenerator(this.scenarioCfg);
         this.tracks = gen.makeScenario(this.ownShip);
-        this.tracks.forEach(t=>{ t._sim=this; t._controller=new ContactController(t); });
+        this.tracks.forEach(t => { t._sim = this; t._controller = new ContactController(t); });
         this.selectedTrackId = this.tracks[0].id;
         this.isSimulationRunning = true;
         this.simulationElapsed = 0;
@@ -1953,10 +2343,10 @@ class Simulator {
 
     showHelpModal() {
         this.helpModal.style.display = 'flex';
-        const left = (window.innerWidth  - this.helpModal.offsetWidth)  / 2;
-        const top  = (window.innerHeight - this.helpModal.offsetHeight) / 2;
+        const left = (window.innerWidth - this.helpModal.offsetWidth) / 2;
+        const top = (window.innerHeight - this.helpModal.offsetHeight) / 2;
         this.helpModal.style.left = `${Math.max(0, left)}px`;
-        this.helpModal.style.top  = `${Math.max(0, top)}px`;
+        this.helpModal.style.top = `${Math.max(0, top)}px`;
     }
 
     hideHelpModal() {
@@ -1977,31 +2367,31 @@ class Simulator {
         const s = Math.floor(totalSeconds % 60);
         return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
-    getRelativeQuarter(cpaBearing, ownShipCourse){
+    getRelativeQuarter(cpaBearing, ownShipCourse) {
         const relativeBearing = (cpaBearing - ownShipCourse + 360) % 360;
-        if(relativeBearing >= 0 && relativeBearing < 90) return 'STBD BOW';
-        if(relativeBearing >= 90 && relativeBearing < 180) return 'STBD QTR';
-        if(relativeBearing >= 180 && relativeBearing < 270) return 'PORT QTR';
+        if (relativeBearing >= 0 && relativeBearing < 90) return 'STBD BOW';
+        if (relativeBearing >= 90 && relativeBearing < 180) return 'STBD QTR';
+        if (relativeBearing >= 180 && relativeBearing < 270) return 'PORT QTR';
         return 'PORT BOW';
     }
-    getAspect(targetAngle){
-        if(targetAngle >= 337.5 || targetAngle < 22.5) return 'BOW';
-        if(targetAngle >= 22.5 && targetAngle < 67.5) return 'STBD BOW';
-        if(targetAngle >= 67.5 && targetAngle < 112.5) return 'STBD BM';
-        if(targetAngle >= 112.5 && targetAngle < 157.5) return 'STBD QTR';
-        if(targetAngle >= 157.5 && targetAngle < 202.5) return 'STERN';
-        if(targetAngle >= 202.5 && targetAngle < 247.5) return 'PORT QTR';
-        if(targetAngle >= 247.5 && targetAngle < 292.5) return 'PORT BM';
-        if(targetAngle >= 292.5 && targetAngle < 337.5) return 'PORT BOW';
+    getAspect(targetAngle) {
+        if (targetAngle >= 337.5 || targetAngle < 22.5) return 'BOW';
+        if (targetAngle >= 22.5 && targetAngle < 67.5) return 'STBD BOW';
+        if (targetAngle >= 67.5 && targetAngle < 112.5) return 'STBD BM';
+        if (targetAngle >= 112.5 && targetAngle < 157.5) return 'STBD QTR';
+        if (targetAngle >= 157.5 && targetAngle < 202.5) return 'STERN';
+        if (targetAngle >= 202.5 && targetAngle < 247.5) return 'PORT QTR';
+        if (targetAngle >= 247.5 && targetAngle < 292.5) return 'PORT BM';
+        if (targetAngle >= 292.5 && targetAngle < 337.5) return 'PORT BOW';
         return 'N/A';
     }
-    getBearingRate(relativeVelocity, targetPosition, range){
+    getBearingRate(relativeVelocity, targetPosition, range) {
         const crossProduct = targetPosition.x * relativeVelocity.y - targetPosition.y * relativeVelocity.x;
-        if(range < 0.01) return '0.00 STEADY';
+        if (range < 0.01) return '0.00 STEADY';
         const bearingRateRadPerHour = crossProduct / (range * range);
         const bearingRateDpm = (bearingRateRadPerHour * 180 / Math.PI) / 60;
         let direction;
-        if(Math.abs(bearingRateDpm) < 0.01) {
+        if (Math.abs(bearingRateDpm) < 0.01) {
             direction = 'STEADY';
         } else if (bearingRateDpm > 0) {
             direction = 'LEFT';
@@ -2011,16 +2401,16 @@ class Simulator {
         return `${Math.abs(bearingRateDpm).toFixed(2)} ${direction}`;
     }
     distToSegment(p, v, w) {
-        const l2 = (v.x - w.x)**2 + (v.y - w.y)**2;
-        if (l2 == 0) return Math.sqrt((p.x - v.x)**2 + (p.y - v.y)**2);
+        const l2 = (v.x - w.x) ** 2 + (v.y - w.y) ** 2;
+        if (l2 == 0) return Math.sqrt((p.x - v.x) ** 2 + (p.y - v.y) ** 2);
         let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
         t = Math.max(0, Math.min(1, t));
-        return Math.sqrt((p.x - (v.x + t * (w.x - v.x)))**2 + (p.y - (v.y + t * (w.y - v.y)))**2);
+        return Math.sqrt((p.x - (v.x + t * (w.x - v.x))) ** 2 + (p.y - (v.y + t * (w.y - v.y))) ** 2);
     }
     prepareStaticStyles() {
         this.ctx.strokeStyle = this.radarFaintGreen;
-        this.ctx.fillStyle   = this.radarFaintGreen;
-        this.ctx.font        = `${Math.max(12, this.canvas.width * 0.04)}px 'IBM Plex Sans Mono', monospace`;
+        this.ctx.fillStyle = this.radarFaintGreen;
+        this.ctx.font = `${Math.max(12, this.canvas.width * 0.04)}px 'IBM Plex Sans Mono', monospace`;
     }
 }
 
