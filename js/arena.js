@@ -181,6 +181,45 @@ class ScenarioGenerator {
             tracks.push(this._spawnSimple(x, y, 270, spd));
         }
 
+        // Separation Zone Traffic (Static/Fishing) in y [-1, 1]
+        const numStatic = this._randInt(2, 5);
+        for (let i = 0; i < numStatic; i++) {
+            const y = this._rand(-0.8, 0.8);   // Keep strictly inside the zone
+            const x = this._rand(-12, 12);
+            const spd = this._rand(0, 3);      // Drifting / Low speed
+            const crs = this._rand(0, 360);    // Random heading
+            const t = this._spawnSimple(x, y, crs, spd);
+            t.isHazard = true;                 // Disable AI maneuvering
+            tracks.push(t);
+        }
+
+        // 2b. Level 3+ Complex Crossers
+        if (level >= 3) {
+            // Opposing Crossers (North heading South)
+            // Spawn near Waypoint (North side), heading roughly South (180)
+            const numOpposing = this._randInt(1, 2);
+            for (let i = 0; i < numOpposing; i++) {
+                const x = this._rand(-10, 10);
+                const y = this._rand(5.0, 8.0); // Start North
+                const crs = (180 + this._rand(-15, 15)) % 360;
+                const spd = Math.max(5, baseSpeed + this._rand(-2, 2));
+                tracks.push(this._spawnSimple(x, y, crs, spd));
+            }
+
+            // Following Crossers (South heading North)
+            // Spawn near Ownship start (South side), heading roughly North (000)
+            // Speed competitive with Ownship (10kts) to force Overtaking interactions
+            const numFollowing = 1;
+            for (let i = 0; i < numFollowing; i++) {
+                const x = this._rand(-6, 6);
+                const y = this._rand(-8.0, -5.0); // Start South
+                const crs = (0 + this._rand(-10, 10) + 360) % 360;
+                // Ownship is 10kts. Range [8, 13] creates mix of overtaking/being overtaken
+                const spd = this._rand(8, 13);
+                tracks.push(this._spawnSimple(x, y, crs, spd));
+            }
+        }
+
         // 3. Ownship & Waypoint
         // Ownship starts South (e.g., y = -6, x = random), heading North (000)
         const ownshipStart = { x: this._rand(-2, 2), y: -6, course: 0, speed: 10 };
