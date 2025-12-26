@@ -351,22 +351,56 @@ button.buttonbase {
   overflow: hidden;
 }
 
-.iconswitchon {
-  width: 14px;
-  max-height: 100%;
+.switch {
+  width: 26px;
+  height: 15px;
+  display: inline-block;
   position: relative;
-  overflow: hidden;
 }
 
-.buttonswitch {
-  border-radius: var(--br-2);
-  background-color: var(--neutral-900);
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 20px;
-  height: 20px;
-  display: flex;
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  cursor: pointer;
+  background-color: var(--neutral-600);
+  transition: all .4s;
+  position: absolute;
+  inset: 0;
+}
+
+.slider:before {
+  content: "";
+  background-color: #fff;
+  width: 11px;
+  height: 11px;
+  transition: all .4s;
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+}
+
+input:checked + .slider {
+  background-color: var(--primary-500);
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px var(--primary-500);
+}
+
+input:checked + .slider:before {
+  transform: translateX(11px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }
 
 .control, .panel-header2 {
@@ -496,6 +530,10 @@ button.control-backward, button.control-forward {
   justify-content: center;
   align-items: center;
   display: flex;
+}
+
+button.control-forward.hidden, button.control-backward.hidden {
+  display: none !important;
 }
 
 button.controlplay .placeholder {
@@ -720,6 +758,10 @@ button.controlplay .placeholder {
     width: 64px;
     height: 64px;
   }
+
+  .control-forward.hidden, .control-backward.hidden {
+    display: none;
+  }
 }
 
 #drag-tooltip, #order-tooltip {
@@ -884,5 +926,13 @@ button.controlplay .placeholder {
     top: 24px;
     left: 24px;
   }
+}
+
+.gap-runner-active #future, .gap-runner-active #past, #wind-data-container {
+  display: none !important;
+}
+
+.card.disabled {
+  opacity: .5;
 }
 /*# sourceMappingURL=Maneuver-Core-Simulation.7beda37c.css.map */

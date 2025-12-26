@@ -26,6 +26,19 @@ class GameManager {
   _attachListeners() {
     this.btnSimulator?.addEventListener('click', this.startSimulatorMode);
     this.btnGapRunner?.addEventListener('click', this.startGapRunner);
+
+    // Main Menu navigation via Logo
+    const logo = document.querySelector('.maneuverlogo');
+    if (logo) {
+      logo.style.cursor = 'pointer';
+      logo.addEventListener('click', () => {
+        this.showMenu();
+        // Optional: Pause simulation?
+        if (window.sim && window.sim.isSimulationRunning) {
+          window.sim.togglePlayPause();
+        }
+      });
+    }
   }
 
   /**
