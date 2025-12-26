@@ -842,14 +842,24 @@ class ContactController {
         this.btnAddTrack?.addEventListener('click', ()=>this.addTrack());
         this.btnDropTrack?.addEventListener('click', ()=>this.dropTrack());
         this.btnScen?.addEventListener('click', ()=>{
-            // 1) Clean up old instance
-            window.sim.destroy();
-            // 2) Build a completely new one
-            window.sim = new Simulator();
-        // 3) (Optional) If you want randomness on first load only,
-        //    your constructor might already call setupRandomScenario().
-        //    Otherwise, explicitly do:
-        // window.sim.setupRandomScenario();
+            if (this.config.mode === 'gap_runner') {
+                // GAP RUNNER: Restart from Level 1
+                this.loadGapRunnerScenario(1);
+                // Ensure simulation resumes if it was paused or game over
+                if (!this.isSimulationRunning) {
+                    this.isSimulationRunning = true;
+                    this.btnPlayPause.classList.remove('pause');
+                    this.startGameLoop();
+                    // Update speed indicator to normal 1x just in case
+                    this.simulationSpeed = 1;
+                    this.updateSpeedIndicator();
+                }
+            } else {
+                // SIMULATOR: Generate new scenario (preserve current config)
+                const currentConfig = this.config;
+                window.sim.destroy();
+                window.sim = new Simulator(currentConfig);
+            }
         });
         // Help Modal
         // this.btnHelp?.addEventListener('click', () => this.showHelpModal());
