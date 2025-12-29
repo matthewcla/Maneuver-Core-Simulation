@@ -129,6 +129,8 @@
             <button type="button" id="future" class="control-forward" aria-label="Fast forward" title="Fast forward"><img class="controlforward-icon" loading="lazy" alt="" src="/controlforward.7e8067db.svg">
               <span id="ff-speed-indicator" class="position-absolute d-none" style="font-size: .75rem; bottom: 0; right: .25rem"></span>
             </button>
+            <button type="button" id="commit-btn" class="control-forward hidden" aria-label="Commit (Adrenaline)" title="Commit"><img class="controlforward-icon" loading="lazy" alt="" src="/controlcommit.d0809886.svg">
+            </button>
           </div>
         </div>
         <button id="regenerate" type="button" class="buttonbase2">
@@ -183,7 +185,10 @@
           <div class="panel-header2">
             <div class="label">CPA</div>
             <div class="control">
-              <!-- <button type="button" class="buttonswitch"> <img class="iconswitchon" loading="lazy" alt="" src="./public/iconswitchon.svg"/></button> -->
+              <label class="switch">
+                <input type="checkbox" id="chk-toggle-cpa" checked="">
+                <span class="slider round"></span>
+              </label>
             </div>
           </div>
           <div class="datacontainer">
@@ -205,7 +210,10 @@
           <div class="panel-header2">
             <div class="label">REL MOTION</div>
             <div class="control">
-              <!-- <button type="button" class="buttonswitch"> <img class="iconswitchon" loading="lazy" alt="" src="./public/iconswitchon.svg"/></button> -->
+              <label class="switch">
+                <input type="checkbox" id="chk-toggle-rm" checked="">
+                <span class="slider round"></span>
+              </label>
             </div>
           </div>
           <div class="datacontainer">

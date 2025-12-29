@@ -19,6 +19,16 @@ if ('serviceWorker' in navigator) window.addEventListener('load', ()=>{
     _attachListeners() {
         this.btnSimulator?.addEventListener('click', this.startSimulatorMode);
         this.btnGapRunner?.addEventListener('click', this.startGapRunner);
+        // Main Menu navigation via Logo
+        const logo = document.querySelector('.maneuverlogo');
+        if (logo) {
+            logo.style.cursor = 'pointer';
+            logo.addEventListener('click', ()=>{
+                this.showMenu();
+                // Optional: Pause simulation?
+                if (window.sim && window.sim.isSimulationRunning) window.sim.togglePlayPause();
+            });
+        }
     }
     /**
    * Checks for ?mode=X URL parameter to auto-start.

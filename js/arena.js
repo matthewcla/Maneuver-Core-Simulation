@@ -320,6 +320,7 @@ class ContactController {
 /**
  * @class Simulator
  * Encapsulates the entire state and logic for the ship maneuvering simulator.
+```
  */
 class Simulator {
     constructor(config = {}) {
@@ -377,8 +378,9 @@ class Simulator {
         this.btnAddTrack = document.getElementById('add-track');
         this.btnDropTrack = document.getElementById('remove-track');
         this.btnScen = document.getElementById('regenerate');
-        this.btnFf = document.getElementById('future');
-        this.btnRev = document.getElementById('past');
+        this.btnFuture = document.getElementById('future');
+        this.btnPast = document.getElementById('past');
+        this.btnCommit = document.getElementById('commit-btn');
         this.ffSpeedIndicator = document.getElementById('ff-speed-indicator');
         this.revSpeedIndicator = document.getElementById('rev-speed-indicator');
         this.trackDataContainer = document.getElementById('track-data-container');
@@ -423,9 +425,31 @@ class Simulator {
 
         // --- Gap Runner State ---
         this.gapRunnerScore = 0;
-        this.currentLevelScore = 0;
-        this.levelStartTime = 0;
+        // Initialize Score for this level
+        this.currentLevelScore = 5000;
         this.penaltyRegistry = new Set();
+        this.perfectGapRegistry = new Set();
+
+        // Combo / "Clean Wake" Tracking
+        this.isCommitting = false;
+        this.laneChangeCount = 0;
+        this.lanesCrossed = 0;
+        // Determine initial lane index (based on y position approx)
+        // Lanes are approx 3nm wide zones? 
+        // Let's define zones: 
+        // Zone 0: South Start (y < -4)
+        // Zone 1: Westbound Lane (y: -4 to -1)
+        // Zone 2: Separation (y: -1 to 1)
+        // Zone 3: Eastbound Lane (y: 1 to 4)
+        // Zone 4: North Goal (y > 4)
+        this.lastLaneIndex = 0; // Start at South
+        this.lastOrderedCourse = this.ownShip.orderedCourse;
+
+        // UI Setup
+        this.btnPast.classList.add('hidden');
+        this.btnFuture.classList.add('hidden');
+        if (this.btnCommit) this.btnCommit.classList.add('hidden');
+
         this.hudElements = {
             container: document.getElementById('gap-runner-hud'),
             level: document.getElementById('hud-level'),
@@ -506,28 +530,21 @@ class Simulator {
     }
 
     // --- Main Initialization ---
+    // --- Main Initialization ---
     _initialize() {
         this._attachEventListeners();
 
         if (this.config.mode === 'gap_runner') {
             this.loadGapRunnerScenario(1);
+        } else {
+            document.body.classList.remove('gap-runner-active');
+            this.addTrack();
+            this.addTrack();
         }
 
         const BASE_CANVAS_SIZE = 900;
-        this.canvas.width = BASE_CANVAS_SIZE * this.DPR;
-        this.canvas.height = BASE_CANVAS_SIZE * this.DPR;
-        this.staticCanvas.width = this.canvas.width;
-        this.staticCanvas.height = this.canvas.height;
-        this.drawStaticRadar();
-        this.staticDirty = false;
-
-        if (this.config.mode !== 'gap_runner') {
-            this.hudElements?.container?.classList.add('hidden');
-            document.body.classList.remove('gap-runner-active');
-        }
-
-        this.simulationElapsed = 0;
-        this.updateSimClock();
+        // Logic for re-adding tracks was handled by clean state below? 
+        // Wait, the original had tracks logic.
         if (this.tracks.length > 0) {
             this.tracks.forEach(track => {
                 if (track.initialBearing !== undefined && track.initialRange !== undefined) {
@@ -582,6 +599,8 @@ class Simulator {
         this.hudElements.container?.classList.remove('hidden');
         if (this.hudElements.level) this.hudElements.level.textContent = level;
         this.updateGapRunnerHUD();
+
+        if (this.btnCommit) this.btnCommit.classList.remove('hidden');
 
         // Ensure overlays are hidden
         this.levelOverlay?.classList.add('hidden');
@@ -704,21 +723,50 @@ class Simulator {
         this.btnPlayPause?.addEventListener('click', () => this.togglePlayPause());
         // Bind playback controls directly to ensure the correct handlers
         // are invoked when the buttons are pressed
-        this.btnFf?.addEventListener('click', this.fastForward.bind(this));
-        this.btnRev?.addEventListener('click', this.rewind.bind(this));
+        this.btnFuture?.addEventListener('click', this.fastForward.bind(this));
+        this.btnPast?.addEventListener('click', this.rewind.bind(this));
+
+        // Commit Button (Adrenaline) Logic
+        if (this.btnCommit) {
+            const startCommit = (e) => {
+                if (e.cancelable) e.preventDefault();
+                this.startCommit();
+            };
+            const stopCommit = (e) => {
+                if (e.cancelable) e.preventDefault();
+                this.stopCommit();
+            };
+
+            this.btnCommit.addEventListener('mousedown', startCommit);
+            this.btnCommit.addEventListener('touchstart', startCommit, { passive: false });
+
+            this.btnCommit.addEventListener('mouseup', stopCommit);
+            this.btnCommit.addEventListener('touchend', stopCommit);
+            this.btnCommit.addEventListener('mouseleave', stopCommit);
+        }
+
         this.btnAddTrack?.addEventListener('click', () => this.addTrack());
         this.btnDropTrack?.addEventListener('click', () => this.dropTrack());
         this.btnScen?.addEventListener('click', () => {
-            // 1) Clean up old instance
-            window.sim.destroy();
+            if (this.config.mode === 'gap_runner') {
+                // GAP RUNNER: Restart from Level 1
+                this.loadGapRunnerScenario(1);
 
-            // 2) Build a completely new one
-            window.sim = new Simulator();
-
-            // 3) (Optional) If you want randomness on first load only,
-            //    your constructor might already call setupRandomScenario().
-            //    Otherwise, explicitly do:
-            // window.sim.setupRandomScenario();
+                // Ensure simulation resumes if it was paused or game over
+                if (!this.isSimulationRunning) {
+                    this.isSimulationRunning = true;
+                    this.btnPlayPause.classList.remove('pause');
+                    this.startGameLoop();
+                    // Update speed indicator to normal 1x just in case
+                    this.simulationSpeed = 1;
+                    this.updateSpeedIndicator();
+                }
+            } else {
+                // SIMULATOR: Generate new scenario (preserve current config)
+                const currentConfig = this.config;
+                window.sim.destroy();
+                window.sim = new Simulator(currentConfig);
+            }
         });
 
         // Help Modal
@@ -733,22 +781,42 @@ class Simulator {
             }).observe(this.helpModal);
         }
 
-        // Data panel expand/collapse toggles radar elements
-        this.rmDataContainer?.addEventListener('toggle', () => {
-            this.showRelativeMotion = this.rmDataContainer.open;
-            this.markSceneDirty();
-            this._scheduleUIUpdate();
-        });
-        this.cpaDataContainer?.addEventListener('toggle', () => {
-            this.showCPAInfo = this.cpaDataContainer.open;
-            this.markSceneDirty();
-            this._scheduleUIUpdate();
-        });
-        this.windDataContainer?.addEventListener('toggle', () => {
-            this.showWeather = this.windDataContainer.open;
-            this.markSceneDirty();
-            this._scheduleUIUpdate();
-        });
+        // Toggle Switches (Checkboxes)
+        const bindToggleSwitch = (chkId, toggleFn) => {
+            const chk = document.getElementById(chkId);
+            if (chk && toggleFn) {
+                chk.addEventListener('change', (e) => {
+                    // Update internal state to match checkbox
+                    // e.target.checked is the new state
+                    const newState = e.target.checked;
+                    // We need to call toggleFn but maybe pass the state or just let toggleFn flip?
+                    // Expected toggleFn flips logic: this.showX = !this.showX
+
+                    // Ideally we sync force:
+                    toggleFn.call(this, newState);
+                    e.stopPropagation();
+                });
+            }
+        };
+
+        // Modify toggle functions to accept optional forced state if needed, 
+        // or just let them flip. Since checkboxes maintain state, we should sync.
+        // But the original toggle functions just flip. 
+        // Let's wrapping:
+        const linkToggle = (chkId, propName, updateFn) => {
+            const chk = document.getElementById(chkId);
+            if (chk) {
+                chk.addEventListener('change', (e) => {
+                    this[propName] = e.target.checked;
+                    this.markSceneDirty();
+                    if (updateFn) updateFn.call(this);
+                    else this._scheduleUIUpdate();
+                });
+            }
+        };
+
+        linkToggle('chk-toggle-rm', 'showRelativeMotion');
+        linkToggle('chk-toggle-cpa', 'showCPAInfo');
 
         // Settings drawer interactions
         if (this.btnSettings && this.settingsDrawer) {
@@ -1159,6 +1227,29 @@ class Simulator {
         }, 500);
     }
 
+    /**
+     * Start "Adrenaline" / Commit mode (50x speed)
+     */
+    startCommit() {
+        if (this.config.mode !== 'gap_runner') return;
+        if (!this.isSimulationRunning) this.togglePlayPause();
+        this.simulationSpeed = 50;
+        this.isCommitting = true;
+        this.updateButtonStyles();
+        this.markSceneDirty();
+    }
+
+    /**
+     * Stop "Adrenaline" / Commit mode (1x speed)
+     */
+    stopCommit() {
+        if (this.config.mode !== 'gap_runner') return;
+        this.simulationSpeed = 1;
+        this.isCommitting = false;
+        this.updateButtonStyles();
+        this.markSceneDirty();
+    }
+
     // --- Physics & Calculations ---
     updatePhysics(deltaTime) {
         if (!this.isSimulationRunning) return;
@@ -1206,34 +1297,85 @@ class Simulator {
     checkGapRunnerStatus(deltaTime) {
         if (!this.tssData?.waypoint) return;
 
+        // --- 0. Update Scoring State (Combo / Clean Wake) ---
+        // Track Lane Changes (using Ordered Course changes)
+        // Only count significant changes to avoid jitter
+        if (this.lastOrderedCourse !== this.ownShip.orderedCourse) {
+            this.laneChangeCount++;
+            this.lastOrderedCourse = this.ownShip.orderedCourse;
+        }
+
+        // Track Lanes Crossed
+        const getLane = (y) => {
+            if (y < -4) return 0; // South Start
+            if (y < -1) return 1; // Westbound
+            if (y <= 1) return 2; // Separation
+            if (y <= 4) return 3; // Eastbound
+            return 4;             // North Goal
+        };
+        const currentLane = getLane(this.ownShip.y);
+        if (this.lastLaneIndex !== null && currentLane !== this.lastLaneIndex) {
+            this.lanesCrossed++;
+            this.lastLaneIndex = currentLane;
+        }
+
+
+        // --- Core Game Loop ---
         // --- Score Decay ---
         const DECAY_RATE = 10; // points per second
         const decay = DECAY_RATE * (deltaTime / 1000);
         this.currentLevelScore = Math.max(0, this.currentLevelScore - decay);
 
-        // --- CPA Safety Checks ---
+        // --- CPA Safety Checks & Scoring ---
         const toRad = (d) => d * Math.PI / 180;
         const ownVx = this.ownShip.speed * Math.sin(toRad(this.ownShip.course));
         const ownVy = this.ownShip.speed * Math.cos(toRad(this.ownShip.course));
         const paramOwn = { x: this.ownShip.x, y: this.ownShip.y, vx: ownVx, vy: ownVy };
 
         for (const track of this.tracks) {
-            // Only check monitoring tracks or non-hazard/non-user?
-            // Hazards are stationary (usually), still shouldn't hit them.
+            // Skip if already collided/penalized
             if (this.penaltyRegistry.has(track.id)) continue;
 
             const tvx = track.speed * Math.sin(toRad(track.course));
             const tvy = track.speed * Math.cos(toRad(track.course));
             const paramTgt = { x: track.x, y: track.y, vx: tvx, vy: tvy };
 
-            // solveCPA is available in file scope
             const { t, d } = solveCPA(paramOwn, paramTgt);
 
+            // 1. Collision Alert Interrupt (Adrenaline Mode)
+            // If committing and CPA < 1.0 NM in future (t > 0), snap back.
+            if (this.isCommitting && d < 1.0 && t > 0 && t < 0.2) { // Immediate threat
+                this.stopCommit();
+                // TODO: Flash "COLLISION ALERT" or audio?
+                // For now, visual feedback by snapping back is handled by stopCommit
+                // We can trigger a red flash without damage
+                this.triggerDamageOverlay(); // Reusing damage overlay for alert? Maybe too strong.
+                // Let's just snap back for now, maybe add a text indicator later.
+            }
+
+            // 2. Penalty
             // Penalty if predicted CPA < 1.0 NM and it is in the future (t > 0)
             if (d < 1.0 && t > 0) {
                 this.currentLevelScore = Math.max(0, this.currentLevelScore - 500);
                 this.penaltyRegistry.add(track.id);
                 this.triggerDamageOverlay();
+            }
+
+            // 3. Perfect Gap (Bonus)
+            // Check if we passed astern safely.
+            // Simplified: If we are past CPA (t < 0) and d was safe but close (1.0 < d < 1.5)
+            // And we haven't awarded for this track yet.
+            if (!this.perfectGapRegistry.has(track.id)) {
+                // Check if "past" CPA. t is time to CPA. If t < 0, CPA is in past.
+                // But d is the distance at CPA.
+                if (t < -0.01 && d >= 1.0 && d <= 1.5) {
+                    // Verify we passed astern?
+                    // Simple check: relative bearing. If we are crossing behind.
+                    // For now, just distance window is good enough for "Gap".
+                    this.currentLevelScore += 1000;
+                    this.perfectGapRegistry.add(track.id);
+                    // TODO: floating text "+1000 PERFECT GAP"
+                }
             }
         }
 
@@ -1304,20 +1446,25 @@ class Simulator {
     completeLevel() {
         this.isSimulationRunning = false;
 
-        // Accumulate Score
-        this.gapRunnerScore += Math.floor(this.currentLevelScore);
-        this.updateGapRunnerHUD();
-
-        if (this.levelOverlay && this.levelMessage) {
-            this.levelMessage.textContent = `Level ${this.gapRunnerLevel} Complete!`;
-            this.levelOverlay.classList.remove('hidden');
+        // Calculate "Clean Wake" Bonus
+        let multiplier = 1;
+        if (this.laneChangeCount <= 2) {
+            multiplier = 1.5;
+            this.currentLevelScore = Math.floor(this.currentLevelScore * multiplier);
         }
 
+        this.gameManager.showLevelOverlay(`Level ${this.currentLevel} Complete!\nScore: ${this.currentLevelScore}\n(Multiplier: x${multiplier})`);
+
+        // Add to total gap runner score
+        this.gapRunnerScore += this.currentLevelScore;
+
+        // Increase level
+        this.currentLevel++;
         setTimeout(() => {
-            this.levelOverlay?.classList.add('hidden');
-            this.loadGapRunnerScenario(this.gapRunnerLevel + 1);
-            this.isSimulationRunning = true;
-        }, 2500);
+            document.getElementById('level-overlay').classList.add('hidden');
+            this.loadGapRunnerScenario(this.currentLevel);
+            this.isSimulationRunning = true; // Wait for scenario load roughly? Or strict timing
+        }, 3000);
     }
 
     gameOver() {
@@ -1869,7 +2016,21 @@ class Simulator {
             this._setText('track-spd', '--');
         }
 
+        const updateToggleState = (chkId, isOn) => {
+            const chk = document.getElementById(chkId);
+            if (chk && chk.checked !== isOn) {
+                chk.checked = isOn;
+            }
+        };
+
         const showRM = selectedTrack && this.showRelativeMotion;
+        updateToggleState('chk-toggle-rm', this.showRelativeMotion);
+
+        // Visual disabled state
+        if (this.rmDataContainer) {
+            this.rmDataContainer.classList.toggle('disabled', !this.showRelativeMotion);
+        }
+
         this._setText('rm-dir', showRM ? selectedTrack.rm.dir : '--');
         this._setText('rm-spd', showRM ? selectedTrack.rm.spd : '--');
         this._setText('rm-rate', showRM ? selectedTrack.rm.rate : '--');
@@ -1877,6 +2038,12 @@ class Simulator {
         // this._setText('rm-aspect', showRM ? selectedTrack.rm.aspect : '--');
 
         const showCPA = selectedTrack && this.showCPAInfo && !selectedTrack.hasPassedCPA;
+        updateToggleState('chk-toggle-cpa', this.showCPAInfo);
+
+        if (this.cpaDataContainer) {
+            this.cpaDataContainer.classList.toggle('disabled', !this.showCPAInfo);
+        }
+
         this._setText('cpa-brg', showCPA ? selectedTrack.cpa.brg : '--');
         this._setText('cpa-rng', showCPA ? selectedTrack.cpa.range : '--');
         this._setText('cpa-time', showCPA ? selectedTrack.cpa.time : '--');
@@ -1896,8 +2063,8 @@ class Simulator {
             this.iconPause.classList.toggle('d-none', !this.isSimulationRunning);
         }
 
-        this.btnFf.className = `control-forward ${this.simulationSpeed > 1 ? 'selected' : 'unselected'}`;
-        this.btnRev.className = `control-backward ${this.simulationSpeed < 0 ? 'selected' : 'unselected'}`;
+        this.btnFuture.className = `control-forward ${this.simulationSpeed > 1 ? 'selected' : 'unselected'}`;
+        this.btnPast.className = `control-backward ${this.simulationSpeed < 0 ? 'selected' : 'unselected'}`;
     }
 
     updateSpeedIndicator() {

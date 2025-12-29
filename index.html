@@ -157,6 +157,9 @@
               <span id="ff-speed-indicator" class="position-absolute d-none"
                 style="bottom:0; right:0.25rem; font-size:0.75rem;"></span>
             </button>
+            <button type="button" id="commit-btn" class="control-forward hidden" aria-label="Commit (Adrenaline)"
+              title="Commit"><img class="controlforward-icon" loading="lazy" alt="" src="./public/controlcommit.svg" />
+            </button>
           </div>
         </div>
         <button id="regenerate" type="button" class="buttonbase2">
@@ -214,7 +217,10 @@
           <div class="panel-header2">
             <div class="label">CPA</div>
             <div class="control">
-              <!-- <button type="button" class="buttonswitch"> <img class="iconswitchon" loading="lazy" alt="" src="./public/iconswitchon.svg"/></button> -->
+              <label class="switch">
+                <input type="checkbox" id="chk-toggle-cpa" checked>
+                <span class="slider round"></span>
+              </label>
             </div>
           </div>
           <div class="datacontainer">
@@ -236,7 +242,10 @@
           <div class="panel-header2">
             <div class="label">REL MOTION</div>
             <div class="control">
-              <!-- <button type="button" class="buttonswitch"> <img class="iconswitchon" loading="lazy" alt="" src="./public/iconswitchon.svg"/></button> -->
+              <label class="switch">
+                <input type="checkbox" id="chk-toggle-rm" checked>
+                <span class="slider round"></span>
+              </label>
             </div>
           </div>
           <div class="datacontainer">

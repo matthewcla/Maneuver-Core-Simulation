@@ -381,22 +381,65 @@ button.buttonbase {
   box-sizing: border-box;
 }
 
-.iconswitchon {
-  width: 14px;
+/* CSS Toggle Switch */
+.switch {
   position: relative;
-  max-height: 100%;
-  overflow: hidden;
+  display: inline-block;
+  width: 26px;
+  /* 32px * 0.8 ~= 26px */
+  height: 15px;
+  /* 18px * 0.8 ~= 15px (rounded up slightly for knob fit) */
 }
 
-.buttonswitch {
-  height: 20px;
-  width: 20px;
-  border-radius: var(--br-2);
-  background-color: var(--neutral-900);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--neutral-600);
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 11px;
+  /* 14px * 0.8 ~= 11px */
+  width: 11px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+}
+
+input:checked+.slider {
+  background-color: var(--primary-500);
+}
+
+input:focus+.slider {
+  box-shadow: 0 0 1px var(--primary-500);
+}
+
+input:checked+.slider:before {
+  transform: translateX(11px);
+  /* Travel distance adjusted */
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }
 
 .control,
@@ -456,11 +499,7 @@ button.buttonbase {
   font-family: var(--font-ibm-plex-mono);
 }
 
-.maneuver-logo-child {
-  /* width: 20px;
-  position: relative;
-  max-height: 100%; */
-}
+
 
 .maneuver-logo-item {
   /* height: 12.8px;
@@ -553,6 +592,11 @@ button.control-forward {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+button.control-forward.hidden,
+button.control-backward.hidden {
+  display: none !important;
 }
 
 /* Ensure the playback time matches your typography */
@@ -822,6 +866,11 @@ button.controlplay .placeholder {
     width: 64px;
   }
 
+  .control-forward.hidden,
+  .control-backward.hidden {
+    display: none;
+  }
+
 }
 
 
@@ -1005,4 +1054,20 @@ button.controlplay .placeholder {
     top: 24px;
     left: 24px;
   }
+}
+
+/* Gap Runner Specific Styles */
+.gap-runner-active #future,
+.gap-runner-active #past {
+  display: none !important;
+}
+
+/* Wind Card Removal Global */
+#wind-data-container {
+  display: none !important;
+}
+
+/* Disabled Card State */
+.card.disabled {
+  opacity: 0.5;
 }
