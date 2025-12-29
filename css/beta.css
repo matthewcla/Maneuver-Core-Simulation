@@ -1071,3 +1071,209 @@ button.controlplay .placeholder {
 .card.disabled {
   opacity: 0.5;
 }
+
+/* --- Mobile Portrait Overrides --- */
+body.mobile-portrait .card,
+body.mobile-portrait .card.wide {
+  min-width: calc((100vw - 48px) / 2.1);
+  width: calc((100vw - 48px) / 2.1);
+  flex: 0 0 auto;
+}
+
+body.mobile-portrait.gap-runner-active .hud {
+  top: 0;
+  left: 0;
+  width: 100%;
+  border-radius: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--padding-16) var(--padding-24);
+  background: var(--neutral-900-alpha-80);
+  box-sizing: border-box;
+}
+
+/* Hide labels by default */
+body.mobile-portrait.gap-runner-active .hud-label {
+  display: none;
+}
+
+/* Specific HUD Layout: Level (Left) | Time (Center, Absolute) | Score (Right) */
+/* Container needs relative for absolute child */
+body.mobile-portrait.gap-runner-active .hud {
+  position: relative;
+  justify-content: space-between;
+  /* Pushes Level Left, Score Right */
+}
+
+/* Row 1: Level */
+body.mobile-portrait.gap-runner-active .hud .hud-row:nth-child(1) {
+  order: 1;
+  text-align: left;
+  font-size: 1rem;
+  display: flex;
+  /* Ensure flex for alignment */
+  justify-content: flex-start;
+  align-items: baseline;
+  /* Align label and number baselines */
+  gap: 8px;
+  /* Doubled spacing */
+  padding-left: 8px;
+  /* Extra margin from edge */
+}
+
+body.mobile-portrait.gap-runner-active .hud .hud-row:nth-child(1) .hud-label {
+  display: inline;
+  font-size: 0.75rem;
+}
+
+body.mobile-portrait.gap-runner-active .hud .hud-row:nth-child(1) #hud-level {
+  font-size: 1.25rem;
+}
+
+/* Row 2: Score -> Right */
+body.mobile-portrait.gap-runner-active .hud .hud-row:nth-child(2) {
+  order: 3;
+  /* Visually last in flex flow if not abspos */
+  text-align: right;
+  flex: 0 0 auto;
+}
+
+body.mobile-portrait.gap-runner-active .hud .hud-row:nth-child(2) #hud-score {
+  font-size: 1.25rem;
+}
+
+/* Row 3: Time -> Absolute Center */
+body.mobile-portrait.gap-runner-active .hud .hud-row:nth-child(3) {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  text-align: center;
+  /* Order doesn't matter for absolute, but keeping it clean */
+}
+
+body.mobile-portrait.gap-runner-active #hud-time {
+  font-size: 2rem;
+}
+
+body.mobile-portrait #radarCanvas {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+}
+
+/* --- Mobile Landscape Overrides --- */
+body.mobile-landscape .maneuverlogo {
+  display: none !important;
+}
+
+body.mobile-landscape.gap-runner-active .hud {
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Full width */
+  width: 100%;
+  /* Span entire viewport */
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 0 0 var(--br-4) 0;
+  padding: var(--padding-12) var(--padding-24);
+  padding-right: 344px;
+  /* 320px Sidebar + 24px Gap -> Protects Score from overlap */
+  background: var(--neutral-900-alpha-80);
+  position: relative;
+  /* For absolute time */
+  box-sizing: border-box;
+  /* Include padding in width */
+}
+
+body.mobile-landscape.gap-runner-active .hud-label {
+  display: none;
+}
+
+/* Landscape Layout: Matching Portrait */
+/* Row 1: Level */
+body.mobile-landscape.gap-runner-active .hud .hud-row:nth-child(1) {
+  order: 1;
+  text-align: left;
+  font-size: 1rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: baseline;
+  gap: 8px;
+  padding-left: 8px;
+}
+
+body.mobile-landscape.gap-runner-active .hud .hud-row:nth-child(1) .hud-label {
+  display: inline;
+  font-size: 0.75rem;
+}
+
+body.mobile-landscape.gap-runner-active .hud .hud-row:nth-child(1) #hud-level {
+  font-size: 1.25rem;
+}
+
+/* Row 2: Score -> Right */
+body.mobile-landscape.gap-runner-active .hud .hud-row:nth-child(2) {
+  order: 3;
+  text-align: right;
+  flex: 0 0 auto;
+}
+
+body.mobile-landscape.gap-runner-active .hud .hud-row:nth-child(2) #hud-score {
+  font-size: 1.25rem;
+}
+
+/* Row 3: Time -> Absolute Center */
+body.mobile-landscape.gap-runner-active .hud .hud-row:nth-child(3) {
+  position: absolute;
+  left: 50%;
+  /* This is now 50% of viewport width */
+  transform: translateX(-50%);
+  width: auto;
+  text-align: center;
+}
+
+body.mobile-landscape.gap-runner-active #hud-time {
+  font-size: 2rem;
+}
+
+body.mobile-landscape .command-center {
+  height: 100vh;
+  overflow-y: auto;
+  display: block;
+}
+
+body.mobile-landscape .sim-controls {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--neutral-900);
+  padding-bottom: var(--padding-8);
+  border-bottom: 1px solid var(--neutral-800);
+  width: 100%;
+}
+
+body.mobile-landscape .telemetry {
+  padding-top: var(--padding-8);
+  overflow-y: visible;
+  overflow-x: hidden;
+  flex-direction: column;
+}
+
+body.mobile-landscape #radarCanvas {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Prevent scrollbars from oversized radar */
+body.mobile-portrait .radar,
+body.mobile-landscape .radar {
+  overflow: hidden;
+}
