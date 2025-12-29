@@ -2047,7 +2047,19 @@ class ContactController {
         const BASE = 900;
         const containerHeight = this.mainContainer.clientHeight;
         const wrapperWidth = this.radarWrapper.clientWidth;
-        const dim = Math.min(wrapperWidth, containerHeight);
+        let dim = Math.min(wrapperWidth, containerHeight);
+        // Viewport Logic
+        const isPortrait = window.innerHeight > window.innerWidth;
+        // const isMobile = Math.min(window.innerWidth, window.innerHeight) < 793; 
+        // Better trigger: match the CSS breakpoint logic roughly, or just check if it's "small"
+        const isSmall = window.innerWidth <= 792 || window.innerHeight <= 792;
+        document.body.classList.remove('mobile-portrait', 'mobile-landscape');
+        if (isSmall) {
+            if (isPortrait) document.body.classList.add('mobile-portrait');
+            else document.body.classList.add('mobile-landscape');
+            // Increase radar canvas size by 15%
+            dim = dim * 1.15;
+        }
         const scale = Math.max(0.7, Math.min(1.5, dim / BASE));
         document.documentElement.style.setProperty('--ui-scale', scale);
         this.uiScaleFactor = scale;
