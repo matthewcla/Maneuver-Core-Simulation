@@ -2,8 +2,9 @@ body {
   margin: 0;
   line-height: normal;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
-  background: #00001;
+  background: #000;
 }
 
 :root {

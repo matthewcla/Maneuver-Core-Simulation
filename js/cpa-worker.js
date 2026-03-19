@@ -1,5 +1,5 @@
 self.onmessage = e => {
-  const { own, tgt } = e.data;
+  const { id, own, tgt } = e.data;
   const rx = tgt.x - own.x;
   const ry = tgt.y - own.y;
   const vx = tgt.vx - own.vx;
@@ -9,5 +9,5 @@ self.onmessage = e => {
   const xCPA = rx + vx * tCPA;
   const yCPA = ry + vy * tCPA;
   const dCPA = Math.sqrt(xCPA * xCPA + yCPA * yCPA);
-  self.postMessage({ t: tCPA, d: dCPA });
+  self.postMessage({ id, t: tCPA, d: dCPA });
 };

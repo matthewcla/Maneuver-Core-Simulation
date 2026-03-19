@@ -38,20 +38,30 @@ function solveCPA(own, tgt) {
     return { t: tCPA, d: dCPA };
 }
 
-const cpaWorker = typeof Worker !== 'undefined'
+let cpaWorker = typeof Worker !== 'undefined'
   ? new Worker('./cpa-worker.js', { type: 'module' })
   : null;
+let cpaMessageId = 0;
 
 function solveCPAAsync(own, tgt) {
   if (!cpaWorker) return Promise.resolve(solveCPA(own, tgt));
+  const id = ++cpaMessageId;
   return new Promise((resolve) => {
     const handler = (e) => {
+      if (e.data.id !== id) return;
       cpaWorker.removeEventListener('message', handler);
       resolve(e.data);
     };
     cpaWorker.addEventListener('message', handler);
-    cpaWorker.postMessage({ own, tgt });
+    cpaWorker.postMessage({ id, own, tgt });
   });
+}
+
+function terminateCpaWorker() {
+  if (cpaWorker) {
+    cpaWorker.terminate();
+    cpaWorker = null;
+  }
 }
 
 const fsApi = {
@@ -265,13 +275,14 @@ class Simulator {
         this.uiUpdatePending = false;
         // --- DOM Element References ---
         this.canvas = document.getElementById('radarCanvas');
-        this.ctx = this.canvas.getContext('2d');
-        
         if (!this.canvas) {
             console.error('radarCanvas element not found in DOM');
+            return;
         }
+        this.ctx = this.canvas.getContext('2d');
         if (!this.ctx) {
             console.error('Failed to get 2D context for radarCanvas');
+            return;
         }
         this.dragTooltip = document.getElementById('drag-tooltip');
         this.orderTooltip = document.getElementById('order-tooltip');
@@ -686,6 +697,8 @@ class Simulator {
         this._abortController.abort();
         // Disconnect ResizeObserver if created
         this._helpResizeObserver?.disconnect();
+        // Terminate the CPA web worker
+        terminateCpaWorker();
         if (this.tracks) this.tracks.length = 0;
         this.ownShip = null;
         this.tracks = null;
@@ -853,8 +866,11 @@ class Simulator {
         if (this.activeEditField === id) {
             if (this.suppressEditRender) return;
             if (!el.querySelector('input')) {
-                el.innerHTML = `<input type="text" value="${parseFloat(numericValue).toFixed(1)}">`;
-                const input = el.querySelector('input');
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = parseFloat(numericValue).toFixed(1);
+                el.textContent = '';
+                el.appendChild(input);
                 const commit = () => {
                     const newVal = parseFloat(input.value);
                     this.activeEditField = null;
@@ -926,7 +942,7 @@ class Simulator {
             this.ownShip.orderedCourse = Math.max(0, Math.min(359.9, value));
             didUpdate = true;
         } else if (id === 'ownship-spd') {
-            this.ownShip.orderedSpeed = value;
+            this.ownShip.orderedSpeed = Math.max(0, Math.min(50, value));
             didUpdate = true;
         } else if (track) {
             if (id === 'track-brg') {
@@ -939,7 +955,7 @@ class Simulator {
                 track.course = Math.max(0, Math.min(359.9, value));
                 didUpdate = true;
             } else if (id === 'track-spd') {
-                track.speed = value;
+                track.speed = Math.max(0, Math.min(50, value));
                 didUpdate = true;
             }
 
@@ -1719,7 +1735,7 @@ class Simulator {
                     const windVecY = Math.sin(windFromAngle);
                     const projectedLength = mouseVecX * windVecX + mouseVecY * windVecY;
                     const arrowPixelLength = projectedLength - radius;
-                    this.trueWind.speed = Math.max(0, -arrowPixelLength / pixelsPerKnot);
+                    this.trueWind.speed = Math.max(0, Math.min(100, -arrowPixelLength / pixelsPerKnot));
                 }
                 this.markSceneDirty();
             } else if (this.dragType === 'icon') {
@@ -1956,6 +1972,7 @@ class Simulator {
         this.btnFullscreen.setAttribute('data-state', entering ? 'exit' : 'enter');
         this.btnFullscreen.title     = entering ? 'Exit full screen' : 'Enter full screen';
         this.btnFullscreen.ariaLabel = this.btnFullscreen.title;
+        this.scaleUI();
     }
 
     setupRandomScenario(){
@@ -2082,5 +2099,6 @@ export {
   Simulator,
   solveCPA,
   solveCPAAsync,
+  terminateCpaWorker,
   fsApi
 };

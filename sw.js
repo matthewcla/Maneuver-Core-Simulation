@@ -1,6 +1,6 @@
 
 // Update CACHE_VERSION on each release to force old caches to clear
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `maneuver-cache-${CACHE_VERSION}`;
 const ASSETS = [
   '/',
@@ -14,6 +14,9 @@ const ASSETS = [
   '/css/beta.css',
   '/offline.html',
   '/favicons.svg',
+  '/icon-180.png',
+  '/icon-192.png',
+  '/icon-512.png',
   '/public/controlbackward.svg',
   '/public/controlforward.svg',
   '/public/group-27.svg',
