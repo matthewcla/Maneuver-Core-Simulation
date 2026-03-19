@@ -1,6 +1,6 @@
 
 // Update CACHE_VERSION on each release to force old caches to clear
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `maneuver-cache-${CACHE_VERSION}`;
 const ASSETS = [
   '/',
@@ -13,7 +13,11 @@ const ASSETS = [
   '/css/global.css',
   '/css/beta.css',
   '/offline.html',
-  '/favicons.svg'
+  '/favicons.svg',
+  '/public/controlbackward.svg',
+  '/public/controlforward.svg',
+  '/public/group-27.svg',
+  '/public/group-28.svg'
 ];
 
 self.addEventListener('install', event => {

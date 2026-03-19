@@ -242,7 +242,7 @@ class ContactController {
         }
     }
     _relativeSituation(a,b){
-        const brg=(Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI+360)%360;
+        const brg=(Math.atan2(b.x-a.x,b.y-a.y)*180/Math.PI+360)%360;
         const diffHdgs=Math.abs(((a.course - b.course + 540)%360)-180);
         if(diffHdgs>150&&diffHdgs<210) return 'HEAD_ON';
         const relBrg=(brg - a.course + 360)%360;
@@ -270,7 +270,6 @@ class Simulator {
         if (!this.canvas) {
             console.error('radarCanvas element not found in DOM');
         }
-        console.log('Simulator init: 2D context:', this.ctx);
         if (!this.ctx) {
             console.error('Failed to get 2D context for radarCanvas');
         }
@@ -389,6 +388,9 @@ class Simulator {
         this.staticCtx = this.staticCanvas.getContext('2d');
         this.staticDirty = true;
 
+        // AbortController for centralized event listener cleanup
+        this._abortController = new AbortController();
+
         // Bind methods to ensure correct `this` context
         this.gameLoop = this.gameLoop.bind(this);
         this.handlePointerDown = this.handlePointerDown.bind(this);
@@ -448,9 +450,11 @@ class Simulator {
 
     // --- Event Listener Setup ---
     _attachEventListeners() {
+        const signal = this._abortController.signal;
+
         // Canvas interaction
         if (window.PointerEvent) {
-            const opts = { passive: false };
+            const opts = { passive: false, signal };
             this.canvas?.addEventListener('pointerdown', this.handlePointerDown, opts);
             this.canvas?.addEventListener('pointerup', this.handlePointerUp, opts);
             this.canvas?.addEventListener('pointerleave', this.handlePointerUp, opts);
@@ -487,11 +491,12 @@ class Simulator {
                     stopPropagation: () => e.stopPropagation(),
                 });
             };
-            const opts = { passive: false };
+            const opts = { passive: false, signal };
+            const sigOnly = { signal };
             this.canvas?.addEventListener('touchstart', wrap(this.handlePointerDown), opts);
             this.canvas?.addEventListener('touchmove', wrap(this.handlePointerMove), opts);
-            this.canvas?.addEventListener('touchend', wrap(this.handlePointerUp));
-            this.canvas?.addEventListener('touchcancel', wrap(this.handlePointerUp));
+            this.canvas?.addEventListener('touchend', wrap(this.handlePointerUp), sigOnly);
+            this.canvas?.addEventListener('touchcancel', wrap(this.handlePointerUp), sigOnly);
 
             // Guarded container drag for touch events
             this.mainContainer?.addEventListener('touchstart', (e) => {
@@ -502,43 +507,44 @@ class Simulator {
             }, opts);
             this.mainContainer?.addEventListener('touchend', (e) => {
                 if (e.target !== this.canvas) wrap(this.handleContainerPointerUp)(e);
-            });
+            }, sigOnly);
             this.mainContainer?.addEventListener('touchcancel', (e) => {
                 if (e.target !== this.canvas) wrap(this.handleContainerPointerUp)(e);
-            });
+            }, sigOnly);
         } else {
-            this.canvas?.addEventListener('mousedown', this.handlePointerDown);
-            this.canvas?.addEventListener('mouseup', this.handlePointerUp);
-            this.canvas?.addEventListener('mouseleave', this.handlePointerUp);
-            this.canvas?.addEventListener('mousemove', this.handlePointerMove);
+            const sigOnly = { signal };
+            this.canvas?.addEventListener('mousedown', this.handlePointerDown, sigOnly);
+            this.canvas?.addEventListener('mouseup', this.handlePointerUp, sigOnly);
+            this.canvas?.addEventListener('mouseleave', this.handlePointerUp, sigOnly);
+            this.canvas?.addEventListener('mousemove', this.handlePointerMove, sigOnly);
 
             // Guarded container drag for mouse events
             this.mainContainer?.addEventListener('mousedown', (e) => {
                 if (e.target !== this.canvas) this.handleContainerPointerDown(e);
-            });
+            }, sigOnly);
             this.mainContainer?.addEventListener('mousemove', (e) => {
                 if (e.target !== this.canvas) this.handleContainerPointerMove(e);
-            });
+            }, sigOnly);
             this.mainContainer?.addEventListener('mouseup', (e) => {
                 if (e.target !== this.canvas) this.handleContainerPointerUp(e);
-            });
+            }, sigOnly);
         }
 
         // Window resize
         window.addEventListener('resize', this._throttleRAF(() => {
             this.scaleUI();
-        }));
+        }), { signal });
 
         // Control buttons
-        this.btnVectorTime?.addEventListener('click', () => this.toggleVectorTime());
-        this.btnRange?.addEventListener('click', () => this.toggleRange());
-        this.btnPlayPause?.addEventListener('click', () => this.togglePlayPause());
+        this.btnVectorTime?.addEventListener('click', () => this.toggleVectorTime(), { signal });
+        this.btnRange?.addEventListener('click', () => this.toggleRange(), { signal });
+        this.btnPlayPause?.addEventListener('click', () => this.togglePlayPause(), { signal });
         // Bind playback controls directly to ensure the correct handlers
         // are invoked when the buttons are pressed
-        this.btnFf?.addEventListener('click', this.fastForward.bind(this));
-        this.btnRev?.addEventListener('click', this.rewind.bind(this));
-        this.btnAddTrack?.addEventListener('click', () => this.addTrack());
-        this.btnDropTrack?.addEventListener('click', () => this.dropTrack());
+        this.btnFf?.addEventListener('click', this.fastForward.bind(this), { signal });
+        this.btnRev?.addEventListener('click', this.rewind.bind(this), { signal });
+        this.btnAddTrack?.addEventListener('click', () => this.addTrack(), { signal });
+        this.btnDropTrack?.addEventListener('click', () => this.dropTrack(), { signal });
         this.btnScen?.addEventListener('click', () => {
             // 1) Clean up old instance
             window.sim.destroy();
@@ -550,18 +556,19 @@ class Simulator {
             //    your constructor might already call setupRandomScenario().
             //    Otherwise, explicitly do:
             // window.sim.setupRandomScenario();
-        });
+        }, { signal });
 
         // Help Modal
         // this.btnHelp?.addEventListener('click', () => this.showHelpModal());
-        this.helpCloseBtn?.addEventListener('click', () => this.hideHelpModal());
+        this.helpCloseBtn?.addEventListener('click', () => this.hideHelpModal(), { signal });
         if (this.helpModal && this.helpContent && this.helpCloseBtn) {
-            new ResizeObserver(() => {
+            this._helpResizeObserver = new ResizeObserver(() => {
                 const scale = Math.max(0.8, Math.min(1.2, this.helpModal.clientWidth / 500));
                 this.helpContent.style.fontSize = `${1 * scale}rem`;
                 this.helpCloseBtn.style.fontSize = `${0.9 * scale}rem`;
                 this.helpCloseBtn.style.padding = `${0.5 * scale}rem`;
-            }).observe(this.helpModal);
+            });
+            this._helpResizeObserver.observe(this.helpModal);
         }
 
         // Data panel expand/collapse toggles radar elements
@@ -569,24 +576,24 @@ class Simulator {
             this.showRelativeMotion = this.rmDataContainer.open;
             this.markSceneDirty();
             this._scheduleUIUpdate();
-        });
+        }, { signal });
         this.cpaDataContainer?.addEventListener('toggle', () => {
             this.showCPAInfo = this.cpaDataContainer.open;
             this.markSceneDirty();
             this._scheduleUIUpdate();
-        });
+        }, { signal });
         this.windDataContainer?.addEventListener('toggle', () => {
             this.showWeather = this.windDataContainer.open;
             this.markSceneDirty();
             this._scheduleUIUpdate();
-        });
+        }, { signal });
 
         // Settings drawer interactions
         if (this.btnSettings && this.settingsDrawer) {
             this.btnSettings.addEventListener('click', () => {
                 this.btnSettings.classList.toggle('active');
                 this.settingsDrawer.classList.toggle('active');
-            });
+            }, { signal });
         }
         // Fullscreen toggle
         if (this.btnFullscreen) {
@@ -594,13 +601,13 @@ class Simulator {
             this.btnFullscreen.addEventListener('click', function (e) {
                 this.classList.toggle('active');
                 sim.toggleFullScreen();
-            });
+            }, { signal });
         }
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && fsApi.isActive()) {
                 fsApi.exit();
             }
-        });
+        }, { signal });
 
         // Settings toggles for polar plot and track IDs
         if (this.chkPolarPlot) {
@@ -608,14 +615,14 @@ class Simulator {
             this.chkPolarPlot.addEventListener('click', function (e) {
                 this.classList.toggle('active');
                 sim.togglePolarPlot();
-            });
+            }, { signal });
         }
         if (this.chkTrackIds) {
             const sim = this;
             this.chkTrackIds.addEventListener('click', function (e) {
                 this.classList.toggle('active');
                 sim.toggleTrackIds();
-            });
+            }, { signal });
         }
 
         // Shared tooltip behavior for elements with data-tooltip
@@ -634,7 +641,7 @@ class Simulator {
                 }
                 const y = e.clientY - tooltipHeight - buffer;
                 this.dragTooltip.style.transform = `translate(${x}px, ${y}px)`;
-            });
+            }, { signal });
             el.addEventListener('pointermove', e => {
                 if (this.dragTooltip.style.display === 'block') {
                     // Dynamic positioning logic (buffer, edge-aware)
@@ -648,17 +655,17 @@ class Simulator {
                     const y = e.clientY - tooltipHeight - buffer;
                     this.dragTooltip.style.transform = `translate(${x}px, ${y}px)`;
                 }
-            });
+            }, { signal });
             el.addEventListener('pointerleave', () => {
                 this.dragTooltip.style.display = 'none';
-            });
+            }, { signal });
             el.addEventListener('pointerdown', () => {
                 this.dragTooltip.style.display = 'none';
-            });
+            }, { signal });
         });
 
         ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange']
-            .forEach(evt => document.addEventListener(evt, () => this._syncFullscreenUI()));
+            .forEach(evt => document.addEventListener(evt, () => this._syncFullscreenUI(), { signal }));
         this._syncFullscreenUI();
 
         // Editable fields
@@ -668,15 +675,17 @@ class Simulator {
                 this.activeEditField = e.target.id;
                 this._scheduleUIUpdate();
             }
-        });
+        }, { signal });
     }
 
     // Clears all simulation state and graphics buffers for garbage collection
     destroy() {
+        // Cancel pending animation frame to prevent crash after nulling state
         cancelAnimationFrame(this._raf);
-        clearInterval(this._myInterval);
-        clearTimeout(this._myTimeout);
-        window.removeEventListener('resize', this._onResize);
+        // Remove all event listeners registered with the AbortController signal
+        this._abortController.abort();
+        // Disconnect ResizeObserver if created
+        this._helpResizeObserver?.disconnect();
         if (this.tracks) this.tracks.length = 0;
         this.ownShip = null;
         this.tracks = null;
@@ -687,14 +696,6 @@ class Simulator {
           this.canvas.height = this.canvas.height;
         }
         this.ctx = null;
-    }
-
-    // --- Vector Time Toggle ---
-    toggleVectorTime() {
-        this.vectorTimeIndex = (this.vectorTimeIndex + 1) % this.vectorTimes.length;
-        this.vectorTimeInMinutes = this.vectorTimes[this.vectorTimeIndex];
-        this.btnVectorTime.textContent = `${this.vectorTimeInMinutes} min`;
-        this.markSceneDirty();
     }
 
     /**
@@ -807,7 +808,7 @@ class Simulator {
         }
 
         if (this.isSimulationRunning || this.sceneDirty) {
-            requestAnimationFrame(this.gameLoop);
+            this._raf = requestAnimationFrame(this.gameLoop);
         } else {
             this.gameLoop.running = false;
         }
@@ -816,7 +817,7 @@ class Simulator {
     startGameLoop() {
         if (!this.gameLoop.running) {
             this.gameLoop.running = true;
-            requestAnimationFrame(this.gameLoop);
+            this._raf = requestAnimationFrame(this.gameLoop);
         }
     }
 
@@ -932,7 +933,7 @@ class Simulator {
                 track.bearing = Math.max(0, Math.min(359.9, value));
                 didUpdate = true;
             } else if (id === 'track-rng') {
-                track.range = Math.max(0, Math.min(359.9, value));
+                track.range = Math.max(0, value);
                 didUpdate = true;
             } else if (id === 'track-crs') {
                 track.course = Math.max(0, Math.min(359.9, value));
@@ -962,21 +963,23 @@ class Simulator {
 
         const dtSec = (deltaTime / 1000) * Math.abs(this.simulationSpeed);
 
-        // Gradually adjust ownship toward ordered values
-        const maxTurn = 3 * dtSec;            // degrees per second
-        let courseDiff = (this.ownShip.orderedCourse - this.ownShip.course + 540) % 360 - 180;
-        if (Math.abs(courseDiff) <= maxTurn) {
-            this.ownShip.course = this.ownShip.orderedCourse;
-        } else {
-            this.ownShip.course = (this.ownShip.course + Math.sign(courseDiff) * maxTurn + 360) % 360;
-        }
+        // Gradually adjust ownship toward ordered values (skip during rewind)
+        if (this.simulationSpeed > 0) {
+            const maxTurn = 3 * dtSec;            // degrees per second
+            let courseDiff = (this.ownShip.orderedCourse - this.ownShip.course + 540) % 360 - 180;
+            if (Math.abs(courseDiff) <= maxTurn) {
+                this.ownShip.course = this.ownShip.orderedCourse;
+            } else {
+                this.ownShip.course = (this.ownShip.course + Math.sign(courseDiff) * maxTurn + 360) % 360;
+            }
 
-        const maxSpdChange = 0.1 * dtSec;     // knots per second
-        const spdDiff = this.ownShip.orderedSpeed - this.ownShip.speed;
-        if (Math.abs(spdDiff) <= maxSpdChange) {
-            this.ownShip.speed = this.ownShip.orderedSpeed;
-        } else {
-            this.ownShip.speed += Math.sign(spdDiff) * maxSpdChange;
+            const maxSpdChange = 0.1 * dtSec;     // knots per second
+            const spdDiff = this.ownShip.orderedSpeed - this.ownShip.speed;
+            if (Math.abs(spdDiff) <= maxSpdChange) {
+                this.ownShip.speed = this.ownShip.orderedSpeed;
+            } else {
+                this.ownShip.speed += Math.sign(spdDiff) * maxSpdChange;
+            }
         }
 
         const timeMultiplier = (deltaTime / 3600000) * this.simulationSpeed;
@@ -998,7 +1001,7 @@ class Simulator {
     calculateAllData(track) {
         const dx = track.x - this.ownShip.x;
         const dy = track.y - this.ownShip.y;
-        track.range = Math.max(0, Math.min(359.9, Math.sqrt(dx**2 + dy**2)));
+        track.range = Math.sqrt(dx**2 + dy**2);
         track.bearing = (this.toDegrees(Math.atan2(dx, dy)) + 360) % 360;
 
         const ownShipCanvasAngle = this.toRadians(this.bearingToCanvasAngle(this.ownShip.course));
@@ -1089,14 +1092,6 @@ class Simulator {
 
     // --- Drawing ---
     drawRadar() {
-        // Debug: log frame and fill red overlay
-        // console.log('drawRadar called:', { width: this.canvas.width, height: this.canvas.height });
-        // Debug fill to confirm drawing
-        this.ctx.save();
-        this.ctx.fillStyle = 'rgba(255, 0, 0, 0.1)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.restore();
-
         const size = this.canvas.width;
         if (size === 0) return;
         const center = size / 2;
@@ -1341,8 +1336,8 @@ class Simulator {
         if (!track || track.hasPassedCPA || !track.cpaPosition) return;
         const pixelsPerNm = radius / this.maxRange;
 
-        const cpaBearing = (this.toDegrees(Math.atan2(track.cpaPosition.x, track.cpaPosition.y)) + 360) % 360;
-        const cpaCanvasAngle = this.toRadians(this.bearingToCanvasAngle(cpaBearing));
+        const cpaCanvasAngleDeg = this.toDegrees(Math.atan2(track.cpaPosition.y, track.cpaPosition.x));
+        const cpaCanvasAngle = this.toRadians(cpaCanvasAngleDeg);
         const cpaRange = Math.sqrt(track.cpaPosition.x**2 + track.cpaPosition.y**2);
         const cpaDistCanvas = cpaRange * pixelsPerNm;
         const cpaX = center + cpaDistCanvas * Math.cos(cpaCanvasAngle);
@@ -1971,7 +1966,6 @@ class Simulator {
         this.isSimulationRunning = true;
         this.simulationElapsed = 0;
         this.scaleUI();
-        this.isSimulationRunning = true;
         this._initialize();
         this.markSceneDirty();
     }
@@ -2037,7 +2031,7 @@ class Simulator {
     }
     distToSegment(p, v, w) {
         const l2 = (v.x - w.x)**2 + (v.y - w.y)**2;
-        if (l2 == 0) return Math.sqrt((p.x - v.x)**2 + (p.y - v.y)**2);
+        if (l2 === 0) return Math.sqrt((p.x - v.x)**2 + (p.y - v.y)**2);
         let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
         t = Math.max(0, Math.min(1, t));
         return Math.sqrt((p.x - (v.x + t * (w.x - v.x)))**2 + (p.y - (v.y + t * (w.y - v.y)))**2);
