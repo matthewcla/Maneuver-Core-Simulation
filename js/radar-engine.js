@@ -680,6 +680,8 @@ class Simulator {
 
     // Clears all simulation state and graphics buffers for garbage collection
     destroy() {
+        // Cancel pending animation frame to prevent crash after nulling state
+        cancelAnimationFrame(this._raf);
         // Remove all event listeners registered with the AbortController signal
         this._abortController.abort();
         // Disconnect ResizeObserver if created
@@ -806,7 +808,7 @@ class Simulator {
         }
 
         if (this.isSimulationRunning || this.sceneDirty) {
-            requestAnimationFrame(this.gameLoop);
+            this._raf = requestAnimationFrame(this.gameLoop);
         } else {
             this.gameLoop.running = false;
         }
@@ -815,7 +817,7 @@ class Simulator {
     startGameLoop() {
         if (!this.gameLoop.running) {
             this.gameLoop.running = true;
-            requestAnimationFrame(this.gameLoop);
+            this._raf = requestAnimationFrame(this.gameLoop);
         }
     }
 
