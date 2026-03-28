@@ -346,32 +346,6 @@ class Simulator {
         this.dragTooltip = document.getElementById('drag-tooltip');
         this.orderTooltip = document.getElementById('order-tooltip');
 
-        // --- Gap Runner Overlays ---
-        this.levelOverlay = document.getElementById('level-overlay');
-        this.levelMessage = document.getElementById('level-message');
-        this.gameOverOverlay = document.getElementById('game-over-overlay');
-        this.gameOverMessage = document.getElementById('game-over-message');
-        this.btnRestart = document.getElementById('btn-restart');
-
-        // Gap Runner State
-        this.gapRunnerScore = 0;
-        this.currentLevelScore = 0;
-        this.levelStartTime = 0;
-        this.penaltyRegistry = new Set();
-
-        // Gap Runner DOM Container (Consolidated)
-        this.hudElements = {
-            container: document.getElementById('gap-runner-hud'),
-            level: document.getElementById('hud-level'),
-            score: document.getElementById('hud-score'),
-            time: document.getElementById('hud-time'),
-            damageOverlay: document.getElementById('damage-overlay')
-        };
-
-        this.btnRestart?.addEventListener('click', () => {
-            location.reload();
-        });
-
         // Playback controls
         this.btnPlayPause = document.getElementById('play-pause');
         this.btnRange = document.getElementById('radar-range');
@@ -423,40 +397,6 @@ class Simulator {
             orderedVectorEndpoint: null
         };
 
-        // --- Gap Runner State ---
-        this.gapRunnerScore = 0;
-        // Initialize Score for this level
-        this.currentLevelScore = 5000;
-        this.penaltyRegistry = new Set();
-        this.perfectGapRegistry = new Set();
-
-        // Combo / "Clean Wake" Tracking
-        this.isCommitting = false;
-        this.laneChangeCount = 0;
-        this.lanesCrossed = 0;
-        // Determine initial lane index (based on y position approx)
-        // Lanes are approx 3nm wide zones? 
-        // Let's define zones: 
-        // Zone 0: South Start (y < -4)
-        // Zone 1: Westbound Lane (y: -4 to -1)
-        // Zone 2: Separation (y: -1 to 1)
-        // Zone 3: Eastbound Lane (y: 1 to 4)
-        // Zone 4: North Goal (y > 4)
-        this.lastLaneIndex = 0; // Start at South
-        this.lastOrderedCourse = this.ownShip.orderedCourse;
-
-        // UI Setup
-        this.btnPast.classList.add('hidden');
-        this.btnFuture.classList.add('hidden');
-        if (this.btnCommit) this.btnCommit.classList.add('hidden');
-
-        this.hudElements = {
-            container: document.getElementById('gap-runner-hud'),
-            level: document.getElementById('hud-level'),
-            score: document.getElementById('hud-score'),
-            time: document.getElementById('hud-time'),
-            damageOverlay: document.getElementById('damage-overlay')
-        };
         this.tracks = [
             { id: '01', initialBearing: 327, initialRange: 7.9, course: 255, speed: 6.1 },
             { id: '02', initialBearing: 345, initialRange: 6.5, course: 250, speed: 7.2 },
