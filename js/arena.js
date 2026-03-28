@@ -147,94 +147,6 @@ class ScenarioGenerator {
     _vel(v) { const rad = (90 - v.course) * Math.PI / 180; return { vx: v.speed * Math.cos(rad), vy: v.speed * Math.sin(rad) } }
     _rand(a, b) { return a + Math.random() * (b - a) }
     _randInt(a, b) { return Math.floor(this._rand(a, b + 1)) }
-    generateTSS(level) {
-        // 1. Define Boundaries
-        // Simple E/W TSS. 
-        // Separation zone: y = -1.0 to 1.0 (2nm wide)
-        // Eastbound lane: y = 1.0 to 4.0
-        // Westbound lane: y = -4.0 to -1.0
-        const boundaries = [
-            { start: { x: -10, y: 1 }, end: { x: 10, y: 1 }, type: 'separation' },
-            { start: { x: -10, y: -1 }, end: { x: 10, y: -1 }, type: 'separation' },
-            { start: { x: -10, y: 4 }, end: { x: 10, y: 4 }, type: 'outer' },
-            { start: { x: -10, y: -4 }, end: { x: 10, y: -4 }, type: 'outer' }
-        ];
-
-        // 2. Spawn Traffic
-        const tracks = [];
-        const baseSpeed = 8 + level * 2;
-        const density = 2 + level; // Ships per lane approx
-
-        // Eastbound Traffic (Course 090) in y [1, 4]
-        for (let i = 0; i < density; i++) {
-            const y = this._rand(1.2, 3.8);
-            const x = this._rand(-12, 12);
-            const spd = Math.max(5, baseSpeed + this._rand(-2, 2));
-            tracks.push(this._spawnSimple(x, y, 90, spd));
-        }
-
-        // Westbound Traffic (Course 270) in y [-4, -1]
-        for (let i = 0; i < density; i++) {
-            const y = this._rand(-3.8, -1.2);
-            const x = this._rand(-12, 12);
-            const spd = Math.max(5, baseSpeed + this._rand(-2, 2));
-            tracks.push(this._spawnSimple(x, y, 270, spd));
-        }
-
-        // Separation Zone Traffic (Static/Fishing) in y [-1, 1]
-        const numStatic = this._randInt(2, 5);
-        for (let i = 0; i < numStatic; i++) {
-            const y = this._rand(-0.8, 0.8);   // Keep strictly inside the zone
-            const x = this._rand(-12, 12);
-            const spd = this._rand(0, 3);      // Drifting / Low speed
-            const crs = this._rand(0, 360);    // Random heading
-            const t = this._spawnSimple(x, y, crs, spd);
-            t.isHazard = true;                 // Disable AI maneuvering
-            tracks.push(t);
-        }
-
-        // 2b. Level 3+ Complex Crossers
-        if (level >= 3) {
-            // Opposing Crossers (North heading South)
-            // Spawn near Waypoint (North side), heading roughly South (180)
-            const numOpposing = this._randInt(1, 2);
-            for (let i = 0; i < numOpposing; i++) {
-                const x = this._rand(-10, 10);
-                const y = this._rand(5.0, 8.0); // Start North
-                const crs = (180 + this._rand(-15, 15)) % 360;
-                const spd = Math.max(5, baseSpeed + this._rand(-2, 2));
-                tracks.push(this._spawnSimple(x, y, crs, spd));
-            }
-
-            // Following Crossers (South heading North)
-            // Spawn near Ownship start (South side), heading roughly North (000)
-            // Speed competitive with Ownship (10kts) to force Overtaking interactions
-            const numFollowing = 1;
-            for (let i = 0; i < numFollowing; i++) {
-                const x = this._rand(-6, 6);
-                const y = this._rand(-8.0, -5.0); // Start South
-                const crs = (0 + this._rand(-10, 10) + 360) % 360;
-                // Ownship is 10kts. Range [8, 13] creates mix of overtaking/being overtaken
-                const spd = this._rand(8, 13);
-                tracks.push(this._spawnSimple(x, y, crs, spd));
-            }
-        }
-
-        // 3. Ownship & Waypoint
-        // Ownship starts South (e.g., y = -6, x = random), heading North (000)
-        const ownshipStart = { x: this._rand(-2, 2), y: -6, course: 0, speed: 10 };
-        const waypoint = { x: this._rand(-2, 2), y: 6, radius: 0.5 };
-
-        return { boundaries, tracks, ownshipStart, waypoint };
-    }
-    _spawnSimple(x, y, course, speed) {
-        const id = String(this.nextId++).padStart(4, '0');
-        return {
-            id, x, y, course: course % 360, speed,
-            state: 'MONITORING', isUserControlled: false,
-            _base: { course, speed } // removed dummy initialBearing/Range to prevent overwrite in _initialize
-        };
-    }
 }
 
 class ContactController {
@@ -1215,14 +1127,6 @@ class Simulator {
             this.drawWeatherInfo(center, radius);
         }
 
-        // --- TSS Rendering ---
-        if (this.tssData) {
-            this.drawTSS(center, radius);
-            if (this.tssData.waypoint) {
-                this.drawWaypoint(center, radius);
-            }
-        }
-
         this.drawOwnShipIcon(center, radius);
         this.tracks.forEach(track => {
             if (track.range > this.maxRange) return;
@@ -1257,54 +1161,6 @@ class Simulator {
             x: center + distOnCanvas * Math.cos(angleRad),
             y: center - distOnCanvas * Math.sin(angleRad)
         };
-    }
-
-    drawTSS(center, radius) {
-        if (!this.tssData.boundaries) return;
-        this.ctx.save();
-        this.ctx.lineWidth = 2;
-
-        this.tssData.boundaries.forEach(b => {
-            const p1 = this.getScreenPos(b.start.x, b.start.y, center, radius);
-            const p2 = this.getScreenPos(b.end.x, b.end.y, center, radius);
-
-            this.ctx.beginPath();
-            this.ctx.moveTo(p1.x, p1.y);
-            this.ctx.lineTo(p2.x, p2.y);
-
-            if (b.type === 'separation') {
-                this.ctx.strokeStyle = this.radarDarkOrange; // Or maybe a distinct color
-                this.ctx.setLineDash([10, 10]);
-            } else {
-                this.ctx.strokeStyle = this.radarFaintWhite;
-                this.ctx.setLineDash([5, 5]);
-            }
-            this.ctx.stroke();
-        });
-        this.ctx.restore();
-    }
-
-    drawWaypoint(center, radius) {
-        const wp = this.tssData.waypoint;
-        const p = this.getScreenPos(wp.x, wp.y, center, radius);
-
-        this.ctx.save();
-        this.ctx.strokeStyle = this.radarGreen;
-        this.ctx.lineWidth = 2;
-        this.ctx.setLineDash([5, 5]);
-        this.ctx.beginPath();
-        // Visual radius somewhat arbitrary or based on zoom? 
-        // Request said: "distinct circle, e.g., green dash line with no fill. Use the same green as the vector color"
-        const r = (wp.radius / this.maxRange) * radius; // Scale radius
-        this.ctx.arc(p.x, p.y, Math.max(5, r), 0, 2 * Math.PI);
-        this.ctx.stroke();
-
-        // Maybe a label?
-        this.ctx.fillStyle = this.radarGreen;
-        this.ctx.font = '12px monospace';
-        this.ctx.fillText("WPT", p.x + r + 5, p.y);
-
-        this.ctx.restore();
     }
 
     drawStaticRadar() {
