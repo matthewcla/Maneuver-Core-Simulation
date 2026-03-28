@@ -157,9 +157,6 @@
               <span id="ff-speed-indicator" class="position-absolute d-none"
                 style="bottom:0; right:0.25rem; font-size:0.75rem;"></span>
             </button>
-            <button type="button" id="commit-btn" class="control-forward hidden" aria-label="Commit (Adrenaline)"
-              title="Commit"><img class="controlforward-icon" loading="lazy" alt="" src="./public/controlcommit.svg" />
-            </button>
           </div>
         </div>
         <button id="regenerate" type="button" class="buttonbase2">
@@ -304,33 +301,7 @@
       <h1 class="menu-title">Maneuver</h1>
       <div class="menu-buttons">
         <button id="btn-simulator" class="menu-button">Simulator</button>
-        <button id="btn-gap-runner" class="menu-button">Gap Runner</button>
       </div>
-    </div>
-  </div>
-
-  <div id="gap-runner-hud" class="hud hidden">
-    <div class="hud-row"><span class="hud-label">Level: </span><span id="hud-level">1</span></div>
-    <div class="hud-row"><span class="hud-label">Score: </span><span id="hud-score">0</span></div>
-    <div class="hud-row"><span class="hud-label">Time: </span><span id="hud-time">00:00</span></div>
-  </div>
-
-  <div id="damage-overlay" class="damage-overlay hidden"></div>
-
-  <div id="level-overlay" class="level-overlay hidden">
-    <div class="menu-content">
-      <h1 class="menu-title">Level Complete</h1>
-      <div id="level-message" style="color: var(--primary-500); font-family: 'IBM Plex Mono'; font-size: 1.5rem;"></div>
-    </div>
-  </div>
-
-  <div id="game-over-overlay" class="level-overlay hidden">
-    <div class="menu-content">
-      <h1 class="menu-title" style="color: var(--radar-dark-orange);">Game Over</h1>
-      <div id="game-over-message"
-        style="color: white; font-family: 'IBM Plex Mono'; font-size: 1.5rem; margin-bottom: 2rem;">Collision Detected
-      </div>
-      <button id="btn-restart" class="menu-button">Return to Menu</button>
     </div>
   </div>
 

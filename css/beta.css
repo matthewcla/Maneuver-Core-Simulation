@@ -917,27 +917,11 @@ button.controlplay .placeholder {
   transition: opacity 0.3s ease-in-out;
 }
 
-.main-menu.hidden,
-.level-overlay.hidden {
+.main-menu.hidden {
   opacity: 0;
   pointer-events: none;
 }
 
-.level-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.85);
-  /* Slightly transparent */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  opacity: 1;
-  transition: opacity 0.3s ease-in-out;
-}
 
 .menu-content {
   display: flex;
@@ -994,73 +978,6 @@ button.controlplay .placeholder {
   transform: translateY(2px);
 }
 
-/* --- Gap Runner HUD & Overlay --- */
-.hud {
-  position: absolute;
-  top: 70px;
-  left: 24px;
-  z-index: 10;
-  background-color: var(--neutral-800-alpha-80);
-  background: rgba(20, 20, 20, 0.8);
-  padding: var(--padding-8) var(--padding-12);
-  border-radius: var(--br-4);
-  font-family: var(--font-ibm-plex-mono);
-  font-size: var(--font-size-14);
-  color: var(--primary-500);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  pointer-events: none;
-}
-
-.hud.hidden {
-  display: none;
-}
-
-.hud-row {
-  display: flex;
-  justify-content: space-between;
-  min-width: 140px;
-}
-
-.damage-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(255, 0, 0, 0.3);
-  pointer-events: none;
-  z-index: 20;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.damage-overlay.active {
-  opacity: 1;
-}
-
-.damage-overlay.hidden {
-  display: none;
-}
-
-/* Mobile Tweaks for Gap Runner */
-@media screen and (max-width: 792px) {
-  body.gap-runner-active .maneuverlogo {
-    display: none !important;
-  }
-
-  body.gap-runner-active .hud {
-    top: 24px;
-    left: 24px;
-  }
-}
-
-/* Gap Runner Specific Styles */
-.gap-runner-active #future,
-.gap-runner-active #past {
-  display: none !important;
-}
 
 /* Wind Card Removal Global */
 #wind-data-container {
@@ -1080,83 +997,6 @@ body.mobile-portrait .card.wide {
   flex: 0 0 auto;
 }
 
-body.mobile-portrait.gap-runner-active .hud {
-  top: 0;
-  left: 0;
-  width: 100%;
-  border-radius: 0;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--padding-16) var(--padding-24);
-  background: var(--neutral-900-alpha-80);
-  box-sizing: border-box;
-}
-
-/* Hide labels by default */
-body.mobile-portrait.gap-runner-active .hud-label {
-  display: none;
-}
-
-/* Specific HUD Layout: Level (Left) | Time (Center, Absolute) | Score (Right) */
-/* Container needs relative for absolute child */
-body.mobile-portrait.gap-runner-active .hud {
-  position: relative;
-  justify-content: space-between;
-  /* Pushes Level Left, Score Right */
-}
-
-/* Row 1: Level */
-body.mobile-portrait.gap-runner-active .hud .hud-row:nth-child(1) {
-  order: 1;
-  text-align: left;
-  font-size: 1rem;
-  display: flex;
-  /* Ensure flex for alignment */
-  justify-content: flex-start;
-  align-items: baseline;
-  /* Align label and number baselines */
-  gap: 8px;
-  /* Doubled spacing */
-  padding-left: 8px;
-  /* Extra margin from edge */
-}
-
-body.mobile-portrait.gap-runner-active .hud .hud-row:nth-child(1) .hud-label {
-  display: inline;
-  font-size: 0.75rem;
-}
-
-body.mobile-portrait.gap-runner-active .hud .hud-row:nth-child(1) #hud-level {
-  font-size: 1.25rem;
-}
-
-/* Row 2: Score -> Right */
-body.mobile-portrait.gap-runner-active .hud .hud-row:nth-child(2) {
-  order: 3;
-  /* Visually last in flex flow if not abspos */
-  text-align: right;
-  flex: 0 0 auto;
-}
-
-body.mobile-portrait.gap-runner-active .hud .hud-row:nth-child(2) #hud-score {
-  font-size: 1.25rem;
-}
-
-/* Row 3: Time -> Absolute Center */
-body.mobile-portrait.gap-runner-active .hud .hud-row:nth-child(3) {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: auto;
-  text-align: center;
-  /* Order doesn't matter for absolute, but keeping it clean */
-}
-
-body.mobile-portrait.gap-runner-active #hud-time {
-  font-size: 2rem;
-}
 
 body.mobile-portrait #radarCanvas {
   position: relative;
@@ -1170,78 +1010,6 @@ body.mobile-landscape .maneuverlogo {
   display: none !important;
 }
 
-body.mobile-landscape.gap-runner-active .hud {
-  top: 0;
-  left: 0;
-  right: 0;
-  /* Full width */
-  width: 100%;
-  /* Span entire viewport */
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: 0 0 var(--br-4) 0;
-  padding: var(--padding-12) var(--padding-24);
-  padding-right: 344px;
-  /* 320px Sidebar + 24px Gap -> Protects Score from overlap */
-  background: var(--neutral-900-alpha-80);
-  position: relative;
-  /* For absolute time */
-  box-sizing: border-box;
-  /* Include padding in width */
-}
-
-body.mobile-landscape.gap-runner-active .hud-label {
-  display: none;
-}
-
-/* Landscape Layout: Matching Portrait */
-/* Row 1: Level */
-body.mobile-landscape.gap-runner-active .hud .hud-row:nth-child(1) {
-  order: 1;
-  text-align: left;
-  font-size: 1rem;
-  display: flex;
-  justify-content: flex-start;
-  align-items: baseline;
-  gap: 8px;
-  padding-left: 8px;
-}
-
-body.mobile-landscape.gap-runner-active .hud .hud-row:nth-child(1) .hud-label {
-  display: inline;
-  font-size: 0.75rem;
-}
-
-body.mobile-landscape.gap-runner-active .hud .hud-row:nth-child(1) #hud-level {
-  font-size: 1.25rem;
-}
-
-/* Row 2: Score -> Right */
-body.mobile-landscape.gap-runner-active .hud .hud-row:nth-child(2) {
-  order: 3;
-  text-align: right;
-  flex: 0 0 auto;
-}
-
-body.mobile-landscape.gap-runner-active .hud .hud-row:nth-child(2) #hud-score {
-  font-size: 1.25rem;
-}
-
-/* Row 3: Time -> Absolute Center */
-body.mobile-landscape.gap-runner-active .hud .hud-row:nth-child(3) {
-  position: absolute;
-  left: 50%;
-  /* This is now 50% of viewport width */
-  transform: translateX(-50%);
-  width: auto;
-  text-align: center;
-}
-
-body.mobile-landscape.gap-runner-active #hud-time {
-  font-size: 2rem;
-}
 
 body.mobile-landscape .command-center {
   height: 100vh;
