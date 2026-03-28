@@ -628,25 +628,9 @@ class Simulator {
         this.btnAddTrack?.addEventListener('click', () => this.addTrack());
         this.btnDropTrack?.addEventListener('click', () => this.dropTrack());
         this.btnScen?.addEventListener('click', () => {
-            if (this.config.mode === 'gap_runner') {
-                // GAP RUNNER: Restart from Level 1
-                this.loadGapRunnerScenario(1);
-
-                // Ensure simulation resumes if it was paused or game over
-                if (!this.isSimulationRunning) {
-                    this.isSimulationRunning = true;
-                    this.btnPlayPause.classList.remove('pause');
-                    this.startGameLoop();
-                    // Update speed indicator to normal 1x just in case
-                    this.simulationSpeed = 1;
-                    this.updateSpeedIndicator();
-                }
-            } else {
-                // SIMULATOR: Generate new scenario (preserve current config)
-                const currentConfig = this.config;
-                window.sim.destroy();
-                window.sim = new Simulator(currentConfig);
-            }
+            const currentConfig = this.config;
+            window.sim.destroy();
+            window.sim = new Simulator(currentConfig);
         });
 
         // Help Modal
@@ -805,10 +789,6 @@ class Simulator {
         }
         this.ctx = null;
 
-        // Cleanup UI
-        document.body.classList.remove('gap-runner-active');
-        this.hudElements?.container?.classList.add('hidden');
-        this.hudElements?.damageOverlay?.classList.remove('active');
     }
 
     // --- Vector Time Toggle ---
