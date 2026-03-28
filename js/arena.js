@@ -474,13 +474,8 @@ class Simulator {
     _initialize() {
         this._attachEventListeners();
 
-        if (this.config.mode === 'gap_runner') {
-            this.loadGapRunnerScenario(1);
-        } else {
-            document.body.classList.remove('gap-runner-active');
-            this.addTrack();
-            this.addTrack();
-        }
+        this.addTrack();
+        this.addTrack();
 
         const BASE_CANVAS_SIZE = 900;
         // Logic for re-adding tracks was handled by clean state below? 
@@ -517,61 +512,6 @@ class Simulator {
         if (document.fonts && document.fonts.ready) {
             document.fonts.ready.then(() => this.scaleUI());
         }
-    }
-
-    loadGapRunnerScenario(level = 1) {
-        this.gapRunnerActive = true;
-        this.gapRunnerLevel = level;
-
-        // Reset Scoring State
-        this.currentLevelScore = 5000 + (level * 1000); // 5000 + level * 1000
-        this.levelStartTime = performance.now();
-        this.penaltyRegistry.clear();
-        // User request: "Initialize total score... loadGapRunnerScenario: Reest currentLevelScore... CompleteLevel: Add remaining current to total".
-        // If I call loadGapRunnerScenario(level+1), I should NOT reset gapRunnerScore.
-        // But if I call it with level 1 (Restart), I probably should.
-        if (level === 1) {
-            this.gapRunnerScore = 0;
-        }
-
-        // UI Setup
-        document.body.classList.add('gap-runner-active');
-        this.hudElements.container?.classList.remove('hidden');
-        if (this.hudElements.level) this.hudElements.level.textContent = level;
-        this.updateGapRunnerHUD();
-
-        if (this.btnCommit) this.btnCommit.classList.remove('hidden');
-
-        // Ensure overlays are hidden
-        this.levelOverlay?.classList.add('hidden');
-        this.gameOverOverlay?.classList.add('hidden');
-
-        const generator = new ScenarioGenerator(this.scenarioCfg);
-        const data = generator.generateTSS(level);
-
-        this.tssData = {
-            boundaries: data.boundaries,
-            waypoint: data.waypoint
-        };
-
-        // Reset Ownship
-        this.ownShip.x = data.ownshipStart.x;
-        this.ownShip.y = data.ownshipStart.y;
-        this.ownShip.course = data.ownshipStart.course;
-        this.ownShip.speed = data.ownshipStart.speed;
-        this.ownShip.orderedCourse = data.ownshipStart.course;
-        this.ownShip.orderedSpeed = data.ownshipStart.speed;
-
-        // Reset Tracks
-        this.tracks = data.tracks;
-        this.tracks.forEach(t => {
-            t._controller = new ContactController(t);
-            t._sim = this;
-            this.calculateAllData(t);
-        });
-
-        this.markSceneDirty();
-        console.log("Loaded GapRunner Scenario Level " + level);
     }
 
     // --- Event Listener Setup ---
