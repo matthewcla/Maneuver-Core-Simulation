@@ -26,10 +26,10 @@ Maneuver is a browser-based radar and collision avoidance simulator built with v
 
 - **main.js** — `GameManager` class: app entry point, mode routing, service worker registration
 - **dynamics.js** — `ShipDynamics` class: Nomoto steering model physics for DDG-51-class vessel. Exports independently. Handles heading, yaw rate, speed, and position integration
-- **arena.js** — Monolithic (~2,700 lines) main engine containing:
-  - `ScenarioGenerator` — Random encounter generation (starboard cross, head-on, overtake, constrained) and TSS level generation
+- **arena.js** — Monolithic (~2,100 lines) main engine containing:
+  - `ScenarioGenerator` — Random encounter generation (starboard cross, head-on, overtake, constrained)
   - `ContactController` — AI behavior for non-player tracks: threat detection via CPA, COLREGs-compliant maneuvering (head-on turns, give-way, overtaking speed reduction)
-  - `Simulator` — Central orchestrator: 60fps game loop, canvas rendering (polar grid, range rings, tracks, CPA indicators, TSS boundaries), UI event handling, data panel updates, touch gestures (long-press drag, pinch zoom)
+  - `Simulator` — Central orchestrator: 60fps game loop, canvas rendering (polar grid, range rings, tracks, CPA indicators), UI event handling, data panel updates, touch gestures (long-press drag, pinch zoom)
 
 ### Rendering
 
@@ -46,5 +46,4 @@ All rendering uses a single HTML5 Canvas with a polar coordinate system. Range r
 - **CPA** (Closest Point of Approach) — Core collision metric: bearing, range, and time
 - **Relative Motion** — Vector showing how a contact moves relative to ownship
 - **COLREGs** — International collision avoidance rules governing contact AI behavior
-- **TSS** — Traffic Separation Scheme with eastbound/westbound lanes and a separation zone
 - **Ownship** — The user-controlled vessel; contacts/tracks are other vessels
