@@ -13,11 +13,9 @@ class GameManager {
   constructor() {
     this.menuOverlay = document.getElementById('main-menu');
     this.btnSimulator = document.getElementById('btn-simulator');
-    this.btnGapRunner = document.getElementById('btn-gap-runner');
 
     // Bind methods
     this.startSimulatorMode = this.startSimulatorMode.bind(this);
-    this.startGapRunner = this.startGapRunner.bind(this);
 
     this._attachListeners();
     this._checkURLParams();
@@ -25,7 +23,6 @@ class GameManager {
 
   _attachListeners() {
     this.btnSimulator?.addEventListener('click', this.startSimulatorMode);
-    this.btnGapRunner?.addEventListener('click', this.startGapRunner);
 
     // Main Menu navigation via Logo
     const logo = document.querySelector('.maneuverlogo');
@@ -33,7 +30,6 @@ class GameManager {
       logo.style.cursor = 'pointer';
       logo.addEventListener('click', () => {
         this.showMenu();
-        // Optional: Pause simulation?
         if (window.sim && window.sim.isSimulationRunning) {
           window.sim.togglePlayPause();
         }
@@ -41,23 +37,17 @@ class GameManager {
     }
   }
 
-  /**
-   * Checks for ?mode=X URL parameter to auto-start.
-   */
   _checkURLParams() {
     const params = new URLSearchParams(window.location.search);
     const mode = params.get('mode');
 
     if (mode === 'simulator') {
       this.startSimulatorMode();
-    } else if (mode === 'gap_runner') {
-      this.startGapRunner();
     }
   }
 
   hideMenu() {
     this.menuOverlay.classList.add('hidden');
-    // Optional: remove from DOM sequence or visibility:hidden to avoid tab focus
   }
 
   showMenu() {
@@ -69,17 +59,11 @@ class GameManager {
     this.initSimulator({ mode: 'simulator' });
   }
 
-  startGapRunner() {
-    this.hideMenu();
-    this.initSimulator({ mode: 'gap_runner' });
-  }
-
   initSimulator(config) {
     if (window.sim) {
       window.sim.destroy();
     }
 
-    // wait for font loading if likely needed, or just start
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => {
         window.sim = new Simulator(config);
