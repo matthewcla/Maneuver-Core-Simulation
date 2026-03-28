@@ -266,7 +266,6 @@ class Simulator {
         this.btnScen = document.getElementById('regenerate');
         this.btnFuture = document.getElementById('future');
         this.btnPast = document.getElementById('past');
-        this.btnCommit = document.getElementById('commit-btn');
         this.ffSpeedIndicator = document.getElementById('ff-speed-indicator');
         this.revSpeedIndicator = document.getElementById('rev-speed-indicator');
         this.trackDataContainer = document.getElementById('track-data-container');
@@ -517,25 +516,6 @@ class Simulator {
         // are invoked when the buttons are pressed
         this.btnFuture?.addEventListener('click', this.fastForward.bind(this));
         this.btnPast?.addEventListener('click', this.rewind.bind(this));
-
-        // Commit Button (Adrenaline) Logic
-        if (this.btnCommit) {
-            const startCommit = (e) => {
-                if (e.cancelable) e.preventDefault();
-                this.startCommit();
-            };
-            const stopCommit = (e) => {
-                if (e.cancelable) e.preventDefault();
-                this.stopCommit();
-            };
-
-            this.btnCommit.addEventListener('mousedown', startCommit);
-            this.btnCommit.addEventListener('touchstart', startCommit, { passive: false });
-
-            this.btnCommit.addEventListener('mouseup', stopCommit);
-            this.btnCommit.addEventListener('touchend', stopCommit);
-            this.btnCommit.addEventListener('mouseleave', stopCommit);
-        }
 
         this.btnAddTrack?.addEventListener('click', () => this.addTrack());
         this.btnDropTrack?.addEventListener('click', () => this.dropTrack());
