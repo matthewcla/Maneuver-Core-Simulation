@@ -25,21 +25,22 @@ Maneuver is a browser-based radar and collision avoidance simulator built with v
 ### Core Modules (`js/`)
 
 - **main.js** — `GameManager` class: app entry point, mode routing, service worker registration
-- **dynamics.js** — `ShipDynamics` class: Nomoto steering model physics for DDG-51-class vessel. Exports independently. Handles heading, yaw rate, speed, and position integration
 - **arena.js** — Monolithic (~2,100 lines) main engine containing:
   - `ScenarioGenerator` — Random encounter generation (starboard cross, head-on, overtake, constrained)
   - `ContactController` — AI behavior for non-player tracks: threat detection via CPA, COLREGs-compliant maneuvering (head-on turns, give-way, overtaking speed reduction)
-  - `Simulator` — Central orchestrator: 60fps game loop, canvas rendering (polar grid, range rings, tracks, CPA indicators), UI event handling, data panel updates, touch gestures (long-press drag, pinch zoom)
+  - `Simulator` — Central orchestrator: 60fps game loop, canvas rendering (polar grid, range rings, tracks, CPA indicators), UI event handling, data panel updates, single-touch pointer wrappers
+
+Note: `js/dynamics.js` (`ShipDynamics`, Nomoto steering model) exists in the repo but is not loaded by `index.html` and is unreferenced at runtime.
 
 ### Rendering
 
-All rendering uses a single HTML5 Canvas with a polar coordinate system. Range rings at configurable scales (3, 6, 12, 24 NM). Zoom range 0.5x–4x. Responsive scaling via `scaleUI()` and CSS custom properties.
+All rendering uses a single HTML5 Canvas with a polar coordinate system. Range rings at configurable scales (3, 6, 12, 24 NM). UI scale clamped to 0.7x–1.5x in `scaleUI()` and `setZoom()`. Responsive scaling via CSS custom properties.
 
 ### Styling
 
 - `css/global.css` — Design tokens as CSS custom properties (radar green `#44a828`, spacing, font sizes, UI scale)
 - `css/beta.css` — Layout, component styles, media queries for mobile
-- `components/` — 58 atomic UI component folders (buttons, icons, cards, controls), each with `index.html` + `style.css`
+- `components/` — ~31 atomic UI component folders across 6 categories (buttons, cards, controls, icons, menus, metrics), each with `index.html` + `style.css`
 
 ### Key Domain Concepts
 
