@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Maneuver — Sandbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@500;600;700&display=swap" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="app">
+
+  <!-- LEFT RAIL -->
+  <aside class="rail" aria-label="Primary">
+    <a class="rail__logo" href="#" aria-label="Maneuver">
+      <img src="../../public/group-27.svg" alt="" />
+      <img src="../../public/group-28.svg" alt="" />
+    </a>
+    <div class="rail__spacer"></div>
+    <button class="rail__btn" id="clear-btn" aria-label="Clear all contacts" title="Clear contacts">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+    </button>
+  </aside>
+
+  <!-- STAGE (radar) -->
+  <main class="stage">
+    <div class="radar">
+      <canvas id="radar-canvas" aria-label="Radar display"></canvas>
+
+      <button class="radar__range" id="range-pill" aria-label="Cycle range">
+        <span class="range__val" id="range-val">12</span>
+        <span class="range__unit">NM</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- TRANSPORT — sibling of stage so we can place it below the panel on mobile -->
+  <footer class="transport">
+    <button class="transport__play" id="play-btn" aria-label="Play or pause">
+      <svg class="icon-play" viewBox="0 0 14 14"><path d="M3.5 2 L12 7 L3.5 12 Z" fill="currentColor"/></svg>
+      <svg class="icon-pause" viewBox="0 0 14 14"><rect x="3.25" y="2.25" width="3" height="9.5" rx="0.75" fill="currentColor"/><rect x="7.75" y="2.25" width="3" height="9.5" rx="0.75" fill="currentColor"/></svg>
+    </button>
+
+    <div class="transport__clock" id="sim-clock">00:00:00</div>
+
+    <div class="transport__scrub" id="scrub" role="slider" aria-label="Scrub time" tabindex="0">
+      <div class="scrub__track"></div>
+      <div class="scrub__fill" id="scrub-fill" style="--pct:0%"></div>
+      <div class="scrub__head" id="scrub-head" style="--pct:0%"></div>
+    </div>
+
+    <div class="transport__speeds" role="radiogroup" aria-label="Simulation speed">
+      <button class="speed" role="radio" data-speed="1">1×</button>
+      <button class="speed is-active" role="radio" data-speed="2" aria-checked="true">2×</button>
+      <button class="speed" role="radio" data-speed="4">4×</button>
+      <button class="speed" role="radio" data-speed="8">8×</button>
+    </div>
+  </footer>
+
+  <!-- RIGHT TELEMETRY -->
+  <aside class="panel" aria-label="Telemetry">
+
+    <!-- TRACK SECTION -->
+    <section class="track" id="track-hero" aria-live="polite">
+      <header class="track__head">
+        <span class="track__tag" id="track-tag">—</span>
+        <span class="track__state" id="track-state"></span>
+      </header>
+
+      <!-- CBDR / bearing drift -->
+      <div class="cbdr" id="cbdr-strip" data-state="idle">
+        <span class="cbdr__state" id="cbdr-state">—</span>
+        <svg class="cbdr__spark" id="cbdr-spark" viewBox="0 0 120 20" preserveAspectRatio="none" aria-hidden="true">
+          <polyline id="cbdr-spark-path" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points=""/>
+        </svg>
+        <span class="cbdr__delta" id="cbdr-delta">—<span class="u">/m</span></span>
+      </div>
+
+      <!-- Hero numbers -->
+      <div class="hero">
+        <div class="hero__cell hero__cell--primary">
+          <span class="hero__lbl">CPA</span>
+          <span class="hero__val"><span id="cpa-rng-val">—</span><span class="hero__unit">NM</span></span>
+        </div>
+        <div class="hero__cell">
+          <span class="hero__lbl">TCPA</span>
+          <span class="hero__val" id="cpa-time">—</span>
+        </div>
+        <div class="hero__aspect">
+          <svg class="aspect" viewBox="-50 -50 100 100" aria-hidden="true">
+            <circle cx="0" cy="0" r="42" fill="none" stroke="#2A2E38" stroke-width="1"/>
+            <line x1="0" y1="-42" x2="0" y2="-36" stroke="#8A8E97" stroke-width="1"/>
+            <line x1="0" y1="42" x2="0" y2="36" stroke="#8A8E97" stroke-width="1"/>
+            <line x1="-42" y1="0" x2="-36" y2="0" stroke="#8A8E97" stroke-width="1"/>
+            <line x1="42" y1="0" x2="36" y2="0" stroke="#8A8E97" stroke-width="1"/>
+            <path id="aspect-wedge" d="" fill="#FF6B2C" fill-opacity="0.28" stroke="#FF6B2C" stroke-width="1.25"/>
+            <circle cx="0" cy="0" r="2.5" fill="#F2F0EA"/>
+          </svg>
+          <div class="hero__aspect-txt">
+            <span class="hero__lbl">Aspect</span>
+            <span class="hero__val-sm" id="aspect-val">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data grid -->
+      <div class="grid">
+        <div class="cell"><span class="cell__lbl">Brg</span><span class="cell__val" id="d-brg">—</span></div>
+        <div class="cell"><span class="cell__lbl">Rng</span><span class="cell__val" id="d-rng">—</span></div>
+        <div class="cell editable" data-edit="track-crs"><span class="cell__lbl">Crs</span><span class="cell__val" id="d-crs">—</span></div>
+        <div class="cell editable" data-edit="track-spd"><span class="cell__lbl">Spd</span><span class="cell__val" id="d-spd">—</span></div>
+        <div class="cell"><span class="cell__lbl">Rel Dir</span><span class="cell__val" id="d-rdir">—</span></div>
+        <div class="cell"><span class="cell__lbl">Rel Spd</span><span class="cell__val" id="d-rspd">—</span></div>
+        <div class="cell"><span class="cell__lbl">Brg Rate</span><span class="cell__val" id="d-brate">—</span></div>
+        <div class="cell"><span class="cell__lbl">Tgt Ang</span><span class="cell__val" id="d-tang">—</span></div>
+      </div>
+    </section>
+
+    <!-- CONTACTS -->
+    <section class="contacts">
+      <header class="contacts__head">
+        <h3 class="contacts__title">Contacts <span class="contacts__count" id="contact-count">0</span></h3>
+        <span class="contacts__hint">long-press the radar to drop</span>
+      </header>
+      <ul class="contacts__list" id="contact-list"></ul>
+      <div class="contacts__empty" id="contacts-empty">
+        <span>No contacts yet.</span>
+        <span class="contacts__empty-hint">Long-press anywhere on the radar, then drag to set course.</span>
+      </div>
+    </section>
+
+    <!-- OWNSHIP -->
+    <section class="own">
+      <div class="own__row">
+        <span class="own__lbl">Ownship</span>
+        <span class="own__val">
+          <span class="editable" data-edit="own-crs"><span id="own-crs">000</span>°<span class="own__u">T</span></span>
+          <span class="sep">·</span>
+          <span class="editable" data-edit="own-spd"><span id="own-spd">12</span><span class="own__u">kt</span></span>
+        </span>
+      </div>
+    </section>
+  </aside>
+
+  <!-- MOBILE TOPBAR -->
+  <header class="topbar" aria-hidden="true">
+    <a class="topbar__logo" href="#" aria-label="Maneuver">
+      <img src="../../public/group-27.svg" alt="" />
+      <img src="../../public/group-28.svg" alt="" />
+    </a>
+    <button class="topbar__btn" id="clear-btn-mobile" aria-label="Clear contacts">
+      <svg viewBox="0 0 20 20"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+    </button>
+  </header>
+
+  <!-- Inline edit popover -->
+  <div class="edit-pop" id="edit-pop" hidden>
+    <label class="edit-pop__lbl" id="edit-pop-label">Course</label>
+    <input class="edit-pop__input" id="edit-pop-input" type="number" inputmode="decimal" />
+    <div class="edit-pop__hint">↵ apply · Esc cancel</div>
+  </div>
+
+  <script src="./sim.js" defer></script>
+  <script src="./radar.js" defer></script>
+  <script src="./app.js" defer></script>
+</body>
+</html>
